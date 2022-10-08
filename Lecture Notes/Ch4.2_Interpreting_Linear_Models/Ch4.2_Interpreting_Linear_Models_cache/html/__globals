@@ -1,0 +1,15 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	read.csv
+unnamed-chunk-3	dim	ins	str	summary
+unnamed-chunk-4	element_text	ggpairs	ins	labs	list	theme	wrap
+unnamed-chunk-5	~	ins	lm
+unnamed-chunk-6	simple.mod	summary
+unnamed-chunk-7	$	aes	age	charges	F	geom_point	geom_smooth	geom_text	ggplot	ins	labs	paste	round	simple.mod
+unnamed-chunk-8	~	boxplot	c	ins
+unnamed-chunk-9	aes	element_text	ggpairs	ins	labs	list	smoker	theme	wrap
+unnamed-chunk-10	aes	element_text	ggpairs	ins	labs	list	sex	theme	wrap
+unnamed-chunk-11	~	ins	lm
+unnamed-chunk-12	mod_age_smk	summary
+unnamed-chunk-13	~	ins	lm	summary
+unnamed-chunk-14	$	c	mod_age_x_smk	sum
+unnamed-chunk-15	$	c	mod_age_x_smk	sum

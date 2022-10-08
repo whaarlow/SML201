@@ -1,0 +1,1287 @@
+---
+title: "SML201 Chapter 2.2"
+author: "Bill Haarlow"
+date: "Fall 2019"
+output:
+  html_document:
+    fig_caption: yes
+    df_print: paged
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+geometry: margin=1.5in
+subtitle: 'Exploratory Data Analysis: Part I'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5, fig.width=9, collapse=FALSE, comment="", prompt=T, echo = TRUE, cache=TRUE, autodep=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=70)
+```
+
+
+
+# R functions covered
+
+--------
+
+*  Check and set up work directory: `getwd()`, `setwd()`
+*  Arithmetic:  `diff()`
+*  Check and remove objects in the environment:  `objects()`, `ls()`, `rm()`
+*  Save and load variables:  `save(..., file=...)`, `load(..., file=...)`
+*  Data extraction: `$` by name; `[,]` by indices; with conditions or logical arguments
+*  Combining conditions: `&`, `|`, `!`
+*  Data manipulation: `na.omit()`, `sort(..., decreasing = FALSE)`, `unique()`, `rank()`, `%in%`, `order()`
+*  Statistic functions:  `sd(..., na.rm = ...)`, `var(..., na.rm = ...)`, `quantile(..., na.rm =..., p=...)`, `IQR(..., na.rm =...)`
+*  Graphical summary functions: `hist(..., main = ..., xlab = ..., ylab = ..., freq = ..., breaks = ..., main = ..., ...)`, `boxplot(..., ylab = ..., main = ...)`
+
+
+# Introduction
+
+----------
+
+In the last chapter we introduced data frame, an object type in R.  We also introduced various statistics that summarize one-dimensional data.  We hope you are convinced that these statistics are useful for extracting interesting information from a dataset.  We will now go into more details to show you how to calculate other more advanced statistics and how to use R to obtain them.
+
+
+
+# Set up a script file
+
+
+--------
+
+
+```{r}
+getwd() # check where the current work directory is 
+
+setwd("/Users/billhaarlow/Desktop/SML201/") 
+# use setwd() to change your directory;
+# when you save outputs all your outputs  
+# will be automatically saved to your current   
+# directory unless you specify a path for
+# your outputs (see example below)
+
+getwd()
+# verify that your current work directory has been
+# changed to where you wanted
+```
+
+```{r, include = F}
+
+# setwd('/Users/daisyhuang/Documents/Teaching/SML201_Fall2019/Lectures/EDA/EDA_part_I') 
+# you can ignore this line; I just want to set my
+# work directory back to the original one since
+# I want to save all my outputs in that folder
+
+getwd()
+# verify directory
+```
+
+
+## Clearing up variables in your workspace (i.e., global environment)
+
+--------
+
+```{r}
+
+ls() # check what R objects are currently in your workspace
+
+rm(list=ls()) # remove all the R objects in your workspace
+
+x = c(3,1,4) # create a variable x that stores the vector c(3,1,4)
+y = 1:2
+rm(x) # remove just x from the workspace
+
+x = c(3,1,4)
+y = 1:2
+rm(list=c('x', 'y')) # remove x and y from the workspace
+
+x = c(3,1,4)
+y = 1:2
+rm(list=ls())
+# remove all R objects in your workspace
+# same as rm(list=c('x', 'y')) since x and y are the only R objects in your workspace
+
+```
+
+--------
+
+To run a line of code from the script file use 
+
+* `Command + Return` for Mac  
+* `Control + Return` for PC
+
+You can see all the short-cut keys here <https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts>
+
+
+# Functions in R
+
+--------
+
+A function in R takes some data (i.e., a column or multiple columns in the titanic dataset), manipulate the data (e.g., sum up of, take the maximum of, or make a graph with the data), and outputs the desired result.  A function in R has the following format:
+
+
+```{r, eval=F}
+# <center>![function_anatomy](./Ch2.2_function_anatomy.png)</center>
+```
+Input arguments are separated by commas.
+
+## Reading the help manual for a function
+
+On the help manual of a function if there is already a default value assigned to the input argument, this means that if the user does not assign a value to the input argument the default value will be used by `R`.
+```{r, eval=F}
+function_default_values
+# <center>![function_default_values](./Ch2.2_function_default_values.png)</center>
+```
+For example,
+
+```{r}
+seq()
+```
+
+Why?
+
+
+
+# Save and load specific variables
+
+--------
+
+```{r}
+x = c(3,1,4)
+y = 1:2
+
+save("x", "y", file="xy.RData") # save x, y variables to xy.RData
+                                # xy.RData will be saved to current work directory
+
+save("x", "y", file="/Users/billhaarlow/Desktop/SML201/xy.RData")
+# can also specify a full path to tell R where to save variable x and y
+
+rm(list=c('x', 'y')) 
+# remove x and y from the workspace to see if save() works
+
+ls()
+load(file = "xy.RData") # load x, y back
+ls() # check if we get x and y back
+x
+y
+
+rm(list=ls())
+```
+
+
+# Start with a dataset
+
+--------
+
+Let's read in the dataset for the analysis.
+
+```{r}
+t.ship = read.csv(file = '/Users/billhaarlow/Desktop/SML201/titanic.csv')
+```
+
+
+--------
+
+We should refresh our memory on the properties of the dataset.
+
+```{r}
+class(t.ship) # this tells me what kind of R object this dataset is
+dim(t.ship) # 891 rows by 12 columns
+```
+
+
+----------
+
+
+```{r}
+head(t.ship) # look at the first 6 (by default) rows of an object
+```
+
+----------
+
+
+```{r}
+tail(t.ship, n=3) # look at the last 3 rows of an object
+```
+
+----------
+
+```{r}
+# check the data type of each column in `t.ship`
+str(t.ship, strict.width = 'cut')
+```
+
+
+----------
+
+```{r}
+# get the 5-number summary and the mean for each column of the data frame
+summary(t.ship)
+
+```
+
+
+
+
+----------
+
+
+Let's find answers to the list of questions that we had last time with R!
+
+# Graphical summary: Histogram
+
+1. What is the age distribution of the passengers?
+
+A histogram provides a graphical display of the distribution of a variable.
+
+\newpage
+
+--------
+
+
+```{r, eval = F, fig.cap = "Histograms for Age (in Years) for Titanic Passengers", fig.height=4.5}
+
+# create the histogram for the column `Age` in `t.ship`
+hist(t.ship$Age, breaks = 30, freq = F, 
+     main = 'Age Distribution for Passengers on Titanic',
+     xlab = 'Age (in Years)', ylab = 'Proportion per Year', border = rgb(0, 1, 0), col = rgb(0, 0:12, 0, max = 255))
+# we will talk about how to construct 
+# histograms in more details in precept
+
+```
+
+
+--------
+
+
+```{r, echo = F, fig.cap = "Histograms for Age (in Years) for Titanic Passengers", fig.height=4.5}
+
+hist(t.ship$Age, breaks = 30, freq = F, 
+     main = 'Age Distribution for Passengers on Titanic',
+     xlab = 'Age (in Years)', ylab = 'Proportion per Year', border = rgb(0, 1, 0), col = rgb(1, 0, 1))
+# we will talk about how to construct 
+# histograms in more details in precept
+
+```
+
+
+--------
+
+
+How about a numerical way to summarize the Age distribution?
+
+
+
+# Numerical summaries
+
+--------  
+
+
+
+Three ways to summarize the central location and the spread of a dataset:
+
+* **Mean, standard deviation/variance**  
+* **Five number summary: minimum, 1st quartile, median(i.e., 2nd quartile), 3rd quartile, maximum**  
+* **Median, interquartile range**  
+
+-------- 
+ 
+
+## Mean, standard deviation and variance
+
+ 
+-------- 
+
+Recall that the **mean** of 
+a set of data points is the *average* of all the data points in the set
+
+\[
+mean\_of\_a\_dataset 
+= \frac{pt.1 + pt.2 + ... + pt.n}{n}
+\]
+
+*pt.i* stands for the $i^{th}$ data point in your dataset
+
+--------  
+
+Variance gives a measure of the spread of the dataset by taking the average of the squared difference between each data point and the mean of the dataset:
+
+\begin{align}
+& variance\_of\_dataset \\
+& = \frac{(pt.1-mean)^2 + (pt.2-mean)^2 + ... + (pt.n-mean)^2}{n-1}
+\end{align}
+
+
+-------- 
+
+
+A question for you:  Why do we need to square the difference?
+
+--------
+
+Note: the mean of a dataset is the quantity that minimizes the average of the squared difference between the data points and the quantity.
+
+--------  
+
+Taking square root of the variance gives standard deviation an unit that is consistent with the units for the original dataset.
+  
+\[
+SD\_of\_dataset = \sqrt{variance\_of\_dataset}
+\]
+
+
+-------- 
+
+
+
+## Five number summary: minimum, 1st quartile, median, 3rd quartile, maximum 
+
+--------
+ 
+Recall that 1st quartile, median and 3rd quartile are just 25th , 50th and 75th percentiles, respectively.
+
+-------- 
+
+While mean and SD give a quick summary of the central location and the spread of a dataset, they do not provide information on the shape of the distribution; e.g., we cannot tell from the values of mean and SD whether the distribution is symmetric or if there are extreme values in the dataset.  
+
+-------- 
+
+The following three datasets have their means approximately 0 and their SDs approximately 1.  However, we can see that the shapes of their distributions are quite different.  The first two distributions are symmetric while the last one is skewed right (i.e., with a long right tail).
+
+--------  
+
+\newpage
+
+```{r, include=F}
+set.seed(2346)
+unif4000 = runif(n=10000, min=-sqrt(12)/2, max=sqrt(12)/2)
+mean(unif4000)
+var(unif4000)
+
+rnorm4000 = rnorm(n=10000, mean=0, sd = 1)
+mean(rnorm4000)
+sd(rnorm4000)
+
+exp4000 = rexp(n=10000, rate=1)-1
+mean(exp4000)
+sd(exp4000)
+```
+
+
+
+```{r fig.cap = "Histograms for three datasets each with mean around 0 and SD around 1", echo=F, fig.height=6, fig.width=7}
+par(mfrow=c(3,1), cex.main=.8, cex.lab=.8, cex.axis=.8)
+
+hist(unif4000, prob=T, main='Histogram of a Dataset with Mean about 0 and SD about 1', xlab='data points', xlim=c(-6, 6))
+hist(rnorm4000, prob=T, main='Histogram of a Dataset with Mean about 0 and SD about 1', xlab='data points', xlim=c(-6, 6))
+hist(exp4000, prob=T, main='Histogram of a Dataset with Mean about 0 and SD about 1', xlab='data points', xlim=c(-6, 6))
+
+par(mfrow=c(1,1))
+```
+
+--------  
+
+The five number summary gives a better idea of the shape of the distribution of a dataset: The median gives an idea of the central location (different definition of central location from the definition for the mean).  For the three datasets above the five number summary along with the means are the following accordingly:
+
+-------- 
+
+```{r echo=F}
+
+
+knitr::kable(
+round(
+rbind(
+summary(unif4000),
+summary(rnorm4000),
+summary(exp4000)
+), digits = 2)
+)
+```
+
+Compared to the median, the mean was affected by the extreme values in the third dataset.
+
+<!----
+
+\newpage
+---->
+
+--------  
+
+## Median, interquartile range
+
+ 
+We already know that median is just the 50th percentile.
+
+Interquartile range (IQR) gives a measure of the spread of the "central" 50% of the data:
+Interquartile range = Q3-Q1
+
+--------  
+
+
+
+
+# Calculating numerical summaries
+
+--------
+
+The Numerical summaries for the variable `Age` are
+
+--------
+
+* **Mean, standard deviation/variance**
+
+```{r}
+mean(t.ship$Age) # you get NA because R
+# does not know how you would like to 
+# handle the missing values
+summary(t.ship$Age) 
+# the vector `Age` has 177 missing values
+# we need to keep in mind that since the 
+# number of missing values is not small
+# this might affect the accuracy of our
+# analysis
+```
+
+```{r}
+mean(t.ship$Age, na.rm = T)
+
+sd(t.ship$Age, na.rm = T)
+
+var(t.ship$Age, na.rm = T)
+
+```
+
+--------
+
+
+* **Five number summary: minimum, 1st quartile, median(i.e., 2nd quartile), 3rd quartile, maximum**
+
+```{r}
+summary(t.ship$Age)[-4]
+```
+
+The minimum age of the passengers is .42 year, 20.12 is the 1st quartile, 28 is the median age, 38 is the 3rd quartile and the oldest passenger is 80 years old.
+
+--------
+
+* **Median, interquartile range**
+
+```{r}
+# calculate the median
+median(t.ship$Age, na.rm = T)
+```
+
+Three ways to find the interquartile range:
+
+```{r}
+## first way: calculate each quantile separately first
+## then, take the difference
+quantile(t.ship$Age, na.rm = T, p = .75) # .75 quantile
+quantile(t.ship$Age, na.rm = T, p = .25) # .25 quantile
+quantile(t.ship$Age, na.rm = T, p=.75)-quantile(t.ship$Age, na.rm = T, p=.25)
+## you can use this method to calculate the difference between
+## any two quantiles, not just the 1st and the 3rd quartiles
+```
+
+--------
+
+
+```{r}
+# alternatively, we can output the values of the two quantiles 
+# as elements in a vector and then take the difference
+# of the two quantiles
+diff(quantile(t.ship$Age, na.rm = T, p=c(.25, .75)))
+```
+
+--------
+
+```{r}
+# lastly, we can also calculate this with 
+# the `IQR()` function
+IQR(t.ship$Age, na.rm = T)
+```
+
+
+
+-------- 
+
+
+
+### Exercises
+
+We already calculated the five-number summary of the `Age` vector.
+
+```{r}
+summary(t.ship$Age)
+```
+
+With the outputs above answer the following questions.
+
+Question 1. Roughly what percentage of the passengers are between age 20.12 and 38?
+
+--------
+
+Answer: About 50%.
+
+--------
+
+```{r}
+summary(t.ship$Age)
+```
+
+Question 2. Roughly what percentage of the passengers are older than 38?
+
+--------
+
+Answer: 1 - 75% = 25%.
+
+--------
+
+```{r}
+summary(t.ship$Age)
+```
+
+Question 3. Suppose that about 67.5% of the passengers have ages that are less than `x`; `x` is called the ______ quantile.  Find out what age this quantile corresponds to.
+
+--------
+
+Answer: The age that about 67.5% of the passengers are younger than is called the $\underline{.675}$ quantile.  The age this .675 quantile corresponds to is 35.
+
+```{r}
+quantile(t.ship$Age, p = .675, na.rm = T)
+```
+
+--------
+
+Question 4. Draw the histogram for the ticket prices and suggest R to use about 30 bins for the histogram.
+
+--------
+
+Answer:
+
+```{r}
+
+hist(t.ship$Fare, freq = F, xlab = "Ticket prices (in pounds)",
+     main = 'Histogram for Titanic Ticket Prices', breaks = 30)
+```
+
+--------
+
+```{r}
+max(t.ship$Fare) # some tickets seem to be a lot more expensive than the rest
+
+```
+
+We see that some people paid a lot more than the rest of the passengers for their tickets.  Who are these people?  We can subset the part of the data that are about the passenger with the highest ticket price a condition:
+
+--------
+
+```{r}
+t.ship[t.ship$Fare == max(t.ship$Fare),]
+
+# Note: t.ship$Fare == max(t.ship$Fare) is
+# a condition and will return a TRUE-FALSE 
+# vector (i.e., a logical vector)
+
+# you can extract out elements of a vector 
+# by using a logical vector that has
+# the same length; e.g.,
+c(3, 8, 1, 9)[c(T, F, F, T)]
+
+```
+
+
+--------
+
+You can generalize the technique of extracting elements out from a vector with logical argument to extract elements out of other R objects.  Here we will demonstrate the technique with a data frame.
+
+```{r}
+# create a small data frame for the demonstration
+
+toy = t.ship[1:6, 1:3]
+toy
+
+```
+
+```{r}
+# I just want to extract out rows 1, 2, 6:
+
+toy[c(T, T, F, F, F, T) , ]
+```
+
+--------
+
+
+```{r}
+# you can also combine the conditions with
+# & (and), | (or) or ! (not); e.g.,
+c(3, 8, 1, 9)[c(T, F, F, T) & c(T, F, T, F)]
+c(3, 8, 1, 9)[c(T, F, F, T) | c(T, F, T, F)]
+c(3, 8, 1, 9)[!(c(T, F, F, T) & c(T, F, T, F))]
+
+```
+
+--------
+
+Is there anyone else paying nearly this much for their tickets?  We can sort the ticket prices in a decreasing order:
+
+```{r}
+sort(t.ship$Fare, decreasing = T)
+# by default `decreasing` is set to `FALSE`
+# so sort() sorts the elements 
+# in a vector in an increasing order;
+# the default setting in sort() also 
+# removes the missing values in sort()
+```
+
+--------
+
+The list above is too long; in general you don't want to print out the irrelevant figures for your analysis unless it's necessary.  let's look at just the top 20 prices.
+
+```{r}
+
+head(sort(t.ship$Fare, decreasing = T), n=20)
+```
+
+--------
+
+
+```{r}
+# if we just want to sort the prices 
+# in an increasing order we don't need 
+# to include the argument `decreasing` 
+head(sort(t.ship$Fare), n=20)
+```
+
+Note that the most expensive price is almost twice as much as the second highest one!  A price that falls well outside the main price range is called an outlier; we are almost certain that the top price is an outlier by just looking at the histogram but what about other prices that are to the far right of the histogram?
+
+
+# Additional numerical summary statistics
+
+-------- 
+
+## Outliers
+
+ 
+
+An **Outlier** is an observation that falls well outside the main range of the data.  We should treat outliers with cautions; sometimes outliers occur due to recording errors and other times outliers actually provide us insightful information about the data.
+
+
+--------
+
+ 
+
+There are different rules to identify outliers.  One set of rules that is commonly used defines an outlier to be a data point that falls more than 1.5 times of the IQR below Q1 or above the Q3 (see sketch on the board in lecture).
+
+---------
+
+In addition, a boxplot provides a graphical way to identify outliers.
+
+```{r fig.height=10}
+
+boxplot(t.ship$Fare, main='Boxplot for Passenger Fare',
+        ylab = 'Passenger Fare (in Pounds)')
+```
+
+Please see details about boxplots in lecture.  
+
+
+--------
+
+
+
+## Mode
+
+ 
+The **modes** of a dataset are the peaks on the histogram for the dataset. E.g., on the histograms for three datasets each with mean around 0 and SD around 1
+we see that the first dataset has no mode, the second and the third dataset each has one mode. The location of the mode tells us on which part of the x-interval the data has high frequency.  The most prominent mode is called the **major mode**--there could be more than one major mode depending on the distribution.  The less prominent ones are called the minor modes.
+
+--------  
+
+
+
+
+
+Let's find out the answers to a few more questions that we had last time!
+
+--------  
+
+
+### Exercises
+
+--------  
+
+
+Question 5. Observe the histogram for `Age`; are there any modes?
+
+--------  
+
+
+There is one major mode around age 21 and there is a minor mode around age 1.
+
+--------  
+
+
+Question 6. *Exactly* how many passengers are between age 20 and 22, inclusively? (Hint: When you apply mathematical operations on a vector with logical arguments `R` treats logical arguments as numbers; `TRUE` is treated as 1 and `FALSE` is treated as 0.)
+
+--------  
+
+
+
+```{r}
+sum(t.ship$Age >=20 & t.ship$Age <=22, na.rm = T)
+```
+
+--------  
+
+
+
+* How much is the most expensive ticket?
+* How much is the cheapest ticket?
+
+--------  
+
+```{r}
+range(t.ship$Fare)
+```
+
+--------  
+
+Question 7. What are the ages of the four youngest passengers on the ship?
+
+--------  
+
+```{r}
+sort(t.ship$Age)[1:20] 
+# sort() sorts the elements in a vector
+# in increasing order (by default);
+# the default setting in sort() also 
+# removes the missing values in sort()
+
+
+```
+
+--------  
+
+The four youngest passengers on the ship are of ages:
+
+```{r}
+sort(t.ship$Age)[1:4]
+```
+
+--------  
+
+Question 8.  Consider the non-missing Age values.  Are there anyone that seems to be younger or older than the majority of the passengers?  Use the outlier rule we discussed in class to identify these passengers.  
+
+--------  
+
+```{r, include = F}
+# use non-NA data only:
+age.data = na.omit(t.ship$Age)
+```
+
+We leave this as an exercises for you.  
+
+--------  
+
+The answer is that any numbers that are not in the interval [-6.6875, 64.8125] are outliers and the `Age` outliers (in an increasing order) should be
+
+>66.0 65.0 71.0 70.5 65.0 65.0 71.0 80.0 70.0 70.0 74.0
+
+or with no repeats:
+
+>65.0 66.0 70.0 70.5 71.0 74.0 80.0
+
+--------  
+
+Question 9. Are there people paying much more/less than the majority of the passengers?
+
+
+```{r, include = F, eval=F}
+load(file = 'fare_out.RData')
+```
+
+--------  
+
+We leave this as an exercises for you.  The `Fare` outliers are any numbers that are not in the interval [-26.724, 65.6344]; there are 116 `Fare` outliers:
+
+```{r, echo = F, eval=F}
+fare.outlier
+```
+
+and their unique values are
+
+```{r, echo = F, eval=F}
+uniq.fare.outlier
+```
+
+Note that you can use the function `unique()` to extract out the unique elements in a vector; see an example of how to use `unique()` near the end of this chapter.
+
+
+# Technical details related to concepts and functions covered in this chapter
+
+## Vector
+
+* A vector is a (1-dimensional) collection of ordered **homogeneous** elements (i.e., all elements are of the same data type) ; the common data types in R are integer, numeric, logical, character/string, factor and complex (we will not use data with complex data type in this course).  Below are some example of vectors with elements of different data types:
+
+
+**Integer**
+
+```{r}
+7:11 # integer
+class(7:11)
+
+# class() tells you the object type of the input argument
+# However, when the input argument is a vector class() 
+# will tell you a bit more: it will tell you the data 
+# type of the elements in the vector--note that all the 
+# elements in a vector always have the same data type.
+```
+
+**numeric**
+
+```{r}
+c(3.4, 9.7, 14.2, 1.5)
+class(c(3.4, 9.7, 14.2, 1.5))
+```
+
+**Logical--binary. TRUE or FALSE**
+```{r}
+c(T, T, F) # create a logical vector
+# You can also use TRUE/FALSE instead of T/F
+
+class(c(T, T, F))
+(3:7)>4 # returns a vector of logical elements
+class((3:7)>4)
+!((3:7)>4) # negation operator; i.e., "not"
+
+
+```
+
+**Character/string--each element in vector is one or more characters**
+
+```{r}
+y = c('a', 'bc', 'def')
+length(y) # length of vector
+nchar(y) # number of characters of each element
+```
+
+**Factors--each element is a category**
+```{r}
+?factor
+factor(c("yes", "yes", "no", "yes", "no"))
+factor(c("yes", "yes", "no", "yes", "no"),  levels = c("yes", "no"))
+```
+We will talk about factors in more details later in the course. 
+
+
+
+### Construction and Extraction
+
+```{r}
+##### For vectors
+
+how.happy = c(miserable = -2, low = -1, all.right = 0, 
+              cheerful = 1, ecstatic = 2)
+names(how.happy)
+
+# another way to construct this vector
+how.happy = (-2):2
+names(how.happy) = c("miserable", "low", "all.right", 
+                     "cheerful", "ecstatic") 
+# need to have quotation marks because the entries are characters
+
+# R starts indexing with 1 and use "[]" for indices
+
+## Five ways to extract elements of a vector
+
+# Way 1
+how.happy[c(2, 4, 5)] # Inclusion by position
+
+# Way 2 
+how.happy[-c(1,3)] # Exclusion by position
+
+# Way 3
+how.happy[c("low", "cheerful", "ecstatic")] # By name
+
+# Way 4
+how.happy[how.happy >= 1] # By logical index
+how.happy[c(F, F, F, T, T)] # same as above
+                  # note that the logical vector in '[]' needs
+                  # to have the same length as how.happy
+
+# Way 5
+how.happy[] # No index (include everything)
+# This is useful when I want to reassign 
+# values to x--see below
+```
+
+
+### Assignment 
+
+```{r}
+
+## The same indexing method can be used to assign values 
+## to elements of a vector.
+
+# Way 1
+how.happy[c(2, 4, 5)] = c(-10, 10, 20) # Inclusion by position
+ 
+
+# Way 2 
+how.happy[-c(2, 4, 5)] = c(-20, 0) # Exclusion by position
+how.happy
+
+# Way 3
+how.happy[c('low',  'all.right',  'cheerful')] = c(-200, 0, 200) # By name
+how.happy
+
+# Way 4
+how.happy[how.happy > 10] = c(2000, 4000) # By logical index
+how.happy
+how.happy[c(F, F, F, T, T)] = c(2000, 4000) # same as above
+                  # note that the logical vector in '[]' needs
+                  # to have the same length as how.happy
+
+# Way 5
+how.happy[] = 5 # No index (include everything)
+# This is useful when I want to reassign values to x
+# Note: this is different from 
+how.happy = 5
+```
+
+### Concatenation--combining multiple vectors into one
+
+```{r}
+x = 60:67; y = 100:105
+x 
+y
+c(x, y)
+```
+
+### Coercion--converting the data types of the elements in a vector into one data type  
+
+```{r}
+class(c("a", "q"))
+class(c(F))
+c("a", "q", F)
+class(c("a", "q", F)) 
+# R does implicit coercion to change the data 
+# type for the vector to whatever that makes sense
+
+c(T, 4.5, F)
+class(c(T, 4.5, F)) # R codes 'T=1' and 'F=0'
+```
+
+
+## Data frame
+
+A data frame could have heterogeneous elements; i.e., its columns can have different data types.
+
+Since the columns of a data frame need to have the same length, a data frame has a similar appearance of a matrix, except that the data types of the entries in a data frame can change from column to column while all the elements of a matrix need to have the same data type.  
+
+
+### Exercise
+
+Question 10. The following R object has to be a data frame, not a matrix.  Why?
+
+```{r}
+head(iris)
+```
+
+----------
+
+To see the column names of a data frame we can use the function `names()` or `colnames()`.
+
+```{r}
+d = data.frame(let = c('a', 'p'), val = 1:2, 
+               t = c(7.6, 5.1))
+
+d
+names(d)  # names of the elements of a data frame
+colnames(d) # Remember that this also works for a matrix
+```
+
+
+
+### Indexing, extraction and concatenation
+
+
+Because a data frame has a similar appearance of a matrix we can index a data frame with the conventional matrix index notation used in mathematics: `[row index, column index]`.  
+
+```{r}
+class(d[, 2]) # a vector
+```
+
+
+In addition, we can extract a column by name using the $ symbol or by using its column index with `[[]]`:
+
+```{r}
+class(d$val) # a vector
+class(d[[2]]) # a vector
+```
+
+Last, we need to be careful about using `[]`.  The output will actually stay in the data frame object type:
+
+```{r}
+class(d[2]) # still a data frame, not a column
+
+# Note that it makes sense to do this
+class(d[2:3]) # this means to extract out the 2nd and 3rd columns
+# but not this
+# class(d[[2:3]])
+# see details here (https://cran.r-project.org/doc/manuals/R-lang.html#Indexing)
+```
+
+
+
+To combine multiple data frames we use the `data.frame()` function
+
+
+```{r}
+# create another data frame to combine with d
+d2 = data.frame(let2 = c('k', 'j'), val2 = 8:7)
+d2
+
+# combine two data frames
+
+data.frame(d, d2)
+class(data.frame(d, d2)) # result is another data frame
+
+```
+
+
+## Some R programming techniques
+
+### Vectorized calculations
+An important feature of R is that it carries out **vectorized computations**. This means that R would apply basic arithmetic, as well as many built-in R functions, to *each element* of a vector. This avoids much of the looping that is used in lower-level languages.  Therefore, making use of vectorized calculations often makes computations more efficient than using loops in R. 
+
+```{r}
+x = 1:4
+x*5
+x^2
+y = 0:3
+x+y
+sum(x, y) # different from x + y
+sum(x) + sum(y)  # same as sum(x, y)
+prod(x) # Returns the product of all the values present in its argument
+diff(x)
+diff(c(8, 2))
+```
+
+
+### Recycling rule
+
+When the vectors in a calculation are of different lengths, R follows the **recycling rule**. That is, it repeats and cycles elements from the shorter one.
+
+```{r}
+x = 1:5
+y = 0:2
+x+y
+```
+
+
+
+## Functions that help you understand an R object better
+
+```{r}
+# To find out the object type for any R objects
+class(iris) # iris is a built-in dataset in R
+
+# For a matrix, an array or a data frame
+dim(iris)
+
+# See the top or bottom part of an object
+head(iris, n=3)
+tail(iris, n=2)
+
+# For a vector or a list
+length(iris$Sepal.Length)
+length(iris) # Recall that a data.frame is just a special type of list
+
+# For a matrix or a data frame
+ncol(iris) # same as dim(iris)[2]
+nrow(iris) # same as dim(iris)[1]
+
+
+# To find out the data type for each element in any R object
+str(iris)
+```
+
+
+### Other built-in functions in R 
+
+**`min()`, `max()`, `which()`**
+```{r}
+x = c(3, 9, 1, -1, 12, -1, 5, -1)
+sum(x)/length(x)
+mean(x) # this takes average of the elements in x
+
+min(x) # the minimum of the elements in x
+max(x) # the maximum of the elements in x
+
+range(x) # range returns the minimum and the maximum of x
+
+c(min(x), max(x)) # same result as range(x)
+
+# To index by value
+which.max(x) # the index of the element that equals the max of x
+which.min(x) 
+# note that this gives you only the index of the first element 
+# that equals the min of x
+
+which(x==min(x)) 
+# this will return all indices of the elements that equals the min of x
+
+
+```
+
+
+## Manipulating or rearranging elements in a vector: sort(), rank(), unique(), order(), %in%
+
+
+**sort()**
+
+The function sort() sorts a vector into ascending or descending order. 
+
+
+```{r}
+x = c(3, 9, 1, -1, 12, -1, 5, -1)
+
+x
+sort(x)
+x # Note that sort() does not change x
+
+sort(x, decreasing =T)
+
+```
+
+
+-------- 
+
+
+```{r}
+# To see why sort() is useful
+
+pop.in.mi = c(19.75, 9, 12.78) 
+# population size in millions
+names(pop.in.mi) = c('NY', 'NJ', 'PA')
+
+pop.in.mi
+
+sort(pop.in.mi) 
+# see the smallest and biggest states among the three
+```
+
+-------- 
+
+**rank()**
+
+The function rank() returns the sample ranks of the values in a vector. Ties (i.e., equal values) and missing values can be handled in several ways.
+
+```{r}
+pop.in.mi
+
+rank(pop.in.mi)
+
+rank(-pop.in.mi) # rank in decreasing order
+
+```
+
+
+-------- 
+
+
+**unique()**
+
+
+The `unique()` function returns a vector, matrix, data frame or array just the same as the input but with duplicate elements/rows removed.
+
+Here is an example for `unique()` on a vector.
+
+```{r}
+x
+unique(x)
+
+sort(unique(x))
+# unique also works on objects of character type
+
+```
+
+Here is another example for `unique()` on a matrix.
+
+```{r}
+# create a matrix for the example
+m.with.duplicate.rows = matrix(c(rep(1:3, 3), 4:6), ncol = 3, byrow = T)
+m.with.duplicate.rows
+
+# `unique()` removes duplicate rows.
+unique(m.with.duplicate.rows)
+```
+
+
+-------- 
+
+**order()**
+
+`order()` is often used to re-order the elements in an object according to the order in *another* object.
+
+```{r}
+# order() returns a list of indices that you can use to sort 
+# the input vector in a decreasing or increasing order
+
+# create vectors for this example
+v = c(8, 9, 2, 1, -1) 
+v2 = 1:5
+# create a matrix for this example
+tmp.m = cbind(v, v2)
+tmp.m
+
+# I now want to rearrange the rows according to the values in v
+
+sort(v) # the sorted v (in an increasing order) looks like this
+
+# order(v) will give me the indices that I need to rearrange the 
+# elements in v in an increasing order
+v[order(v)] # same result as sort(v)
+
+# I can use such indices to rearrange the rows of tmp.m so that
+# the rows are arranged according to the values in the 
+# first column of the matrix
+tmp.m[order(v),]
+
+# Similarly, if we want to do this in a decreasing order:
+tmp.m[order(-v),]
+
+```
+
+-------- 
+
+**%in%**
+
+%in% is helpful for finding out if the elements of the left-object
+(i.e., the object on the left of `%in%`) are in the right-object
+
+```{r}
+x
+c(3, 4, 5) %in% x
+# This returns a vector of the same length as c(3, 4, 5)
+# each element in the resulting vector is T if that
+# element is in x, F otherwise
+
+x %in% c(3, 4, 5) 
+# different from the result for `c(3, 4, 5) %in% x`
+```
+
+-------- 
+
+In Summary,  
+
+* sort(): rearrange the elements of a vector;
+* rank(): get the ranks of the elements of a vector;
+* order(): get the indices to re-arrange the elements/rows of a vector/matrix/data frame;  order() is usually used if you would like to arrange the elements in one object according to that in another object.
+* unique(): get the unique elements/rows of a vector/matrix/data frame;
+* %in%: check if the elements in a vector are in another vector;
+

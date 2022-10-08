@@ -1,0 +1,484 @@
+---
+title: "SML201 Chapter 6.1"
+subtitle:  'Introduction to Hypothesis Testing'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+
+
+# Introduction
+
+A quick review of what we have learned so far about the sample mean behavior:
+
+
+Assume that the $X$ from a population where the population mean is $\mu$ and the population SD  is $\sigma$  and that $n$ = sample size.
+
+* sample size large: $\bar{X} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$ $\xrightarrow{standardization}$ $\frac{\bar{X} - \mu}{\frac{\sigma}{\sqrt{n}}} \sim N(0, 1)$
+
+* sample size small and population normal:  $\bar{X} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$ $\xrightarrow{standardization}$ $\frac{\bar{X} - \mu}{\frac{\sigma}{\sqrt{n}}} \sim t_{df = n-1}$
+
+* sample size small and population not normal $\xrightarrow{  }$ don't know the distribution of the sample mean so will use Bootstrap sampling to approximate the distribution
+
+
+In practice: for the first two cases: we simplify the steps by just assuming that $\frac{\bar{X} - \mu}{\frac{\sigma}{\sqrt{n}}} \sim t_{df = n-1}$ since $t_{df = n-1}$ is very close to $N(0, 1)$ when sample size is large.
+
+----------
+
+In the previous chapter we tried to:
+
+* **infer** the values of a **population quantity** (e.g., population mean or proportion) by using a **sample quantity**. 
+
+There, our goal was to **estimate** the value of some **population quantity**.
+
+----------
+
+
+However, in some situations 
+
+* it is **not of our interest** to **estimate the exact value** of the population quantity
+
+but instead 
+
+* our goal is **to test** whether **a claim** about the population quantity is true.
+
+----------
+
+For example,
+
+* In a presidential election between the top candidate in the Republican Party and that in the Democratic Party we might want to find out whether the following claim is true:
+    - the proportion of supporters for Candidate R is less or equal to that for Candidate D
+
+
+* In determining the effect of a new treatment
+
+    - the new treatment is not more effective than the old treatment
+
+A rejection of each of these claims will bring us an interesting discovery.
+
+
+
+# An Example
+
+----------
+
+\footnotemark[1]
+(Hypothetical) A senator introduces a bill to simplify the tax code.  The senator claims that this bill is revenue-neutral: on balance, tax revenues for the government will stay the same.  To evaluate the senator's claim, the Treasury Department runs a pilot study on a sample of 100 forms chosen at random from the file and recompute the tax under the new rules and then look at the difference:
+
+> difference = tax under new rules - tax under old rules.
+
+-----------
+
+The sample average difference and the SD of the difference came out to be -$219 and $725, respectively.  Can we conclude that the new rule will collect less money from  payers on average?  Or could the value of the sample average change just due to chance variations?
+
+
+\footnotetext[1]{Example was taken and modified based on an example from {\it{Statistics}} by Freedman, Pisani, Purves (3rd Edition) W.W. Norton \& Company.}
+
+
+-----------
+
+## Exercises
+
+1.  What is the population of interest here?
+
+    (A.) all the tax forms  
+    (B.) 100 forms chosen at random from the file
+
+-----------
+
+2.  What is the parameter of interest here?
+
+    (A.) -219  
+    (B.) 725  
+    (C.) tax differences calculated under the new rule and the old rule for all the tax forms   
+    (D.) the average of the tax differences calculated under the new rule and the old rule for all the tax forms   
+
+
+-----------
+
+3.  -219 is the observed value of the statistics.
+
+    (A.) True  
+    (B.) False  
+
+
+-----------
+
+If under the new law the government really
+loses an average of $219 per tax return, that
+could add up to a lot of money!  E.g.,
+
+    >$200/return x 100 million returns = $20 billion!
+
+
+But this average is just for a sample of size 100 and the sample SD is pretty big (how much tax people pay is highly variable, and it’s not surprising
+that a new bill would have a big effect on some returns, and very
+little on other.)  
+
+-----------
+
+With hypothesis testing we aim at answering the question: Is there a real difference in the population or is it just chance variation in the sample?  
+
+Goal: Evaluate data to determine whether it provides evidence against some claim about a **population**.
+
+-----------
+
+## Formally set up the hypotheses
+
+$H_0$: The new tax law will make no difference on average.  The average change for the population is greater or equal to 0.  
+$H_1$: The average change for the population is negative.
+
+The **null hypothesis** usually says that there is no real systematic effect (any observed difference you see your sample is just due to chance) and the **alternative hypothesis** says that the effect is real.  
+
+
+-----------
+
+Note that 
+
+* the null and alternative hypotheses are both statements about the population, not the sample. 
+
+* the null and alternative hypotheses together should cover all the possible cases
+
+* In practice the **alternative hypothesis** is usually something that is supported by your sample data.
+
+
+
+
+
+
+-----------
+
+Let's try to answer this question:  Assuming that the new tax law will make no difference on average (i.e., the average change for the population is 0) what is the change that you will observe a sample with a sample mean this negative or more negative?  
+
+
+Some relevant info:  sample size = 100; sample mean = -219 and sample SD = 725.
+
+
+
+-----------
+
+<!----<font size="6">--->
+
+**Question: Do you believe what the senator said (i.e., on average the change is zero for the population) based on the sample data?**  
+
+A. Yes, I am convinced by the senator; the -$219 is just a sample average for the change.  It could be that the average change is zero for the entire country and the sample has an average change of -$219 due to random variation in the data.  
+
+B. No, I mean, he could be right but it is very unlikely.  
+
+C. I don't know...I will just let the future leaders in our class decide on this one for me.
+
+<!----</font>--->
+
+-----------
+
+
+Assuming that the new tax bill really has no effect on the tax revenues for the government, what is the chance that we will see a sample average this negative?  If the new tax bill has no effect on the tax revenues then the average change on the tax amount for the entire population will be zero; we can then calculate the chance that we will see a sample average chance this negative under the assumption on the the average change for the population:
+
+```{r}
+# Since the sample size is 100 we can assume that 
+# the result of the CLT holds for the sample mean
+
+pnorm(-219, mean=0, sd = 725/sqrt(100))
+
+
+# can also calculate this probability this way
+
+pnorm((-219-0)/(725/sqrt(100)))
+```
+
+## Conclusion
+
+If the senator were right, it would be very unlikely for me to see an sample with such negative sample mean.  However, I did observe such a sample.  Therefore, the senator's claim might be false.
+
+
+
+------
+
+
+
+
+## Test statistic
+
+A **test statistic** is a random variable whose value is calculated from sample data for a hypothesis test. Under the Null hypothesis the test statistic follows a certain distribution; thus, assuming the Null is true we can then compute the chance that we will see a test statistic with the value like the one we see in our sample or more extreme.
+
+If the chance is very small we will then reject the null hypothesis (since there is be strong evidence against the Null). An example of a test statistic is the standardized sample mean.  
+
+
+## Calculate the p-value
+
+*Assuming that the null hypothesis is true*, what is the (maximum) chance that we will see something like what we see in our sample or even more extreme?
+
+We can calculate this probability under the assumption that $H_0$ is true.  This probability is called the **p-value**.  The smaller the p-value, the stronger evidence against the null hypothesis.
+
+</font> <font color="red"> Note: p-value is **not** the probability that the null hypothesis is true. </font>
+
+In the Example above, the p-value is about .12 percent.
+
+## When to reject the null hypothesis
+
+**Type I error** is defined as the error of rejecting $H_0$ when $H_0$ is true. 
+
+
+To answer this question we need to decide on how much Type I error ($\alpha$) you are willing to tolerate when you reject the null hypothesis.
+
+If we are willing to tolerate $\alpha$ amount of error then we will reject the $H_0$ if the p-value < $\alpha$.  This is called testing at the $\alpha$-level and $\alpha$ is called the significance level.
+
+----------
+
+**How does one choose the significance level?**
+
+If we fix the sample size then there is a trade off between the probabilities of the type I and type II error.  To set the significance level we need to consider the cost of making an type I error.
+
+E.g., we developed a set of medical procedures to treat a particular cancer; we know that the procedures have a lot of serious side effects and complications could happen but we suspect that the procedures would improve the survival rate of the patients and overall the procedures would still give a patient a better chance.
+
+----------
+
+**How does one choose the significance level? (con't)**
+
+$H_0$: Survival Rate (S.R.) with Procedures - S.R. without $\leq$ 0;  
+$H_1$: S.R. with Procedures - S.R. without > 0.
+
+
+Rejecting $H_0$ incorrectly would mean using the procedures on people when the procedures could actually hurt people.  This mistake is costly so you might want to control the chance of making a type I error by setting a small significance level for the test.  
+
+----------
+
+
+Traditionally, people often choose values like .05 or .01 for $\alpha$.
+
+* p <0.05: “statistically significant”
+
+* p <0.01: “highly significant”
+
+$\alpha$ is the maximum amount of error that we are willing to tolerate when we mistakenly reject $H_0$.
+
+-----------
+
+Many journals will only publish results which are statistically significant--the 5% line; and some of the more prestigious journals will only publish results which are highly significant--the 1% line.
+
+**There is no magic of the numbers 5% or 1%**
+
+We should always report the p-value; e.g., there is not much difference between 4.9% or 5.1% for a p-value.
+
+
+
+----------
+
+**Critical values and rejection regions**
+
+A critical value is the point(s) that separates the rejection and acceptance regions. In the example above if we set the the significance level $\alpha$ of the test to be .01 we can find out the critical value and the rejection region corresponding to this significance level.  
+
+<!-----------
+
+
+Under $H_0$ the (sampled tax payments under new tax code - sampled tax payments under old tax code) follows a Normal distribution with mean 0 and SE(sample difference in payments) is about 725/sqrt(100) = 72.5
+
+```{r}
+q = qnorm(p=.01)
+q
+
+# Critical value is 
+q*72.5
+```
+
+The critical value is -168.66 and the rejection region is $(-\infty, -168.66)$.  Note: -219 is in the rejection region for the *statistic*. 
+
+----------->
+
+-----------
+
+The **critical value(s)** and the **rejection region(s)** are defined relative to the values of the test statistic.
+
+The term *test statistic* is often reserved for the random variable whose value we can use to find the p-value without further transformation.  E.g., 725/sqrt(100) = 72.5 is the value for our test statistic in our example.  We can find the critical value(s) and the rejection region(s) for our test statistic, i.e., the standardized sample mean by using the fact that the standardized sample mean follows a t-distribution with (sample size -1) degree of freedom.  
+
+-----------
+
+We can calculate the critical value and the rejection region for our test statistic, i.e., the standardized sample mean:
+
+```{r}
+# Critical value is for the standardized sample mean is
+q = qnorm(p=.01)
+q
+```
+
+
+For the standardized sample mean the critical value is -2.33 and the rejection region is $(-\infty, -2.33)$.  Note: $\frac{-219-0}{\frac{725}{\sqrt{100}}} = -3.02$ is in the rejection region.
+
+-----------
+
+
+## Type I and Type II errors
+
+Type I error: reject $H_0$ when $H_0$ is true  
+
+Type II error: accept $H_0$ when $H_1$ is true  
+
+$\alpha$ = P(Type I error). 
+
+----------
+
+
+**Can we reduce P(type I error) without increasing P(type II error)?**  
+
+We can increase sample size.
+
+
+
+
+
+# General procedure for hypothesis testing
+
+-------
+
+In the previous example for hypothesis testing we test whether the population mean (in the one population case) has a certain value.  The testing procedure follows the following steps ($\mu_0$ denotes the population mean value stated in the null hypothesis):
+
+-----
+
+1.) **State** the quantity that we assume for the population in the **null hypothesis** (e.g., assume that the population mean has a certain value) along with the **alternative hypothesis**;  
+
+2.) **Based on** the assumption stated in the **null** hypothesis we then **find out the distribution of the test statistic** (e.g., the standardized sample mean ($\frac{\bar x - \mu_0}{\frac{s}{\sqrt{n}}}$) should follow the N(0, 1) distribution when the sample size is large, or the t-distribution with $n-1$ degree of freedom when the sample size is small and the population distribution is Normal);  
+
+-------
+
+3.) With the test statistic distribution that we deduced in step 2 we can then find out the chance of seeing a sample quantity (e.g., the sample mean) that is as extreme as the one we saw in our sample or even more extreme *assuming the null hypothesis were true*; this chance is called the **p-value**;  
+
+4.) Based on the p-value that we found in step 3 we **decide** to **either reject or accept** the **null** hypothesis.
+
+Any kind of hypothesis test follows this set of steps.  
+
+
+-----------
+
+
+Remember that the hypotheses (both null and alternative) are always about the **population**, never about the sample.
+
+-----------
+
+# Test for a population proportion
+
+--------
+
+**Exercise** A bank wants to develop a new product targeting clients from another bank who have average monthly balance of USD 1000 or more; however, the management believes that the bank should develop the product only if at least 65% of all the accounts in the other bank meet this criterion. The bank surveyed 500 accounts from the other bank by selecting a simple random sample of 500.  The bank found that 67% of them had an average monthly balance of 1000 USD or more.  Should they proceed and develop the new product?  State and test the hypothesis at the $\alpha=0.05$ significance level.
+
+
+## part a
+State the null and the alternative hypothesis test.  
+
+$H_0$: Less than 65% of the accounts meet the criterion.  
+$H_1$: At least 65% of the accounts meet the criterion.  
+
+
+## part b  
+Under $H_0$ what is the distribution of the sample mean?  
+
+(A.) Normal or T distribution;  
+(B.) not sure;  
+(C.) not sure but can approximate this by using Bootstrap sampling.
+
+
+-----------
+
+
+## part c
+
+What is the test statistic?  Calculate the p-value. State if you are going to reject the test.
+
+
+-----------
+
+### T-test or Normal tests on proportions
+
+For 0-1 data with $p$ proportion 1's in a population with size $N$, the SD of the population can be calculated as $\sqrt{\frac{Np(1-p)^2+N(1-p)p^2}{N}} = \sqrt{p(1-p)}$ where N is the population size.  
+
+```{r}
+pop.sd = sqrt(.65*(1-.65)) 
+# should use .65, not .67 because H_0 assumes that 
+# the population proportion is .65 and the p-value
+# is calculated under the assumption that the 
+# H_0 is true.
+```
+
+-----------
+
+Caution: When testing the value of a population proportion, we are dealing with 0-1 data in our population.  Therefore, when testing the null hypothesis that the population proportion is $p_o$, **under the null hypothesis** the **population SD** should be calculated by using **$\sqrt{p_o(1-p_o)}$**.  Do **not** use the **sample data** to estimate the population SD in this case.  
+
+However, note that if you are constructing the **CI for $p_o$**, you will **use the sample data** to estimate the population SD.  
+
+
+-----------
+
+
+```{r}
+samp.se = pop.sd/sqrt(500)
+samp.se
+
+1-pt((.67-.65)/samp.se, df=500-1)
+```
+P-value (~17.4%) is greater than $\alpha$ so we fail to reject the null.
+
+
+## part d
+
+What are the critical value and rejection region of this test?
+
+The significance level is .05.  Under $H_0$ the standardized sample mean $\frac{sample\ mean - .65}{SE(sample\ mean)} = \frac{sample\ mean - .65}{\frac{population\ SD}{\sqrt{500}}}$ follows a t-distribution with degree of freedom 500-1.  We will reject $H_0$ if we see a sample mean that is so much greater than .65 that the chance of seeing a sample mean that is so large or larger is less than .05.
+
+
+-----------
+
+
+```{r}
+standardized.xbar = qt(p = .95, df = 500 - 1)
+standardized.xbar
+
+.65 + standardized.xbar*samp.se
+```
+The critical value is 1.6479 and the rejection region is $(1.6479, \infty)$ for the *standardized* sample mean.  
+
+This means that we will reject the test if we see a sample with sample mean greater than 0.6852.
+ 
+
+# How to find out what test to use
+
+--------
+
+A **test statistic** is a random variable whose value is calculated from sample data during a hypothesis test. You can use test statistics to determine whether to reject the null hypothesis. The test statistic compares your data with what is expected under the null hypothesis.  Some test statistics that we have seen so far are the standardized sample mean in t-tests or Normal tests.
+
+**To decide on what test to use** we should find out **the distribution of the test statistic under the Null**.
+
+
+
+## Equivalence between a two sided hypothesis test and CI
+
+For 2-sided tests if the p-value is less than $\alpha$, the $1-\alpha$ confidence interval will not contain the null hypothesis value.
+

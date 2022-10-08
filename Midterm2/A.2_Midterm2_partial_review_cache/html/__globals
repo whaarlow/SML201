@@ -1,0 +1,18 @@
+unnamed-chunk-2	c
+unnamed-chunk-3	c	F	hist	mean	par	pop	return	sample	sapply	set.seed	T
+unnamed-chunk-4	c	F	hist	par	pop	sample	set.seed	T
+unnamed-chunk-5	c
+unnamed-chunk-6	brandon	dnorm	F	hist	lines	max	mean	min	sd	seq
+unnamed-chunk-7	brandon	qqline	qqnorm
+unnamed-chunk-8	apply	brandon	length	matrix	mean	sample	set.seed	T
+unnamed-chunk-9	F	hist	mean_pop.deviation
+unnamed-chunk-10	c	mean_pop.deviation	quantile
+unnamed-chunk-11	brandon	dev	mean
+unnamed-chunk-12	c
+unnamed-chunk-13	dnorm	F	hist	lines	max	mean	min	sd	seq	u
+unnamed-chunk-14	qqline	qqnorm	u
+unnamed-chunk-15	apply	length	matrix	mean	sample	T	u
+unnamed-chunk-16	F	hist	mean_pop.deviation
+unnamed-chunk-17	c	mean_pop.deviation	quantile
+unnamed-chunk-18	dev	mean	u
+unnamed-chunk-19	pnorm	pt	sqrt

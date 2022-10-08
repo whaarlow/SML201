@@ -1,0 +1,306 @@
+---
+title: "Precept 9 Exercise"
+author: "Your Name"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: no
+    toc_depth: 3
+  pdf_document:
+    fig_caption: yes
+    number_sections: no
+    toc: no
+    toc_depth: 3
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=4, fig.width=6, collapse=TRUE, comment=NA, prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, tidy.opts=list(width.cutoff=63),tidy=TRUE)
+options(width=63)
+```
+
+# Objectives
+
+* Conducting hypothesis tests
+* Finding rejection regions
+* Understand regression outputs
+
+# Functions covered
+
+* dt(x, df, ...), pt(q, df, ...), qt(p, df, ...), rt(n, df, ...)
+* t.test(x, y = NULL,
+       alternative = c("two.sided", "less", "greater"),
+       mu = 0, paired = FALSE, var.equal = FALSE,
+       conf.level = 0.95, ...)
+
+
+
+# Exercise 1
+
+(Hypothetical) One month before the presidential election in 2020 we take a simple random sample from all the active New Jersey (NJ) voters and ask them whom they will vote for.  There are 1000 people in the sample and 46% of them say that they will vote for the Democratic candidate, Candidate D, and 43% say that they will vote for the Republican candidate, Candidate R.  The percentages do not add up to 100% because there are other candidates too.  
+
+We are interested in predicting which candidate is going to win the electoral college votes for New Jersey; i.e., we are interested in whether the percentage of the New Jersey active voters voting for Candidate D is greater than that for Candidate R.
+
+## Part a
+
+What is the parameter that we are trying to estimate here?
+
+Answer:  Either of the following two will be an acceptable answer but please use the first version for the rest of the questions:
+
+Proportion of New Jersey voters voting for Candidate D - Proportion of New Jersey voters voting for Candidate R
+
+Proportion of New Jersey voters voting for Candidate R - Proportion of New Jersey voters voting for Candidate D 
+
+
+## Part b
+
+What range of the values for the parameter implies that Democrat wins the electoral college votes for New Jersey?
+
+The parameter from part A will be positive.
+
+## Part c
+
+What is the statistic that we can use to estimate the population parameter?
+
+$.46-.43=.03$
+
+## Part d
+
+Since we know the behavior of the sample mean random variable when the sample size is large and when the sample is a simple random sample, we would like to to formulate the problem in such a way that the parameter is the mean of a population and the statistic is the sample mean.  What number would you record for each person in the population?  
+
+Hint: Suppose I have a simple random sample of 10 people.  Among them 5 said that they would vote for Candidate D, 4 for Candidate R and 1 for one of the other candidates.   What number will you record for each of these people in the sample so that the sample mean will be the statistic mentioned in part c?
+
+```{r}
+x = rep(c(1,-1,0), c(460,430,110))
+table(x)
+mean(x)
+```
+
+
+
+## Part e
+
+Construct a 90% C.I. to estimate the parameter in part a.  Do this part without using t.test().
+
+```{r}
+x = rep(c(1,-1,0), c(460,430,110))
+mean(x)
+sd(x)
+se=sd(x)/sqrt(1000)
+se
+qnorm(p = .95)
+.03-1.64*se
+.03+1.64*se
+```
+
+$(-0.01892563, 0.07892563)$
+
+## Part f
+
+Repeat Part f but now use t.test().  Check that you get the correct answer by comparing your answer for this part to that for the previous part.
+
+```{r}
+t.test(x = (rep(c(1,-1,0), c(460,430,110))), conf.level = 0.90)
+```
+
+
+
+## Part g
+
+Does your 90% CI cover zero?  Note that $\frac{460 - 430}{1000} = 3\%$.  Does having a CI that covers zero mean that you are more or less sure about that Candidate D will do better than Candidate R?
+
+Yes, our 90% CI covers zero. This means that we are less sure about that Candidate D will do better than Candidate R.
+
+
+## Part h
+
+Let's call the parameter that we want to estimate $\mu$ and let's call the sample mean for our sample (of size 1000), $\bar{X}$.  What is the approximate distribution of $\frac{\bar{X} - \mu}{SE(\bar{X})}$ supposed to be?  Report the numeric value(s) for the parameter(s) for this distribution too.  Note that our sample of size 1000 is a simple random sample from the population of all the active NJ voters.
+
+The approximate distribution of $\frac{\bar{X} - \mu}{SE(\bar{X})}$ is supposed to be zero. The parameter for this distribution is $\mu = 0.03$.
+
+## Part i
+
+Test the following hypotheses:
+
+$H_0$: The percentage of the New Jersey active voters supporting Candidate D is equal to that supporting Candidate R.  
+$H_1$: The percentages are different.
+
+Note that since your $H_1$ says that the percentages are different, your p-value should be the probability that you will observe a sample mean that is so far from 0 or further.  Report the standardized test statistic and the p-value for the test.
+
+The standardized test statistic is t = 1.0056 and the p-value for the test is 0.3148.
+
+
+## Part j
+
+According to your result in the previous part will you reject the null hypothesis at the 10% significant level?
+According to our result in part i, we will not reject the null hypothesis at the 10% significance level because $0.3148>0.10$.
+
+## Part k
+
+What is the rejection region for the standardized test-statistic and for the statistic at the 10% significant level?  Is your sample mean in the rejection region?
+
+```{r}
+q = qnorm(p=.1)
+q
+
+(mean(x)-0)/(se)
+```
+
+
+The rejection region for the standardized test statistic is 
+
+
+
+# Exercise 2
+
+For a linear regression model if the errors are Normally distributed (we will talk about how to check this assumption later), it can be proved that the $\hat{\beta}$'s are also Normally distributed (remember that the estimates of the coefficients are random variables) when the sample size is large and we can test individually whether $\beta_k = 0$.
+
+Here is an example,
+
+```{r}
+mod2 = lm(data=iris, Petal.Width ~ Species + Petal.Length)
+
+summary(mod2)
+```
+
+This means that `R` tested the following hypothesis and calculated the p-value for the hypothesis and p-values as the following:
+
+* $H_0$: $\beta_0 = 0$;  $H_1:\beta_0 \neq 0$; p-value = 0.109 
+* $H_0$: $\beta_{versicolor}$ = 0;  $H_1$: $\beta_{versicolor} \neq 0$; p-value = 4.04e-05 
+* $H_0$: $\beta_{virginica}$ = 0;  $H_1$: $\beta_{virginica} \neq 0$; p-value = 4.71e-08 
+* $H_0$: $\beta_{Petal.Length}$  = 0;  $H_1: \beta_{Petal.Length} \neq 0$; p-value = 4.41e-10 
+
+Note that the `*'s` after the p-values tells you how significant your test results are.  E.g., `***` means that your p-value is between 0 and 0.001, and `**` means that your  p-value is between 0.001 and 0.01.  The astrisks make it easy for people to spot the coefficient estimates with small p-values.  
+
+A small p-value means that given that the truth coefficient is zero it would be unlikely that you would observe a sample that gives you a coefficient estimate like the one that you have.  E.g., given that the true model actually has no y-intercept (i.e., $\beta_0 = 0$), the chance that we would get a coefficient estimate $\hat{\beta_0} = -0.09083$ is about .109.
+
+Therefore, small p-value means strong evidence against the claim that the term associated with the cofficient should not be in the model.  E.g., the test for $H_0$: $\beta_{Petal.Length}$  = 0;  $H_1: \beta_{Petal.Length} \neq 0$ has a p-value = 4.41e-10.  This is strong evidence against the claim that the variable `Petal.Length` should be excluded from the model.  Thus, we will want to include `Petal.Length` in our model.
+
+
+## Part a
+
+Verify the p-value for the following test by doing the calculation yourself:
+
+$H_0: \beta_0 = 0$;   
+$H_1: \beta_0 \neq 0$
+
+Note that from the output above it says that the observed value for $\beta_0$ is $-0.09083$ and the $SE(\hat{\beta_0})$ is $0.05639$.  Now, calculate the standardized test-statistic and the p-value with these numbers.  Compare your answer with the numbers in the output.
+
+
+
+
+# Exercise 3
+
+Last week we worked on parts a-c of this exercise.  Please complete parts d-e.  
+
+This dataset \emph{Newcomb.RData} includes data on the amount of time (in seconds) taken for a beam of light to travel from the Naval Observatory in Washington D.C. to the Washington Monument and back, a distance of 7.44373km.   The data was collected in 1880 by Simon Newcomb (working with Ablert Michelson).
+
+```{r}
+
+Newcomb =data.frame(Time = c(2.4828e-05, 2.4826e-05, 2.4833e-05, 2.4824e-05, 
+                          2.4834e-05, 2.4756e-05, 2.4827e-05, 2.4816e-05, 2.484e-05, 2.4798e-05, 
+                          2.4829e-05, 2.4822e-05, 2.4824e-05, 2.4821e-05, 2.4825e-05, 2.483e-05, 
+                          2.4823e-05, 2.4829e-05, 2.4831e-05, 2.4819e-05, 2.4824e-05, 2.482e-05, 
+                          2.4836e-05, 2.4832e-05, 2.4836e-05, 2.4828e-05, 2.4825e-05, 2.4821e-05, 
+                          2.4828e-05, 2.4829e-05, 2.4837e-05, 2.4825e-05, 2.4828e-05, 2.4826e-05, 
+                          2.483e-05, 2.4832e-05, 2.4836e-05, 2.4826e-05, 2.483e-05, 2.4822e-05, 
+                          2.4836e-05, 2.4823e-05, 2.4827e-05, 2.4827e-05, 2.4828e-05, 2.4827e-05, 
+                          2.4831e-05, 2.4827e-05, 2.4826e-05, 2.4833e-05, 2.4826e-05, 2.4832e-05, 
+                          2.4832e-05, 2.4824e-05, 2.4839e-05, 2.4828e-05, 2.4824e-05, 2.4825e-05, 
+                          2.4832e-05, 2.4825e-05, 2.4829e-05, 2.4827e-05, 2.4828e-05, 2.4829e-05, 
+                          2.4816e-05, 2.4823e-05), 
+                 Series = as.factor(c(1, 1, 1, 1, 1, 
+                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 
+                          2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 
+                          3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))) 
+str(Newcomb)
+head(Newcomb)
+```
+
+
+
+#### Part a
+
+Use ggplot() to generate a histogram for the time data.  A density plot is a smoothed version of a histogram. Superimpose a density plot on top of the histogram by using the `geom_density()` function (you can just add the following layer to your code that produce the histogram). 
+
+
+```{r eval = F}
+# DENSITY PLOT
+
+  geom_density(color = 'blue') + 
+  labs(x = "Time (in seconds)", y = "Proportion per second",
+       title = 'Distribution for the Amount of Time (in seconds) \nTaken for a Beam of Light to Travel',
+     subtitle = 'from the Naval Observatory to the Washington Monument and Back')
+  
+
+```
+
+```{r tidy = F}
+library(ggplot2)
+
+# DENSITY PLOT
+ggplot(Newcomb, mapping = aes(x=Time)) + 
+  geom_histogram(mapping = aes(y=..density..)) +
+  geom_density(color = 'blue') + 
+  labs(x = "Time (in seconds)", y = "Proportion per second",
+       title = 'Distribution for the Amount of Time (in seconds) \nTaken for a Beam of Light to Travel',
+     subtitle = 'from the Naval Observatory to the Washington Monument and Back')
+  
+
+```
+
+
+
+
+#### Part b 
+
+We already saw on the histogram that the sample distribution has some outliers with small values.  Use qq-plot to compare the quantile of the data with the quantile from N(0, 1) to further confirm that the distribution of time is not normally distributed if we include the outliners.  
+
+
+```{r}
+
+qqnorm(y = Newcomb$Time, main = "Normal Q-Q Plot for Time",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = Newcomb$Time, col = "red")
+```
+
+
+#### Part c
+
+Determine the 90\% confidence interval for the average time.  To construct your CI in a correct way does the population data need to be Normal?  
+
+```{r}
+# The sample size is
+length(Newcomb$Time)
+
+# 90% CI:
+mean(Newcomb$Time) + c(-1, 1)*qnorm(p = .95)*sd(Newcomb$Time)/sqrt(length(Newcomb$Time))
+
+```
+
+The sample size (66) is quite large.  The population distribution might be skewed due to some small outliers.  However, according to the CLT the distribution of the sample mean will still approximately Normal. 
+
+#### Part d 
+
+Use a bootstrap sampling with 10,000 simulations to determine the 90\% confidence intervals of the standard deviation of *Time*.  
+
+
+
+
+
+#### Part e 
+
+Generate the histogram for the bootstrap sample SD's above.  Superimpose the smoothed version of the histogram on the graph. 
+
+
+
+
+
+
+
+
+

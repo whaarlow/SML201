@@ -1,0 +1,16 @@
+unnamed-chunk-1	?	$	$<-	as.factor	bdims	c	dim	library	names	str
+unnamed-chunk-2	$	$<-	aes	as.factor	c	element_text	ggpairs	library	list	sex	theme	wrap
+unnamed-chunk-3	~	$	abline	d	F	library	plot	regsubsets	str	summary
+unnamed-chunk-4	$	as.data.frame	g	summary
+unnamed-chunk-5	coef	g
+unnamed-chunk-6	~	d	lm	summary
+unnamed-chunk-7	mod1	mod2	round	vcov
+unnamed-chunk-8	mod2	sqrt	vcov
+unnamed-chunk-9	$	F	hist	mod1	plot
+unnamed-chunk-10	aes	c	d	ggpairs	list	sex	wrap
+unnamed-chunk-11	~	d	lm	mod1	summary
+unnamed-chunk-12	anova	mod1	mod3
+unnamed-chunk-13	d	dim	extractAIC	log	mod1	mod3
+unnamed-chunk-14	colnames	head	mod1	model.matrix
+unnamed-chunk-15	$	$<-	aes	as.factor	bdims	c	dim	element_text	ggpairs	list	sex	str	theme	wrap
+unnamed-chunk-16	~	$	abline	b	coef	F	hist	lm	plot	regsubsets	round	sqrt	summary	vcov

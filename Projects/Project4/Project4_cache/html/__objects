@@ -1,0 +1,23 @@
+unnamed-chunk-1	.Random.seed
+unnamed-chunk-2	house
+unnamed-chunk-3	
+unnamed-chunk-4	avg.price.bedrooms	avg.price.grade
+unnamed-chunk-5	
+unnamed-chunk-6	
+unnamed-chunk-7	
+unnamed-chunk-8	trans.grade
+unnamed-chunk-9	mod.variables
+unnamed-chunk-10	date.format
+unnamed-chunk-11	test2
+unnamed-chunk-12	permu	s	test1	tmp	train	val
+unnamed-chunk-13	
+unnamed-chunk-14	non_test
+unnamed-chunk-15	g	h	i	j
+unnamed-chunk-16	mod1	mod2
+unnamed-chunk-17	g.train	h.train
+unnamed-chunk-18	cal.mse.g	cal.mse.h	mse.g	mse.h	predict.reg
+unnamed-chunk-19	
+unnamed-chunk-20	champion
+unnamed-chunk-21	find.champion.b	find.champion.f	names.b	names.f
+unnamed-chunk-22	predicted.y	res
+unnamed-chunk-23	cal.mse.in.time	cal.mse.out.time	mse.in.time	mse.out.time

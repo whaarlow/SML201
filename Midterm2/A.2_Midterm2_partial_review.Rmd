@@ -1,0 +1,357 @@
+---
+title: "A.2 Midterm2 Partial Review"
+subtitle: 
+author: 
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+
+## Introduction
+
+
+Here we will review some of the topics/concepts that some of you find particularly difficult.  For a more extensive list of the topics that we have covered so far, see Midterm 2 Study Guide posted on Piazza.
+
+## CLT v.s. LLN
+
+The Central Limit Theorem (CLT) and the Law of Large Numbers (LLN) are two very different concepts.  The **CLT** is about the distribution of the **sample mean** when the sample size is large (we often use 30 as a cutoff as long as there is no sign that indicates that the population data is very skewed; this is because the t-distribution is very similar to the standard Normal distribution when the degree of freedom for the t-distribution is 30 and more).  On the other hand the **LLN** is about the distribution of **the data in your sample**.  The LLN says that the distribution of the data in your sample gets closer and closer to the population data distribution when the sample size gets large.  
+
+* **Similarity**: Both theorems tell you about what happens when the size of the simple random sample gets large.    
+* **Distinction**: The CLT is about the sample mean whereas the LLN is about the data points in the sample.
+
+### From Precept 8
+
+Population: 
+
+```{r}
+# Data in the population
+pop = c(1,1,1,2,2,3)
+```
+
+Demonstration of the CLT:
+
+```{r fig.height=8, echo = F}
+# Make a function that generates 10000 samples
+generator = function(pop, sample.size){
+    return(sapply(1:10000, 
+                  FUN=function(x){mean(
+                    sample(pop, size=sample.size, replace=T)
+                                      )}
+                  )
+           )
+                                          }
+
+# Demo for CLT
+set.seed(47467)
+par(mfrow=c(4,1))
+hist(pop, freq = F, breaks=c(0.5,1.5,2.5,3.5), xlim = c(0.5, 3.5), 
+     main = 'Population distribution', xlab = "Values of data points in the population")
+X=generator(pop,10)
+hist(X,main='Sample mean distribution; sample size=10',
+     xlim = c(0.5, 3.5),
+     xlab = 'sample means', freq = F)
+X=generator(pop,100)
+hist(X,main='Sample mean distribution; sample size=100',
+     xlim = c(0.5, 3.5),
+     xlab = 'sample means', freq = F)
+X=generator(pop,1000)
+hist(X,main='Sample mean distribution; sample size=1000',
+     xlim = c(0.5, 3.5),
+     xlab = 'sample means', freq = F)
+
+```
+
+
+Demonstration of LLN:
+
+
+```{r fig.height=8, echo = F}
+
+set.seed(7987)
+# Demo for LLN
+par(mfrow=c(4,1))
+hist(pop, freq = F, breaks=c(0.5,1.5,2.5,3.5), main = 'Population distribution',
+     , xlab = "Values of data points in the population")
+Y=sample(pop,size=10,replace=T)
+hist(Y,breaks=c(0.5,1.5,2.5,3.5), freq=F,
+     main = 'sample size = 10 for one sample', xlab = 'data points in the sample')
+Y=sample(pop,size=100,replace=T)
+hist(Y,breaks=c(0.5,1.5,2.5,3.5), freq=F,
+     main = 'sample size = 100 for one sample', xlab = 'data points in the sample')
+Y=sample(pop,size=1000,replace=T)
+hist(Y,breaks=c(0.5,1.5,2.5,3.5), freq=F,
+     main = 'sample size = 1000 for one sample', xlab = 'data points in the sample')
+
+```
+
+
+### Exercises
+
+1.  Which theorem describes how the histogram for the sample data should look like when the sample size of a simple random sample is large?
+
+    (A.)  CLT  
+    (B.)  LLN  
+    (C.)  None of the above.
+
+2.  If the distribution of the sample mean were not Normal but has a long left tail, the C.I. for predicting the population mean should have
+
+    (A.)  a longer left arm  
+    (B.)  a longer right arm  
+    (C.)  arms with equal arm length
+    (D.)  None of the above.
+
+
+## Bootstrap sampling
+
+Question: Why do we do Bootstrap sampling?
+
+    (A.)  We are in a case where we do not know the distribution of the sample mean so we can only get this piece of information through simulations.  
+    (B.)  Our sample data is the only piece of information that we have about the population.  
+    (C.)  We want to mimic the sampling procedure so that we can get an idea on the distribution of the sample mean.  
+    (D.)  All of the above.  
+    
+### From Ch 5.3
+
+#### Example of constructing a confidence interval (CI) with Bootstrap sampling
+
+**Brandon's sample of size 20:**
+
+```{r}
+brandon = c(48, 32, 64, 57, 68, 54, 35, 38, 29, 38, 39, 36, 42, 35, 51, 40, 50, 33, 50, 37)
+```
+
+----------
+
+For Brandon the sample size (20) is a bit small so we need to check to see whether it is 
+okay to assume that the population is Normal.
+
+--------
+
+
+Investigate the sample data:
+
+```{r tidy = F}
+hist(brandon, main = 'Age of the 20 viewers in sample',
+     xlab = 'Ages (in Years)', freq = F) 
+xseq = seq(from = .9*min(brandon), to = 1.1*max(brandon), length = 100)
+lines(y = dnorm(xseq, mean = mean(brandon), sd = sd(brandon)), x = xseq, col = "blue")
+
+```
+
+
+
+--------
+
+```{r}
+# quantile-quantile plot 
+qqnorm(y = brandon, main = "Normal Q-Q Plot for Ages (years)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+
+qqline(y = brandon, col = "blue")
+```
+
+
+
+--------
+
+
+The sample distribution is a bit skewed, so again we will use Bootstrap sampling to construct the C.I. and compare the result with the C.I. constructed by using the t-distribution.
+
+
+
+--------
+
+Use Bootstrap sampling to get a 90% CI:
+
+--------
+
+```{r}
+set.seed(1234)
+# Create Bootstrap samples
+mat = matrix(sample(brandon, size = 
+                         length(brandon)*10000, 
+                       replace = T), ncol = 10000)
+
+# Calculate the deviations of Bootstrap samples
+mean_pop.deviation = apply(mat, MAR = 2, FUN = mean)-mean(brandon)
+
+```
+
+--------
+
+```{r, echo=F}
+
+hist(mean_pop.deviation, breaks = 100, 
+     main = 'Histogram for Simulated Bootstrap Deviations  
+     between Sample Means and Population Mean', 
+     xlab= 'Simulated (sample means - population mean)',
+     cex.lab = .8, cex.main = .8, freq = F)
+```
+
+--------
+
+```{r, tidy=F}
+
+dev = quantile(mean_pop.deviation, 
+               prob = c(.90+(1-.90)/2, (1-.90)/2))
+```
+
+
+--------
+
+A 90% Bootstrap CI for the population mean is (39.85, 47.6).
+
+
+```{r}
+mean(brandon) - dev
+
+
+```
+
+
+
+#### Exercise 3 from Ch 5.3
+
+--------
+
+Construct a 90% CI for the average height for the population where the sample below is from.  The sample contains measurements of the heights in inches of 22 people.
+
+```{r}
+u = c(68.61, 71.35, 71.01, 62.32, 68.39, 72.97, 71.19, 71.36, 67.46, 71.68, 69.37, 72.33, 68.69, 71.69, 63.23, 52.32, 58.17, 58.32, 61.00, 57.42, 53.20, 55.16)
+
+```
+
+--------
+
+a. Is it a reasonable assumption that the population is Normal?
+
+```{r, echo=F}
+hist(u, breaks=9, freq = F) # I'll let you add labels and title etc
+# to compare the sample data with 
+# the normal distribution with the same mean and sd
+xseq = seq(from = .9*min(u), to = 1.1*max(u), length = 100)
+lines(y = dnorm(xseq, mean = mean(u), sd = sd(u)), x = xseq, col = "blue")
+```
+
+--------
+
+Use qq-plot to compare the sample quantiles with the quantile from N(0, 1).
+
+```{r, echo=F}
+# quantile-quantile plot 
+qqnorm(y = u, main = "Normal Q-Q Plot for Height (in)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = u, col = "blue")
+```
+
+
+
+--------
+
+
+Since the sample distribution is asymmetric and the points don't seem to form a straight line for the qq-plot, the population is probably not normal.
+
+--------
+
+b. Construct a 90% CI.
+
+Since we do not know the population SD, the sample size is relatively small and the population distribution is probably not normal, we will use Bootstrap sampling to get a 90% CI:
+
+--------
+
+```{r}
+# Create Bootstrap samples
+mat = matrix(sample(u, size = 
+                         length(u)*10000, 
+                       replace = T), ncol = 10000)
+
+# Calculate the deviations of Bootstrap samples
+mean_pop.deviation = apply(mat, MAR = 2, FUN = mean)-mean(u)
+
+```
+
+--------
+
+```{r, echo=F}
+
+hist(mean_pop.deviation, breaks = 100, 
+     main = 'Histogram for Simulated Bootstrap Deviations  
+     between Sample Means and Population Mean', 
+     xlab= 'Simulated (sample means - population mean)',
+     cex.lab = .8, cex.main = .8, freq = F)
+```
+
+--------
+
+```{r, tidy=F}
+
+dev = quantile(mean_pop.deviation, 
+               prob = c(.90+(1-.90)/2, (1-.90)/2))
+```
+
+
+--------
+
+A 90% Bootstrap CI for the population mean is:
+
+
+```{r}
+mean(u) - dev
+
+
+```
+
+## Hypothesis testing
+
+### Exercise (Ch 6.1.3 from OpenIntro)
+
+Do payday loan borrowers support a regulation that would require lenders to pull their credit report and evaluate their debt payments? From a random sample of 826 borrowers, 51% said they would support such a regulation. 
+
+
+Does the sample provides strong evidence against the claim that a majority of payday loan borrowers do not support the regulation?  Test the claim at $5\%$ significance level.  Report your p-value.
+
+Let %\mu% be the percentage fo people that would not support the regulation.  
+$H_0$:  a majority of payday loan borrowers do not support the regulation; i.e., $\mu \leq .5$  
+$H_1$: $\mu > .5$  
+
+
+According to $H_0$ the population proportion is .5 so the population SD is $\sqrt{(.5)(1-.5)}$.  
+
+Sample size is large enough so the sample mean follows the Normal distribution with mean $.5$ and SE $\frac{\sqrt{(.5)(1-.5)}}{\sqrt{826}}$ under $H_0$.
+
+Assuming the $H_0$ is true the chance that we will observe a simple random sample of 826 with mean .51 is
+
+
+
+```{r}
+se = sqrt(.5*(1-.5))/sqrt(826)
+
+1-pnorm((.51-.5)/se)
+
+# Alternately
+
+1-pt((.51-.5)/se, df = 826-1)
+```
+
+The p-value is .28.  p-value is greater than the significance level $5\%$, so we fail to reject $H_0$.
+
+
+

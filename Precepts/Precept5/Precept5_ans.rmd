@@ -1,0 +1,397 @@
+---
+title: "Precept 5 Exercise Answers"
+author: "Your Name"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: no
+  pdf_document:
+    fig_caption: yes
+    toc: no
+geometry: margin=1.5in
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, tidy=FALSE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+# Objectives
+
+* Being able to fit linear regression models with R
+* Being able to interpret the results of linear regressions
+* Being able to verify some of the assumptions in linear regression
+
+
+# Demo
+
+## Example 1
+
+a)  Use the dataset `iris` and make a scatterplot of the two variables `Sepal.Length` and `Sepal.Width`.  Does it look like a good idea to regress `Sepal.Width` on `Sepal.Length`?
+
+```{r}
+library(ggplot2)
+
+# Generate scatterplot
+ggplot(data=iris) + 
+  geom_point(mapping = aes(x=Sepal.Length, y=Sepal.Width)) + 
+  ggtitle("Sepal Width (cm) v.s. Sepal Length (cm)") + 
+  labs(x="Sepal Length (cm)", y="Sepal Width (cm)")
+```
+
+b)  What is the correlation between `Sepal.Length` and `Sepal.Width`?  What happens if you regress `Sepal.Width` on `Sepal.Length` anyway?  Do you get better estimates than you would if you just used the mean of Sepal.Width as your predicted value?  Compare the following two models:
+\begin{align*}
+y_{i}&=\beta_{0}+\epsilon_{i} \\
+y_{i}&=\beta_{0}+\beta_{l}\cdot l_{i}+\epsilon_{i} 
+\end{align*}
+where $l_{i}$ is the sepal length of a given plant.  Add the regression line to your scatterplot.  Think about the physical meaning of what your model is telling; does your model make sense?
+
+```{r}
+# Get correlation
+cor(x=iris$Sepal.Length, y=iris$Sepal.Width)
+
+# Regress on a constant (i.e., include only the intercept in your model)
+mod1 <- lm(Sepal.Width ~ 1, data=iris)
+
+ls(mod1)  # Check what's in an lm object
+class(mod1) # An object of class "lm" is a list; see `?lm`
+
+############################################################
+
+mod1$coefficients # This gives the estimate of the coefficient
+
+head(mod1$fitted.values) # `fitted.values` gives the estimated y-values
+length(mod1$fitted.values) # This should be of the same length as the y-vector
+
+head(mod1$residuals) 
+# `residuals` gives (estimated y-values - actual y-values)
+length(mod1$residuals) # This should be of the same length as the y-vector
+
+# What is the average of the residuals?
+mean((mod1$residuals)^2)
+# How is this compared with the variance of the Sepal.Width?
+var(iris$Sepal.Width)
+
+
+# Note that this is equivalent to using the 
+# mean of Sepal Width to estimate the sepal 
+# width value of a new observation.
+
+mean(iris$Sepal.Width)
+
+############################################################
+
+# We can get additional info of the model with `summary(mod1)`
+summary(mod1)
+ls(summary(mod1)) # see what info I can get from `summary(mod1)`
+head(summary(mod1)$residuals)
+
+summary(mod1)$r.squared # why is this zero?
+summary(mod1)$adj.r.square
+
+```
+
+Let's regress `Sepal.Width` on `Sepal.Length` and see what happens.
+
+```{r}
+# Simple linear regression
+mod2 <- lm(Sepal.Width ~ Sepal.Length, data=iris)
+summary(mod2)
+
+# Add the regression line to the scatterplot
+# Preceptors: please explain what 
+# `geom_smooth(method = "lm", se=F)` mean
+ggplot(data=iris, mapping = aes(x=Sepal.Length, y=Sepal.Width)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se=F) +
+  labs(x="Sepal Length (cm)", y="Sepal Width (cm)", 
+       title = "Sepal Width (cm) v.s. Sepal Length (cm)")
+```
+
+
+c)  Can you improve the model by adding in a second explanatory variable for each species using either of the following models:
+
+\begin{align*}
+y_{i}&=\beta_{l}\cdot l_{i}+\beta_{0}+\beta_{ver}\cdot\mathbf{1}_{ver, i}+\beta_{vir}\cdot\mathbf{1}_{vir, i}+\epsilon_{i} \\
+y_{i}&=\beta_{l}\cdot l_{i}+\beta_{set}\cdot\mathbf{1}_{set, i}+\beta_{ver}\cdot\mathbf{1}_{ver, i}+\beta_{vir}\cdot\mathbf{1}_{vir, i}+\epsilon_{i} 
+\end{align*}
+
+where $l_{i}$ is the sepal length of a given plant and `set`, `ver`, and `vir` refer to the respective species.  How should you interpret the output from each of these models? Are the results any better than the previous model?  Use the $R^2$ and $R^2_{adj}$ in your argument. (Preceptors: please explain the meanings of the coefficients and how the meanings are different for the two models.) 
+
+```{r}
+# Multiple regression
+mod3 <- lm(Sepal.Width ~ Sepal.Length + Species, data=iris)
+summary(mod3)
+
+mod4 <- lm(Sepal.Width ~ Sepal.Length + Species + 0, data=iris)
+summary(mod4)
+```
+
+Graphical interpretation of what these models mean; note that both model 3 and 4 give the same set of lines.
+
+```{r tidy = F}
+# Plot data with the predicted models
+# Prepare data frame for the graphs
+fits <- data.frame(Sepal.Length=iris$Sepal.Length,
+                   Sepal.Width=iris$Sepal.Width, 
+                   mod3=mod3$fitted.values,
+                   mod4=mod4$fitted.values, 
+                   Species=iris$Species)
+
+# Add the lines defined by the fitted mod3 to the scatterplot
+ggplot(data = fits) +
+  geom_line(aes(x=Sepal.Length, y=mod3, color=Species), size=1.5, alpha=0.5) + 
+  geom_point(aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
+  scale_color_manual(values = c("red", "steelblue", "green")) + 
+  labs(x="Sepal.Length", y="Sepal.Width",
+  title = "Model 3: Sepal.Width ~ Species + Sepal.Length")
+
+# Add the lines defined by the fitted mod4 to the scatterplot
+ggplot(data = fits) +
+  geom_line(aes(x=Sepal.Length, y=mod4, color=Species), size=1.5, alpha=0.5) + 
+  geom_point(aes(x=Sepal.Length, y=Sepal.Width, color=Species)) +
+  scale_color_manual(values = c("red", "steelblue", "green")) + 
+  labs(x="Sepal.Length", y="Sepal.Width",
+  title = "Model 4: Sepal.Width ~ Species + Sepal.Length")
+```
+
+
+
+
+d)  Now calculate the correlation within each species.  Then, replace $sepal\ length$ with the interaction term, $sepal\ length \times species$, in model 4; find the regression line predicting the $sepal\ width$ of a iris with given $sepal\ length$ and $species$ values.  That is; find the fitted model:
+\begin{align*}
+\hat{y}_i &=\hat{\beta}_{set}\cdot\mathbf{1}_{set, i}+\hat{\beta}_{ver}\cdot\mathbf{1}_{ver, i}+\hat{\beta}_{vir}\cdot\mathbf{1}_{vir, i} \\
+&\qquad+\hat{\beta}_{l\cdot set}\cdot l_{i}\cdot\mathbf{1}_{set, i}+\hat{\beta}_{l\cdot ver}\cdot l_{i}\cdot\mathbf{1}_{ver, i}+\hat{\beta}_{l\cdot vir}\cdot l_{i}\cdot\mathbf{1}_{vir, i} 
+\end{align*}
+
+Preceptors and students: you do not need to worry about the details in the code chunk below.  You just need to know that within-group-correlations between 'Sepal.Length' and 'Sepal.Width' are 0.74, 0.53, 0.46 for the species setosa, versicolor and virginica, respectively.
+
+```{r}
+# Get correlations 
+corr.spec <- by(iris[,c('Sepal.Length', 'Sepal.Width')], 
+               INDICES= iris$Species, 
+               FUN=cor)
+corr.spec
+
+# What by() does:
+?by
+
+# Careful how you use the output:
+class(corr.spec)
+class(corr.spec[1])
+class(corr.spec[[1]])
+# Extacting out the within-species 
+# correlation between 'Sepal.Length' and 'Sepal.Width'
+sapply(corr.spec, FUN=function(x){x[1,2]})
+```
+
+The correlation between `Sepal.Length` and `Sepal.Width` is much stronger within each group compare to that for the entire dataset.  As a result it will be good to use different lines to make predictions for each group.
+
+
+```{r}
+# Fit the model; "+ 0" means do not include beta_0 
+# (i.e., no overall y-intercept for the model); you can also use "-1"
+# to achieve the same result
+mod5 <- lm(Sepal.Width ~ Species + Sepal.Length:Species + 0, data=iris)
+summary(mod5)
+
+# Plot data with the predicted model
+ggplot(data=iris, 
+       mapping = aes(x=Sepal.Length, y=Sepal.Width, color=Species)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se=F, size = 1.5, alpha=.5) + 
+  ggtitle("Sepal Width (cm) v.s. Sepal Length (cm)") + 
+  labs(x="Sepal Length (cm)", y="Sepal Width (cm)")
+```
+
+
+
+e) What happens if you use the `*` operator in lieu of the `:` operator in the model?
+
+```{r}
+# Regress model
+mod6 <- lm(Sepal.Width ~ Sepal.Length*Species + 0, data=iris)
+summary(mod6)
+```
+
+
+
+
+
+# Exercises 
+
+## Question 1 
+
+
+Using the dataset `possum` in the package `openintro`, we will generate a linear model to predict possum lengths.
+
+```{r}
+library(openintro)
+str(possum)
+```
+
+a) Use the ggpairs() function to investigate the pairwise relationship between the variables.  We want to use one of the variables (other than `totalL` of course) in the dataset to predict the total length of a possum.  Which variable will you use?  Explain why.
+
+```{r message = F, warning = F, tidy = F}
+library(GGally)
+
+ggpairs(possum,
+  upper = list(continuous = wrap("cor", size = 1.9)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Pairwise relationship
+                between variables in the possum dataset")
+```
+
+We will use `headL` because it has the strongest correlation with `totalL`.
+
+b) Regress `totalL` on the variable that you selected in part (a).  Report the $R^2$ value.  Also, plot the scatterplot for `totalL` v.s. the selected variable with the regression line superimposed.
+
+You can use the following code for making the labels
+
+```
+  labs(x="Head Length", y="Total Length",
+  title = "Total Length (cm) vs. Head Length (cm)") 
+```
+```{r}
+# Generate the model
+mod11 <- lm(totalL ~ headL, data=possum)
+summary(mod11)
+summary(mod11)$r.squared
+  
+  
+fit11 <- data.frame(possum, mod11 = mod11$fitted.values)
+
+# Plot model
+ggplot(data=fit11) + 
+  geom_line(aes(x=headL, y=mod11), size= 1.5) + 
+  geom_point(aes(x=headL, y=totalL)) + 
+  labs(x="Head Length", y="Total Length",
+  title = "Total Length (cm) vs. Head Length (cm)") 
+```
+
+The $R^2$ value is .4776.
+
+c) Add the variable `sex` into the model and refit the model by fill in the contents for `lm()` below.  
+
+
+```{r eval = F}
+# Fit model
+mod12<- lm()
+```
+
+
+```{r}
+# Fit model
+mod12<- lm(totalL~headL+sex, data=possum)
+```
+
+The code in the following code chunk will plot the scatterplot and use different colors for different genders of the possums.  Add the predicted regression lines that you made with `mod12` to your graph.  
+
+```{r eval = F}
+# Fit model
+summary(mod12)
+
+
+fit12 = data.frame(possum, mod12 = mod12$fitted.values)
+
+# Plot data
+ggplot(data=fit12) + 
+  geom_line(aes(x=headL, y=mod12, color=sex), size= 1.5) + 
+  geom_point(aes(x=headL, y=totalL, color=sex)) + 
+  labs(x="Head Length", y="Total Length",
+  title = "Total Length (cm) vs. Head Length (cm)") 
+```
+
+
+Now modify your model by adding the interaction term between `sex` and `headL` to the last model. 
+
+```{r eval = F}
+
+# Model
+mod13  = lm()
+summary(mod13)
+
+```
+
+```{r}
+
+# Model
+mod13  = lm(totalL ~ headL+sex+headL:sex, data=possum)
+summary(mod13)
+
+```
+
+The code in the following code chunk will plot the scatterplot with the new predicted regression lines add to it. 
+
+```{r}
+
+fit13 = data.frame(possum, mod13 = mod13$fitted.values)
+
+# Plot
+ggplot(data=fit13) + 
+  geom_line(aes(x=headL, y=mod13, color=sex), size= 1.5) + 
+  geom_point(aes(x=headL, y=totalL, color=sex)) + 
+  labs(x="headL", y="totalL",
+  title = "totalL ~ headL+sex") 
+```
+
+
+
+d) With the simpler model (i.e., `mod12`) in part (c), predict the total length of a possum if the possum is female and has head length 92.4 mm; what about a male possum with head length 86.4 mm.
+
+```{r}
+# Two approaches
+d = data.frame(sex=factor(c('f', 'm')), headL = c(92.4, 86.4))
+predict(mod12, newdata = d)
+
+sum(mod12$coefficients*c(1, 92.4, 0))
+sum(mod12$coefficients*c(1, 86.4, 1))
+```
+
+e) Assume that your model already has an intercept term, if a factor variable with 3 categories (i.e., with 3 levels) is added to the syntax in the R code, how would this affect the mathematical form of your model?  E.g., if the original model is
+
+```{r eval = F}
+mod.origin <- lm(y ~ 1, data=some.data.frame)
+```
+
+and the updated model is
+
+```{r eval = F}
+mod.with.factor <- lm(y ~ f.var, data=some.data.frame)
+```
+
+where `f.var` is a factor vector with 3 levels, what will the mathematical forms of the original and the updated models be?  Write out these models in their mathematical forms (instead of typing them out, you can write them out on a piece of paper to save time).
+
+How would adding the factor variable affect the prediction line?  Hint: Look at the result of `mod12` in part c.
+
+**Mathematical form of mod.origin:**
+
+
+$y = \beta_0 + \epsilon$
+
+
+**Mathematical form of mod.with.factor:**
+
+
+$y = \beta_0 + \beta_{f_2}\mathbf{1}_{f_2} + \beta_{f_3}\mathbf{1}_{f_3} + \epsilon$
+
+Adding a factor with 3 levels will allow the model to use three different lines each with a different y-intercept to predict the y-value.  Each of the 3 lines will be used for each of the unique categories in the factor.
+
+
+f) How would adding the interaction term between the factor in part f and a continuous variable affect the prediction line (just explain this in words; you do not need to provide the mathematical model)?  E.g., now the model would be
+
+```{r eval = F}
+mod.with.factor <- lm(y ~ f.var:cont_var, data=some.data.frame)
+```
+
+
+Hint: Look at the result of `mod13` in part c.
+
+Adding the interaction term will allow the model to use lines with different slopes to predict y.
+
+

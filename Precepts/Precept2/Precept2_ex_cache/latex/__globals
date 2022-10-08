@@ -1,0 +1,24 @@
+unnamed-chunk-1	cars	dim
+unnamed-chunk-2	cars	head
+unnamed-chunk-3	head	read.csv	str
+unnamed-chunk-4	$	c	list
+unnamed-chunk-5	c	class	length
+unnamed-chunk-6	area.code2017	class
+unnamed-chunk-7	[[	$	area.code2017	class
+unnamed-chunk-8	[[	$	c	class	head	t.ship
+unnamed-chunk-9	c	sort	T	unique
+unnamed-chunk-10	letters	names<-	rank
+unnamed-chunk-11	?	class	head	length	nhtemp
+unnamed-chunk-12	head	max	mean	min	nhtemp	range	sqrt	sum
+unnamed-chunk-13	F	hist	nhtemp
+unnamed-chunk-14	F	hist	nhtemp
+unnamed-chunk-15	F	hist	nhtemp
+unnamed-chunk-16	c	F	hist	nhtemp
+unnamed-chunk-17	cars	dim
+unnamed-chunk-18	cars	class	dim
+unnamed-chunk-19	[[	$	cars	head
+unnamed-chunk-20	==	>=	$	babynames	c	library
+unnamed-chunk-21	high.freq	str	summary
+unnamed-chunk-22	==	$	babynames	c	library	str
+unnamed-chunk-23	dim	high.freq	popular.names
+unnamed-chunk-24	airmiles	F	hist

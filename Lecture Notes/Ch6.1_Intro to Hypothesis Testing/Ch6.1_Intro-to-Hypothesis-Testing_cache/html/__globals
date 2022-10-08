@@ -1,0 +1,6 @@
+unnamed-chunk-1	pnorm	sqrt
+unnamed-chunk-2	qnorm
+unnamed-chunk-3	qnorm
+unnamed-chunk-4	sqrt
+unnamed-chunk-5	pop.sd	pt	sqrt
+unnamed-chunk-6	qt	samp.se

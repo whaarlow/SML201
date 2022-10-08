@@ -1,0 +1,65 @@
+unnamed-chunk-2	read.csv
+unnamed-chunk-3	class	dim	t.ship
+unnamed-chunk-4	head	t.ship
+unnamed-chunk-5	str	t.ship
+unnamed-chunk-6	$	as.vector	class	dim	t.ship	table
+unnamed-chunk-7	$	mean	t.ship	tapply
+unnamed-chunk-8	$	mean	t.ship	tapply
+unnamed-chunk-9	$	mean	median	t.ship	tapply
+unnamed-chunk-10	$	mean	t.ship	tapply
+unnamed-chunk-11	as.numeric	names	plot	s.rate.by.age
+unnamed-chunk-12	==	$	c	F	hist	par	t.ship
+unnamed-chunk-13	~	boxplot	c	par
+unnamed-chunk-14	&	==	$	c	mean	median	return	T	t.ship
+unnamed-chunk-15	$	as.vector	head	t.ship	table
+unnamed-chunk-16	length	no.grp.members	nrow	t.ship
+unnamed-chunk-17	$	data.frame	head	names	no.grp.members	t.ship	table
+unnamed-chunk-18	dim	merge	t.ship	ticket.member
+unnamed-chunk-19	::	Fare	grp.member.ct	head	library	mutate	t.ship.merged
+unnamed-chunk-20	$	jitter	plot	t.ship.complete
+unnamed-chunk-21	$	abline	airquality	c	mean	plot	text
+unnamed-chunk-22	$	cor	t.ship.complete
+unnamed-chunk-23	
+unnamed-chunk-24	class	dim	is.data.frame	is.matrix	is.vector	length	matrix
+unnamed-chunk-25	array	c
+unnamed-chunk-26	c	class	list	matrix
+unnamed-chunk-27	?	>	c	class	data.frame
+unnamed-chunk-28	$	as.factor	str	summary	t.ship
+unnamed-chunk-29	matrix
+unnamed-chunk-30	c	colnames<-	rownames<-
+unnamed-chunk-31	c	F	m	T
+unnamed-chunk-32	cbind	m	matrix	rbind
+unnamed-chunk-33	dim	m	ncol	nrow
+unnamed-chunk-34	m	t
+unnamed-chunk-35	array	c
+unnamed-chunk-36	c	colnames	data.frame	names
+unnamed-chunk-37	[[	$	class	d
+unnamed-chunk-38	c	cbind	class	d	data.frame
+unnamed-chunk-39	[[	$	c	class	list
+unnamed-chunk-40	c	ingredients	list
+unnamed-chunk-41	!=	$	airquality	dim	head	sum
+unnamed-chunk-42	[[	==	>	>=	$	a	cars	ingredients	m	x
+unnamed-chunk-43	c	factor	rep
+unnamed-chunk-44	grp
+unnamed-chunk-45	?	grp	mean	rnorm	tapply
+unnamed-chunk-46	c	effect	factor	grp	list	mean	rep	tapply
+unnamed-chunk-47	[<-	c	effect
+unnamed-chunk-48	effect.with.NAs	grp	mean	tapply
+unnamed-chunk-49	effect.with.NAs	grp	mean	T	tapply
+unnamed-chunk-50	grp	table
+unnamed-chunk-51	grp	length	rep	sum	tapply
+unnamed-chunk-52	?	as.vector	class	grp	names	names<-	table
+unnamed-chunk-53	c	data.frame	I	rep
+unnamed-chunk-54	authors	books
+unnamed-chunk-55	authors	books	merge
+unnamed-chunk-56	authors	books	dim	merge
+unnamed-chunk-57	!=	$	authors	authors.first	books	books.first	merge	sum
+unnamed-chunk-58	c	matrix
+unnamed-chunk-59	a	data.frame	library	m	mutate	X1	X2	X3
+unnamed-chunk-60	class	new.d	str
+unnamed-chunk-61	$	d	data.frame
+unnamed-chunk-62	as.matrix	head	iris
+unnamed-chunk-63	boxplot	flower.part.measurements
+unnamed-chunk-64	^	return
+unnamed-chunk-65	&	==	$	babynames	library	max	return
+unnamed-chunk-66	class	d	dim	summary

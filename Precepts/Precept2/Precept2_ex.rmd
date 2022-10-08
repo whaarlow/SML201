@@ -1,0 +1,489 @@
+---
+title: "Precept 2 Answers"
+author: "Bill Haarlow"
+date: "Fall 2019"
+output:
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+# Objectives
+
+* Getting familiar with functions: `hist()`, `unique()`, `sort()`, `%in%` and `rank()`
+* Learn how to create a report with the Rmarkdown package
+* Learn construction, extraction and assignment techniques for lists (and data frames)
+* Learn how to interpret histograms 
+
+# Rmarkdown Introduction
+
+Rmarkdown is a **mark-up language** that can generate reports which includes R codes. As opposed to text processing programs that require marking the end-result in the document itself, this type of method marks the desired formatting and the final document is achieved by rendering the document. For example, *italicized text* can be marked with a single underscores or asterisks, **boldfaced text** is marked with double underscores or asterisks, header is marked with one or more `#` at the beginning of a line, etc.
+
+
+The first thing you see in this type of file is the header. The rendering process will use this to figure out the title and author name. You can also specify formatting option here such as, the type of output document (here a PDF instead of the default of HTML), include a table of content (toc = true or toc = yes), size of figures, adding captions to figure, etc.
+
+# Knitr
+
+To generate an output file with a .Rmd file, you need to render the .Rmd file using the button "Knit" that is on the top of the upper-left panel in Rstudio. You can control the rendering options for the entire file using the following command, each option controls a different property in the file created:  
+
+```{r setup, include=FALSE}
+# This code chunk should usually be placed at the beginning of your report after the header
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=T, comment=NA, prompt=T, echo = TRUE, cache=TRUE, autodep=TRUE, tidy.opts=list(width.cutoff=63), tidy=T)
+options(width=63)
+```
+
+
+
+
+# What the options in knitr::opts_chunk$set() mean
+
+<!--- This is how you would comment in a .Rmd file --->
+
+The options set in knitr::opts_chunk$set() control for the entire report.
+
+
+However, you can also use these options to control the settings for a particular code chunk; to do so you would put the option(s) inside the curly braces.  E.g., all the graphs produced by the code in the following code chunk will be aligned left and will be 10 inches tall:
+
+
+```\{r fig.align="left", fig.height = 10\}
+
+
+```
+
+Below are the commonly used options and their descriptions, along with their default values and the data types of the input values in the parentheses.
+
+**fig.align**: ('default'; character) alignment of figures in the output document (possible values are left, right and center; default is not to make any alignment adjustments).
+
+**fig.height**: (7; numeric) Height in inches for plots created in chunk.
+
+**fig.width**: (7; numeric) Width in inches for plots created in chunk.
+
+**message**: (TRUE; logical) whether to preserve messages emitted by message() (similar to warning).
+
+**collapse**: (FALSE; logical; applies to Markdown output only) whether to, if possible, collapse all the source and output blocks from one code chunk into a single block.
+
+**prompt**: (FALSE; logical) whether to add the prompt characters in the R code (see prompt and continue in ?base::options; note that adding prompts can make it difficult for readers to copy R code from the output, so prompt=FALSE may be a better choice.
+
+**comment**: ('##'; character) the prefix to be put before source code output; default is to comment out the output by ##, which is good for readers to copy R source code since output is masked in comments (set comment=NA to disable this feature).
+
+**cache**:  (FALSE; logical)  Whether to save results so that code blocks aren't re-run unless code changes,
+_or_ a relevant earlier code block changed (see autodep).
+
+**autodep**: (FALSE; logical) whether to figure out the dependencies among chunks automatically by analyzing the global variables in the code (may not be reliable) so that dependence does not need to be set explicitly.
+
+**options(width=63)**: (80; numeric)  Controls the maximum number of columns on a line used in printing vectors, matrices and arrays.
+
+
+
+# Some code chunks for the demo
+
+You can write **chunks** of code within the .Rmd file. This code can be incorporated as is, executed to include its output, or both. Below are a couple of examples for the use of code chunks using the `cars` dataset; the dataset lists the speed of 50 cars and the distances these 50 cars take to stop. We can see the size of the data frame using ` dim `. We can use `head` to see that cars holds two vectors with numerical values. 
+
+```{r}
+# within the code chunk everything is treated as if they were in a 
+# .R script file; when you knit the .Rmd file all the code in the
+# code chunks in the report will be run sequentially
+dim(cars)
+```
+
+```{r}
+head(cars)
+```
+
+# Lists and data frames
+
+## Lists
+
+
+Recall that for a data frame its elements can have different data types.  The data frames that we will encounter in this course usually have vectors as the elements.  E.g., for the titanic dataset:
+
+```{r}
+t.ship = read.csv(
+"/Users/billhaarlow/Desktop/SML201/titanic.csv")
+
+head(t.ship)
+
+str(t.ship, strict.width = 'cut')
+```
+
+Note that all the vectors (i.e., the columns) in `t.ship` have the same length.
+
+
+A *list* is a generalization of a data frame.  For a list, not only that its elements can have different data types, they can also have different sizes.  Thus, a data frame is just a special type of list where all its elements are of the same size.  List is the most flexible object type in R.
+
+
+Here is an example of a list.  
+
+
+```{r}
+# Create two lists for the example
+area.code2017 = list(area.code = 609, 
+                     area=c('Princeton', 'Trenton', 'Lawrenceville'))
+new.area.code2018 = list(new.area.code = 640, purpose = 'overlay 609 in 2018')
+
+# You can concatenate two lists into one
+c(area.code2017, new.area.code2018)
+
+# 
+c(area.code2017, new.area.code2018)$area.code
+
+```
+
+How do we extract elements from a list?  Recall that in terms of structure a list is like a vector of placeholders and inside of each placeholder there can be any R object.  
+
+Let's have a quick review on how extraction works with vectors.
+
+```{r}
+c(-7:4)
+c(-7:4)[5] # extract out the part of the vector that contains the 5th element;
+class(c(-7:4)[5]) # still a vector
+
+c(-7:4)[5:7] # extract out the part of the vector that contains the 5th to 7th element;
+class(c(-7:4)[5:7]) # still a vector
+
+c(-7:4)[length(c(-7:4))] # extract out the part of the vector that contains the last element;
+class(c(-7:4)[length(c(-7:4))]) # still a vector
+```
+
+Now, see how extraction works with lists in R.
+
+```{r}
+# list extraction works in a way that is similar to vector extraction
+area.code2017[2] 
+class(area.code2017[2]) # still a list
+
+area.code2017[1:2] 
+class(area.code2017[1:2]) # still a list
+```
+
+```{r}
+# Any difference between the following 3 ways?
+area.code2017[2] 
+class(area.code2017[2]) # note that this is still a list
+
+area.code2017[[2]]
+class(area.code2017[[2]]) # note that this is a vector
+
+area.code2017$area
+class(area.code2017$area) # note that this is a vector
+# How do you extract out 'Princeton'?
+# What will you get with this: area.code2017[2][1]?
+```
+
+
+Note that we used `[[]]` and `$` here; these are the extraction functions that reserved for lists.  You might remember that we used `$` for the data frame `t.ship` in lecture before.  This is because a data frame is just a special kind of list whose elements are vectors of the same length.  
+
+
+## Data frames
+
+Since a data frame is a special case of a list, a data frame inherits all the properties of a list.  In addition, since a data frame has a two-dimensional appearance that is similar to a matrix, some of the extraction operations that work for matrices works for a data frame as well.  Below are examples demonstrating how extraction works for data frames
+
+```{r}
+#  The following extraction methods result in a vector:
+class(t.ship[,1]) # first vector from the data frame
+head(t.ship[,1])
+
+class(t.ship$PassengerI) # same as above, but use the name of this column in the df
+
+head(t.ship[[1]]) 
+class(head(t.ship[[1]])) # this goes into the first placeholder and take out the vector inside
+head(t.ship[[1:2]]) # this doesn't work as expected 
+# because you are already inside of the placeholder.
+# This actually gets the 2nd element of the first vector.
+
+#  The following extraction methods result in a data frame:
+head(t.ship[1]) # extract out the part of the data frame that has the first element/column
+class(head(t.ship[1])) # still a data frame 
+head(t.ship[1:2]) # this still works
+
+head(t.ship[c("Age", "Sex")]) # same as above, a data frame
+class(t.ship[1]); class(t.ship[c("Age", "Sex")])
+```
+
+In short, only using `[ ]` as how you would extract elements in a vector will result in a data frame. 
+
+
+# How to use these functions: `unique()`, `sort()`, and `%in%`
+
+```{r}
+# create vector for the example:
+v = c(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, -4, 9)
+
+# returns a vector with the unique value by removing duplicates
+unique(v) 
+
+# returns a vector of the values sorted in increasing/decreasing order
+sort(v) 
+sort(unique(v))
+sort(unique(v), decreasing =T) 
+
+# do 1, 3, 4 appear in v?
+v %in% c(1, 3, 4) # note that this is different from c(1, 3, 4) %in% v
+# extract out elements in v that are 1, 3, or 4
+v[v %in% c(1, 3, 4)]
+```
+
+# Use `rank()` to get the ranks of the elements in a vector
+
+```{r}
+
+# rank() - gives ranks to the input vector; smallest value will 
+# receive rank 1, next smallest value will receive rank 2, etc.
+# Equal values, "ties", can be treated in different ways 
+# (see details in help manual).
+
+# the line below just assigns some letters in alphabetical 
+# order to the elements in the vector
+names(v) <- letters[1:14]
+
+v
+
+rank(v) # tie-ranks will be replaced by their average
+rank(-v) # rank in decreasing order
+```
+
+
+## Histograms
+
+We will use the `nhtemp` dataset (one of R's built-in datasets) for this week's demo.  `nhtemp` records the mean annual temperature (in degrees Fahrenheit) in New Haven, Connecticut, from 1912 to 1971.
+
+```{r}
+?nhtemp
+class(nhtemp) 
+# `nhtemp` is a time series R object; 
+# you can just treat `nhtemp` as a vector
+
+head(nhtemp) 
+#The Average Yearly Temperatures in New Haven, 1912-1971
+length(nhtemp) #Number of observations
+
+
+```
+
+In the previous weeks we learned how to perform mathematical operations on data; for example, 
+
+```{r}
+sum(nhtemp) #Sum of all observations
+head(sqrt(nhtemp)) 
+# Vectorization computation: take square root of each element
+min(nhtemp) #The lowest recorded average temp
+max(nhtemp) #The highest recorded average temp
+mean(nhtemp) #The average temp across all years
+range(nhtemp) #The lowest and highest recorded average temp
+```
+
+
+To understand the distribution of the data, we can display the data graphically with a histogram. The basic function to create a histogram is hist(). Similar to previously learned functions, we can adjust the values for its input arguments to modify the output of this function.
+
+In addition, we can use the function par() to adjust the values for the graphic parameters that are used to display the graph.  You can check out the help manual for par() to see all the available input arguments for the function but here are some useful ones that we are going to talk about today:
+
+**mfrow**: a vector for the number of rows and number of columns c(nr,nc), to describe the layout of the plotting area. Used to design the layout of several plots.
+
+**cex.main, cex.lab, cex, cex.aixs**: used to change the sizes of the font for the title, the x- and y- axis labels, the symbols and the axis annotations on a plot, respectively. These arguments can also be used in other graphical functions, such as, hist(), plot(), points(), lines(), abline()--the last 4 functions will be discussed in next week's precept.
+
+ 
+```{r, tidy=F}
+# Add lables to the histogram
+hist(nhtemp,freq = F, 
+     main='Average Yearly Temperatures in New Haven', 
+     xlab = 'Temp (F)', ylab = 'Proportion per fahrenheit' ) 
+# Setting the correct scale for the y-axis with `freq` the input argument.
+# Set freq = F, the histogram displays density so that the total 
+# area equals 1. the area of the rectangles is the fraction of data points
+# falling into the cells, that is $density = proportion per x-axis unit$
+```
+
+```{r, tidy=F}
+# Adjust title, axis label sizes: 
+# cex.main=.8: sets the font of the title to be 80% of the default size
+# cex.lab=.8: sets the font of the x- and y- labels to be 80% of the default size
+# cex.axis=.5: sets the font of the axis annotations to be 50% of the default size
+
+hist(nhtemp,freq = F, cex.main=.8, cex.lab=.8, cex.axis=.5,
+     main='Average Yearly Temperatures in New Haven', 
+     xlab = 'Temp (F)', ylab = 'Proportion per fahrenheit' )
+```
+
+```{r}
+# Add more breaks
+hist(nhtemp,freq = F, cex.main=.8, cex.lab=.8, cex.axis=.5,
+     main='Average Yearly Temperatures in New Haven', 
+     xlab = 'Temp (F)', ylab = 'Proportion per fahrenheit',
+     breaks=30)
+```
+Please adjust the value for the input argument `breaks` to see how the graph changes and why `30` is a good value for breaks.
+
+
+We can also use **xlim** and **ylim** in graphical functions to set the ranges for the x- and y-axes for the graphs.  For example, the following sets the minimum and the maximum of the x-axis to be 46 and 56, and the minimum and the maximum of the y-axis to be 0 and 1.
+```{r}
+hist(nhtemp,freq = F, cex.main=.8, cex.lab=.8, cex.axis=.5,
+     main='Average Yearly Temperatures in New Haven', 
+     xlab = 'Temp (F)', ylab = 'Proportion per fahrenheit',
+     breaks=30, xlim=c(46, 56), ylim=c(0, 1))
+```
+
+
+
+**The following links is helpful for learning R Markdown (especially the first one).**
+
+http://www.stat.cmu.edu/~cshalizi/rmarkdown/#mark-up-markdown
+
+https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf
+
+https://yihui.name/knitr/options/
+
+# Exercises 
+
+Please include your answers in code chunks and make sure that you can knit your file successfully.
+
+## Question 1
+
+(a) Try placing one at a time of the following arguments into the curly brackets for the first 
+code chunk and observe what happens when you compile (knit) the file. 
+
+include = FALSE <!--evaluation but do not show codes or results-->  
+echo = FALSE  <!--evaluate; do not show codes but show results-->  
+eval = FALSE  <!--do not evaluate-->  
+
+i.e., for the first one do this
+
+
+```{r, include = F}
+dim(cars)
+```
+
+
+Side note: note that you can also add one of these arguments to knitr::opts_chunk$set(), and the option will then controls all the code chunk globally.
+
+(b) Change 'toc: no' in the YAML header to 'toc: yes' and observe what happens when you compile the file. Also, type your name for the `author` field in the header.
+
+***Add a code chunk to each of the following questions to evaluate the answers***
+
+## Question 2
+
+`cars` is a built-in data frame in R.  
+
+```{r}
+class(cars)
+dim(cars)
+```
+
+Without running any code, say what kind of R object each of the following line will return.  Once you finish, verify your answers by using the `class()` function. (You do not have to show the code to apply the `class()` function; the verifications are just for your own benefit.)
+
+```{r}
+cars[,1] # numeric
+cars$speed # numeric
+head(cars[1]) # data.frame
+head(cars["speed"]) # data.frame
+cars[[1]] # numeric
+
+```
+
+
+## Question 3
+
+Use the dataset `babynames` in the `babynames` package.
+
+
+(a)  Make a data frame "high.freq" by extracting out the rows for female names that were used at least 20000 times in a given year between year 2000 and year 2017 inclusively.  
+Hint: You should break down this problem into parts.  Your thought/work process should follow steps similar to the following:
+
+* Step 1: I am asked to extract out the rows that satisfy the following conditions:
+    a)  for female names
+    b)  for names used at least 20000 times in a given year
+    c)  for years between year 2000 and year 2017 inclusively
+* Step 2: How do I extract out rows that satisfy each of the conditions above?
+* Step 3: Work out the code for Step 2 and test the code by checking the results produced by the code (e.g., use functions, such as `range()`, `table()`, `summary()`, `head()` etc.)
+* Step 4: How do I go from the results in step 3 to the requested result?
+
+```{r, results='hide'}
+library(babynames) # Loads package `babynames`
+babynames$sex=="F" # Extracts "sex" column & extracts all female names
+female_baby = babynames$sex=="F" # Assigns female names to `female_baby`
+high.freq=babynames[female_baby,] # Creates data frame `high.freq` using `female_baby`
+years2000.2017 = high.freq$year %in% c(2000:2017) # Extracts all data from 2000 to 2017 from `high.freq` and assigns it to `years2000.2017`
+high.freq = high.freq[years2000.2017,] # Reassigns year-extracted `high.freq` to `high.freq`
+high.freq
+times = high.freq$n>=20000 # Extracts all names with a frequency over 20000 from `high.freq` and assigns it to `times`
+high.freq=high.freq[times,] # Reassigns times-extracted `high.freq` to `high.freq`
+high.freq # Outputs data frame `high.freq`
+```
+
+```{r}
+summary(high.freq)
+str(high.freq)
+```
+
+(b)  What are the names that appear in `high.freq`?  How many are there (do not include repeats)?
+
+`unique(high.freq$name)`
+
+The 6 unique names in `high.freq` are "Emily", "Hannah", "Madison", "Emma", "Isabella" & "Sophia".
+
+(c)  Make a data frame "popular.names" by extracting out the rows from `babynames` for the female names that you found in part (b) for years between 2000 and 2017 inclusively.  Compare the size of this data frame with that of `high.freq`.
+
+```{r, results='hide'}
+library(babynames)
+babynames$sex=="F" # Extracts "sex" column & extracts all female names
+female_baby_p = babynames$sex=="F" # Assigns female names to `female_baby_p`
+female.names=babynames[female_baby_p,] # Creates data frame `female.names` using `female_baby_p`
+placeholder = female.names$name==c("Emily","Hannah","Madison","Emma","Isabella","Sophia")
+popular.names = female.names[placeholder,] # Creates data frame `popular.names` using `placeholder`
+years2000.2017.p = popular.names$year %in% c(2000:2017) # Extracts all data from 2000 to 2017 from `popular.names` and assigns it to `years2000.2017.p`
+popular.names = popular.names[years2000.2017.p,] # Reassigns year-extracted `popular.names` to `popular.names`
+popular.names ### Up through here is good
+popular.names
+str(popular.names)
+```
+
+```{r}
+dim(high.freq)
+dim(popular.names)
+```
+
+
+
+## Question 4
+
+Plot the histogram for the built-in dataset `airmiles` by using hist().  Answer the following with just the histogram (i.e., without any computations).
+
+```{r}
+hist(airmiles, freq = F, breaks=16)
+```
+  
+    a. What does the area for each bin represent?
+    The area for each bin represents the proportion of observations for a given number of airmiles.
+    b. Describe the shape of the distribution of the data (e.g., left- or right- skewed? Symmetric or Asymmetric? With long left or right tail?  How many dominant modes does it have?) 
+    This distribution is right-skewed, with a long right tail. It is asymmetric and unimodal.
+    c. What is the mode of the data?
+    The mode of the data appears to be within [0, 2000) airmiles.
+    d. What is the median of the data?  Is the mean bigger/smaller than the median?
+    The median appears to be within [6000, 8000) airmiles and the mean appears to be smaller than the median.
+
+
+## Question 5: Most popular babygirl names 
+
+Suppose that most of you in this class are turning 19 to 22 this year; this means that you were born between 1997 and 2000.  We will investigate the baby names in the dataset for this  time period .
+
+## Part a
+Extract out the rows in `babynames` that correspond to the names of the babies born between 1997 and 2000, inclusively, and name the resulting subset `names1997.2000`.  How many rows and columns does `names1997.2000` have?  
+
+
+
+## Part b
+Use `names1997.2000` from Part a for this Part. For the period of 1997 to 2000 find out the top 20 most popular female names each year (it is okay to just print these four lists out in the code chunk; no need to include these names in the write-up).  Among these four lists of top 20 female names, which names stay in the top 20 for all four years for the period of 1997 to 2000?   
+
+Please make sure that you print out only the requested names; printing out all the names in your dataset will likely cause Rstudio to have compiling issues since there will be many pages of names to be printed out.
+
+
+
+
+

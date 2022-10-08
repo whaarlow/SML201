@@ -1,0 +1,13 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	class	head	read.csv	str	summary	tail
+unnamed-chunk-3	$	F	hist	loancase
+unnamed-chunk-4	$	loancase	summary
+unnamed-chunk-5	~	boxplot
+unnamed-chunk-6	~	boxplot
+unnamed-chunk-7	$	length	loancase	rep	sort	sum	T	tapply
+unnamed-chunk-8	c	matrix
+unnamed-chunk-9	$	as.matrix	c	loancase	round	table
+unnamed-chunk-10	grid.raster	library	readPNG
+unnamed-chunk-11	[<-	aes	as.data.frame	geom_line	ggplot	ggtitle	Grade	m	names	names<-	Percentage	Purpose	xlab	ylab
+unnamed-chunk-12	==	$	aes	as.data.frame	as.factor	data.frame	geom_line	ggplot	LETTERS	m	T	xlab	ylab
+unnamed-chunk-13	$	aes	data.frame	do.call	factor	geom_point	ggplot	gp	lapply	letters	mean	rbind	rep	rnorm	sd	split	y

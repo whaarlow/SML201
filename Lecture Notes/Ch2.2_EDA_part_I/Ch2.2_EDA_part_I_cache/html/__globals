@@ -1,0 +1,73 @@
+unnamed-chunk-1	getwd	setwd
+unnamed-chunk-2	getwd
+unnamed-chunk-3	c	ls	rm
+unnamed-chunk-4	
+unnamed-chunk-5	function_default_values
+unnamed-chunk-6	seq
+unnamed-chunk-7	c	load	ls	rm	save
+unnamed-chunk-8	read.csv
+unnamed-chunk-9	class	dim	t.ship
+unnamed-chunk-10	head	t.ship
+unnamed-chunk-11	t.ship	tail
+unnamed-chunk-12	str	t.ship
+unnamed-chunk-13	summary	t.ship
+unnamed-chunk-14	$	F	hist	rgb	t.ship
+unnamed-chunk-15	$	F	hist	rgb	t.ship
+unnamed-chunk-16	mean	rexp	rnorm	runif	sd	set.seed	sqrt	var
+unnamed-chunk-17	c	exp4000	hist	par	rnorm4000	T	unif4000
+unnamed-chunk-18	::	exp4000	rbind	rnorm4000	round	summary	unif4000
+unnamed-chunk-19	$	mean	summary	t.ship
+unnamed-chunk-20	$	mean	sd	T	t.ship	var
+unnamed-chunk-21	$	summary	t.ship
+unnamed-chunk-22	$	median	T	t.ship
+unnamed-chunk-23	$	quantile	T	t.ship
+unnamed-chunk-24	$	c	diff	quantile	T	t.ship
+unnamed-chunk-25	$	IQR	T	t.ship
+unnamed-chunk-26	$	summary	t.ship
+unnamed-chunk-27	$	summary	t.ship
+unnamed-chunk-28	$	summary	t.ship
+unnamed-chunk-29	$	quantile	T	t.ship
+unnamed-chunk-30	$	F	hist	t.ship
+unnamed-chunk-31	$	max	t.ship
+unnamed-chunk-32	==	$	c	F	max	T	t.ship
+unnamed-chunk-33	t.ship
+unnamed-chunk-34	c	F	T	toy
+unnamed-chunk-35	!	&	|	c	F	T
+unnamed-chunk-36	$	sort	T	t.ship
+unnamed-chunk-37	$	head	sort	T	t.ship
+unnamed-chunk-38	$	head	sort	t.ship
+unnamed-chunk-39	$	boxplot	t.ship
+unnamed-chunk-40	&	<=	>=	$	sum	T	t.ship
+unnamed-chunk-41	$	range	t.ship
+unnamed-chunk-42	$	sort	t.ship
+unnamed-chunk-43	$	sort	t.ship
+unnamed-chunk-44	$	na.omit	t.ship
+unnamed-chunk-45	load
+unnamed-chunk-46	fare.outlier
+unnamed-chunk-47	uniq.fare.outlier
+unnamed-chunk-48	class
+unnamed-chunk-49	c	class
+unnamed-chunk-50	!	>	c	class	F	T
+unnamed-chunk-51	c	length	nchar
+unnamed-chunk-52	?	c	factor
+unnamed-chunk-53	>=	c	F	names	names<-	T
+unnamed-chunk-54	[<-	>	c	F	T
+unnamed-chunk-55	c
+unnamed-chunk-56	c	class	F	T
+unnamed-chunk-57	head	iris
+unnamed-chunk-58	c	colnames	data.frame	names
+unnamed-chunk-59	class	d
+unnamed-chunk-60	[[	$	class	d
+unnamed-chunk-61	class	d
+unnamed-chunk-62	c	class	d	data.frame
+unnamed-chunk-63	^	c	diff	prod	sum
+unnamed-chunk-64	
+unnamed-chunk-65	$	class	dim	head	iris	length	ncol	nrow	str	tail
+unnamed-chunk-66	==	c	length	max	mean	min	range	sum	which	which.max	which.min
+unnamed-chunk-67	c	sort	T
+unnamed-chunk-68	c	names<-	sort
+unnamed-chunk-69	pop.in.mi	rank
+unnamed-chunk-70	sort	unique	x
+unnamed-chunk-71	c	matrix	rep	T	unique
+unnamed-chunk-72	c	cbind	order	sort
+unnamed-chunk-73	c	x

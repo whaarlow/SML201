@@ -1,0 +1,8 @@
+unnamed-chunk-1	c	mean	rep	table
+unnamed-chunk-2	c	mean	qnorm	rep	sd	sqrt
+unnamed-chunk-3	~	iris	lm	summary
+unnamed-chunk-4	as.factor	c	data.frame	head	str
+unnamed-chunk-5	geom_density	labs
+unnamed-chunk-6	..density..	aes	geom_density	geom_histogram	ggplot	labs	library	Newcomb	Time
+unnamed-chunk-7	$	Newcomb	qqline	qqnorm
+unnamed-chunk-8	$	c	length	mean	Newcomb	qnorm	sd	sqrt

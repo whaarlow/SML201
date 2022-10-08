@@ -1,0 +1,26 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	pnorm
+unnamed-chunk-3	pnorm
+unnamed-chunk-4	pnorm
+unnamed-chunk-5	pnorm
+unnamed-chunk-6	pnorm
+unnamed-chunk-7	pnorm
+unnamed-chunk-8	c
+unnamed-chunk-9	c	F	hist	mean	par	pop	return	sample	sapply	T
+unnamed-chunk-10	c
+unnamed-chunk-11	c	density	dnorm	F	hist	legend	lines	lizard	max	mean	min	sd	seq
+unnamed-chunk-12	lizard	qqline	qqnorm
+unnamed-chunk-13	c	length	lizard	mean	qt	sd	sqrt
+unnamed-chunk-14	mean	pop	sd
+unnamed-chunk-15	pop	sample	set.seed	T
+unnamed-chunk-16	mean	sampl.60	sd
+unnamed-chunk-17	c	F	hist	sampl.60
+unnamed-chunk-18	c	length	mean	qt	sampl.60	sd	sqrt
+unnamed-chunk-19	mean	pop	sample	sd	set.seed	T
+unnamed-chunk-20	c	length	mean	qt	sampl.6000	sd	sqrt
+unnamed-chunk-21	
+unnamed-chunk-22	sqrt
+unnamed-chunk-23	c	rep	sd
+unnamed-chunk-24	c	qt	sqrt
+unnamed-chunk-25	as.factor	c	data.frame	head	str
+unnamed-chunk-26	geom_density	labs

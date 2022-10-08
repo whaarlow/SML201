@@ -1,0 +1,187 @@
+---
+title: "Project 3 Hints"
+author: 
+date: "Fall 2019"
+output:
+  pdf_document: 
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+geometry: margin=1.5in
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=4, fig.width=5, collapse=TRUE, comment="", prompt=T, echo = TRUE, cache=TRUE, autodep=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=79)
+```
+
+
+
+
+**Two questions that we would like to answer in this project:**
+
+* Do the errors seem random, and specifically are they distributed symmetrically around zero?  
+
+* Among the states with CI estimates that are away from zero (i.e., among the states that we were confident about who the winning candidate for each of the states would be), how many of them have CIs that predicted the correct state winner?
+
+In order to do well on this project you should be able to answer the following questions correctly.
+
+
+# What does the sign of each of these quantities tell us?
+
+* **poll.diff** = rawpoll_trump - rawpoll_clinton
+* **vote.diff** = trump.vote - clinton.vote
+* **deviation** = poll.diff - vote.diff
+
+-----------
+
+
+**poll.diff** = rawpoll_trump - rawpoll_clinton  
+Positive: The polls predicted that Trump was going to win for that state;  
+Negative: The polls predicted that Clinton was going to win for that state.
+
+
+-----------
+
+
+**vote.diff** = trump.vote - clinton.vote  
+Positive: In reality Trump won for that state;  
+Negative: In reality Clinton won for that state.
+
+-----------
+
+**deviation** = poll.diff - vote.diff
+
+poll.diff - vote.diff = (rawpoll_trump - rawpoll_clinton) - (trump.vote - clinton.vote)  
+that is,   
+(rawpoll_trump - trump.vote) - (rawpoll_clinton - clinton.vote)  
+
+Positive: This part is left for you to answer;   
+Negative: This part is left for you to answer.
+
+-----------
+
+# What does it mean that `poll.diff[i]` and `vote.diff[i]` have the same sign?
+
+Same sign means that the polls in state `i` predicted the winner of the state correctly.
+
+-----------
+
+# For each state what were the polls trying to predict? 
+
+
+Polls were trying to predict whom the winner would be for that state; i.e., `vote.diff[i]` for state `i`.
+
+-----------
+
+## What is/are the population(s) in this case?
+
+One population is all the active voters in a particular state. There are 51 populations here.
+
+-----------
+
+## What is/are the sample(s)?
+
+
+All the people in the polls for a particular state is a sample.  For each state `i` we need to construct a CI to predict `vote.diff[i]`.
+
+-----------
+
+## How do we put this into a framework that allows us to construct the CIs with what we have learned?
+
+**poll.diff** = rawpoll_trump - rawpoll_clinton  
+**vote.diff** = trump.vote - clinton.vote
+
+For each state i, we want to use `poll.diff[i]` to estimate `vote.diff[i]`.  We can think of `vote.diff[i]` as the population mean for state i if we label the data properly;  in addition, If we label the data properly we can use the techniques that we have learned to construct the CI for predicting the population mean `vote.diff[i]`.  What should be the numbers in our samples?
+
+
+-----------
+
+### Can we treat this as the case of using the difference of two sample means to estimate the difference of two population means?
+
+
+No.  If we treat this as a two sample case, the samples are dependent since if someone voted for Clinton would not vote for Trump, and vice versa.
+
+-----------
+
+### How do we label our data so that we will have independent data points?
+
+Oftentimes we need to label or relabel our data in a way that puts the problem in a framework that we know how to construction a CI for the population quantity.
+
+
+-----------
+
+### Let's consider a couple of examples.
+
+Data don't necessarily come in forms that are appropriate for our analyses.  As data scientists part of our job is to figure out how to transfer the raw data that we have into a dataset that is appropriate for our analysis.  Let's look at a few examples.
+
+
+-----------
+
+(Please see Ch 4.5 for details)  **Prop 19 in California example:  Converting data into a format that we can use a sample mean difference to predict the population difference**. In a 2010 Survey USA poll, 70% of the 119 respondents between the ages of 18 and 34 said they would vote in the 2010 general election for Prop 19, which would change California law to legalize marijuana and allow it to be regulated and taxed.  Construct a 90% CI for the proportion of people supporting Prop 19 in California.
+
+In this case the sample data we have is 70%.  We want to use .7 as a point estimate for the population proportion (i.e., the proportion of people supporting Prop 19 in California).  We already learned that for 0-1 datasets the proportion of 1's in the dataset is the sample mean; thus, if we label the people who support Prop 19 with 1's and the people who don't with 0's, our sample mean will be .7.  The order of the 0's and 1's in the sample doesn't really matter; all we care about is that 70% of the 119 people in the sample should be labeled with 1's and the rest should be labeled as 0's.  This 0-1 sample is now in a format that is appropriate for the analysis; this way the sample proportion 70% becomes the sample mean for our dataset and we can use our sample mean and SE(sample mean) to construct a CI to predict the population proportion--a technique that we are already familiar with:
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{s}{\sqrt{n} } 
+$$
+
+**Without the correct format for our data we will not be able to calculate SE(sample mean).**
+
+Note that the data points in your sample are **independent** under this framework. 
+
+-----------
+
+(Ch6.2; you don't really need this part to do the project but this will give you more insight on why we choose the approach that we take) **Special Tutoring: Converting dependent samples to an independent sample**.  Several students were given special tutoring after taking a midterm exam in a particular class.  After the tutoring, a second midterm was administered and the scores were compared.  The following results were recorded:
+
+```{r}
+midterm1 = c(67, 74, 54, 51, 62, 49, 65, 69, 66, 70, 53, 58, 66, 52, 84)
+
+midterm2 = c(64, 75, 85, 96, 96, 88, 94, 66, 80, 48, 51, 90, 69, 94, 72)
+```
+Are there improvements on the scores after the tutoring?  Construct a 90% CI for the mean difference of the midterm scores.
+
+The first thing that comes to our mind would probably be modeling this as a two population case.  However, if we did that we would notice that the two samples were not independent;  e.g., someone who did better than the rest of the students on Midterm 1 would more likely do better than other students in the group on Midterm 2 too.  
+
+The quantity that we would like to estimate is (Midterm 2 population mean - Midterm 1 population mean) and the point estimate that we would like to use for estimating this quantity is (Midterm 2 sample average - Midterm 1 sample average).  We would like to use the following formula to construct the CI
+
+> (Midterm 2 sample average - Midterm 1 sample average) $\pm$ q SE(Midterm 2 sample average - Midterm 1 sample average)
+
+Note that SE(Midterm 1 sample average - Midterm 2 sample average) will be calculated differently depending on if we treat this as a two-population case or a one-population case.   The degree of freedom will also be different depending on which case we are in.  Recall that the two populations and the two samples need to be independent in the two population case; thus, we cannot solve the problem as if this were in the two-population case.  Let's relabel the data and we can then solve the problem as a one population case.  Define
+
+```{r}
+diff = midterm2 - midterm1
+diff
+```
+
+In this one sample, `diff`, the data points are independent and we know that the SE(Midterm 2 sample average - Midterm 1 sample average) = SE(diff) is just $\frac{SD(diff)}{\sqrt{n}}$.
+
+
+-----------
+
+As you can see in the previous two examples we often need to label our data in a way that puts the problem under a framework that we know how to construct a CI for the population quantity.  Now, for the project we are trying to estimate the population quantity `vote.diff` by using `poll.diff`.  Can we use the formula
+
+> poll.diff $\pm$ q SE(poll.diff)?
+
+Since in the two population case the two populations fail to be independent, we should try to label the data in a way that puts the problem under a one population framework--hopefully  the data points in the sample will be independent in that case.  Try to label the data so that `poll.diff` will become a sample mean.  If you are stuck try work on the following small example first.  
+
+
+Say, I have a sample of 10 people and among them 5 support Clinton, 4 support Trump and 1 supports others.  
+
+
+(a) What is the value for `poll.diff` in this case?  Write this out as a fraction.
+
+
+
+(b) Label your data so that the sample mean will become `poll.diff`.  Note that your sample data can be any number, not necessarily just 0's and 1's.  You will need to translate the concept that you learned in the examples above to find out how you should construct the sample you need for your analysis. Be creative! 
+
+
+(c) Check that the numerator and the denominator of your sample mean is correct by comparing it with your answer for part (a).
+
+
+
+# What is the purpose of calculating `std.unit`?
+
+For each state i if the data from the combined polls were a simple random sample drawn from the population, the sample should be representative of the population.  In this case what is the distribution of $\frac{poll.diff[i] - vote.diff[i]}{SE(poll.diff[i])} = \frac{sample\ mean - population\ mean}{SE(sample\ mean)}$ supposed to be?  Note that this is true for all 51 locations (50 states plus D.C.); thus, $\frac{poll.diff[i] - vote.diff[i]}{SE(poll.diff[i])}$ should follow the same distribution for all $i$; therefore, *if errors for the states were independent* there should be equally likely chance for a combined poll difference to be greater or less than the actual election difference for the state.
+

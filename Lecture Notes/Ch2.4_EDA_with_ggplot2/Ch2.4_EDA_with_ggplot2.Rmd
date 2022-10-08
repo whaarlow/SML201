@@ -1,0 +1,628 @@
+---
+title: "SML201 Chapter 2.4"
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
+geometry: margin=1.5in
+subtitle: Graphing with the `ggplot2` package
+editor_options:
+  chunk_output_type: console
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE, message = F,
+warning = F, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+# R functions covered
+
+--------
+
+*  Functions in the `ggplot2` package
+*  `ggpairs()` in the `GGally` package
+
+# Introduction
+
+----------
+
+In the last chapter we saw that we can answer very interesting questions about the passengers with plots that compare different groups of the passengers.  Unfortunately, for creating more complex graphs R's basic graphic functions become more verbose; also, personally I think graphs produced by the basic `graphics` functions are not very appealing aesthetically unless you are willing to spending a lot of time on making manual adjustments to the graphs by changing the values of the graphic variables (e.g., we showed you how to make some of these adjustments with `cex`, `cex.main` and `cex.lab` etc. in this week's precept).  When it comes to making complex graphs the packages `ggplot2` and `GGally` (an extension of `ggplot2`) have a lot more advantages over R's basic 
+`graphics` package.
+
+
+# About the `ggplot2` package
+
+------
+
+The package `ggplot2` was built based on the concepts in the *The Grammar of Graphics* by Leland Wilkinson (1999/2005).  
+
+The package has a lot of built-in features that make nice graphs and are more suitable for complex large datasets.   
+
+------
+
+
+# Read in the dataset
+
+```{r, tidy = F}
+t.ship = 
+  read.csv(file = 
+  '/Users/billhaarlow/Desktop/SML201/titanic.csv')
+```
+
+We should refresh our memory on the properties of the dataset.
+
+```{r}
+class(t.ship) # this tells me what kind of R object this dataset is
+dim(t.ship) # 891 rows by 12 columns
+```
+
+
+----------
+
+
+```{r}
+head(t.ship) # look at the first 6 (by default) rows of an object
+```
+
+----------
+
+```{r}
+str(t.ship, strict.width = 'cut')
+```
+
+----------
+
+# An example of a graph produced by the `ggplot2` package
+
+```{r}
+library(ggplot2)
+```
+
+Here is a set of histograms that produced by the `geom_histogram()` function in the `ggplot2` package.  Note that if we had to used the basic graphic functions in R to produce this set of plots, we would have to write the code separately for 6 histograms, not to mention that we would also need to write extra lines of  code to give different colors to the data points for the people in the survived and deceased groups.
+
+```{r tidy = F}
+ggplot(t.ship) + 
+   geom_histogram(mapping = aes(x = Age, y = ..density.., 
+                                fill = as.factor(Survived)), 
+                  position="identity", binwidth = 3, 
+                  alpha = .4) +  
+  facet_grid(as.factor(Pclass)~Sex) +
+  labs(x='Titanic Passenger Ages (Years)', 
+       y='Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions by Ticket Class and Sex', fill = "Survived?" ) +
+ scale_fill_discrete(labels = c("Deceased", "Survived"))
+```
+
+# How does the syntax work for functions in the `ggplot2` package?
+
+
+## The basic idea
+
+You can combine/layer several graphical components in `ggplot2` to build and customize your graph. Some of the graphical components include:
+
+* data in data.frame format
+* aesthetic mapping: e.g., x- and y- variables, color, size and shape related to the variables
+* geometric object: what kind of plot you would like to make?
+* statistical transformations
+* position adjustments
+* faceting: for conditional plots
+
+<!---
+* scales
+* coordinate system (will not be covered in this course)
+--->
+
+## Main structure of the grammar
+
+The main structure of the grammar has the form of 
+
+ggplot(data.frame, ...) + geom_FunctionType()
+
+Some commonly used geom_ functions are
+
+* geom_boxplot() 
+* geom_histogram() 
+* geom_line()
+* geom_point()
+* geom_smooth()
+* geom_hex()
+
+
+## Steps
+
+Creating a plot using the `ggplot2` package follows the following steps:
+
+1. Dataset - use the function `ggplot`() to specify what dataset we will work with to create the plot; the dataset needs to be a data frame.  
+2. Type of graph to make - use `geom_FunctionTpye()` to specify what kinds of graphs (such as scatterplots, histograms, or boxplots) we want to make.  
+3. Aesthetic mappings - specify the variables to use for the plot(s) and how they appear on the plot.  
+4. Appearance - using the various parameters to change the display of the plot, such as specifying the labels, colors or showing the data by groups.  
+
+```{r}
+ggplot(t.ship) +
+  geom_histogram(mapping=aes(x=Age,y=..density..),binwidth = 3,alpha=0.5) +
+  facet_grid(as.factor(Pclass)~as.factor(Survived)) +
+  labs(x = "Survival Status (0 = \"deceased\", 1 = \"Survived\")", 
+    y = "Ticket Classes", title = "Titanic Passenger Age Distributions 
+       by Ticket Class and Survival Status")
+```
+
+```{r}
+ggplot(t.ship) +
+  geom_histogram(mapping=aes(x=Age, fill=as.factor(Survived)),
+                 position="identity",
+                 binwidth = 3,
+                 alpha=.4) +
+  facet_grid(as.factor(Pclass)~Sex) +
+  labs(x='Titanic Passenger Ages (Years)', 
+       y='Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions 
+       by Ticket Class and Sex', 
+       fill = "Survived?") +
+  scale_fill_discrete(labels=c("Deceased","Survived"))
+  
+```
+
+```{r}
+iceberg = data.frame("Exists" = c(F, T), "Target" = c("Titanic", "Titanic 2"), "Destroy" = c("100%", "0%"), "Mission" = c("Passed", "Failed"), "Respect" = c("+", "N/A"), "Reason" = c("N/A", "Climate"))
+iceberg
+```
+
+# Examples
+
+## A simple example
+
+Suppose that we would like to use a side-by-side boxplot to compare the age distributions of the passengers by ticket class.
+
+```{r}
+class(t.ship)
+# the dataset `t.ship` is already in data.frame format
+
+ggplot(t.ship) + 
+  geom_boxplot(mapping = aes(x = as.factor(Pclass), y = Age, fill = as.factor(Pclass))) +
+  labs(y = 'Titanic Passenger Ages (Years)', 
+       x = 'Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions by Ticket Class',
+       fill = "Ticket Class") 
+```
+
+Notice that the argument `fill = as.factor(Pclass)` was placed inside of the `aes()` function.  If we use a particular color for `fill` the argument should be placed outside of the `aes()` function.
+
+```{r}
+ggplot(t.ship) + 
+  geom_boxplot(mapping = aes(x = as.factor(Pclass), y = Age), fill = 'blue') +
+  labs(y = 'Titanic Passenger Ages (Years)', 
+       x = 'Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions by Ticket Class',
+       fill = "Ticket Class") 
+```
+
+Also, notice that you can also place the mapping argument in the `ggplot()` function.  Can you think of a situation where it will be good to do this?
+
+
+```{r}
+ggplot(t.ship, mapping = aes(x = as.factor(Pclass), y = Age, fill = as.factor(Pclass))) + 
+  geom_boxplot() +
+  labs(y = 'Titanic Passenger Ages (Years)', 
+       x = 'Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions by Ticket Class',
+       fill = "Ticket Class")
+```
+
+
+
+## A more complex graph
+
+Eventually we will make the graph shown at the beginning of the chapter but let's start with something simpler first.
+
+```{r tidy}
+ggplot(t.ship) + 
+  # `..density..` allows me to use density for the y-axis
+  # `binwidth` sets the bin width
+  # `alpha` sets the transparency of the graph
+   geom_histogram(mapping = aes(x = Age, y = ..density..), 
+                  binwidth = 3, alpha = .5) +
+  # `facet_grid` allows me to make a different plot for 
+  # each subset of the data
+  # note that the variable on either side of `~` has
+  # to be a factor
+  facet_grid(as.factor(Pclass)~as.factor(Survived)) +
+  # this tells R to create panels for the unique combinations of
+  # the `Pclass` values and the `Survived` values:
+  # the `Pclass` values correspond to the rows and
+  # the `Survived` value correspond to the columns
+  labs(x='Survival Status (0 = "deceased", 1 = "Survived")', 
+       y='Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions 
+       by Ticket Class and Survival Status' ) 
+```
+
+
+Now, let's produce the graph shown at the beginning of the chapter!  
+
+Exercise 1.: Produce a set of histograms for the passenger ages by ticket classes (rows) and gender (columns).
+
+```{r tidy = F}
+ggplot(t.ship) + # ggplot(t.ship) tells R that you're using 
+                 # the data in `t.ship` to make the graph
+   geom_histogram(mapping = aes(x = Age, 
+                                fill = as.factor(Survived)),
+                  # features related to the data in the 
+                  # dataset should be included in  
+                  # mapping = aes().
+                  # fill = as.factor(Survived) gives different color to 
+                  # the graph for different the values in `Survived`
+                  position="identity", 
+                  # the default is position="stack" which
+                  # stacks the bins
+                  binwidth = 3, alpha = .4) + 
+                  # alpha controls the transparency of the bins
+  facet_grid(as.factor(Pclass)~Sex) +
+  # this tells R to create panels for the unique combinations of
+  # the `Pclass` values and the `Sex` values:
+  # the `Pclass` values correspond to the rows and
+  # the `Sex` value correspond to the columns
+  labs(x='Titanic Passenger Ages (Years)', 
+       y='Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions 
+       by Ticket Class and Sex', 
+       fill = "Survived?" ) + 
+       # fill = "Survived?" is the header for the legend
+  scale_fill_discrete(labels = c("Deceased", "Survived"))
+  # this labels the categories in the legend
+
+# Warning message:
+# Removed 177 rows containing non-finite values (stat_bin).
+# This Warning is due to the fact that there are 177 missing
+# values in `Age`
+```
+
+
+### How to read the plots
+
+In the set of the histograms above the area of a bin (relative to the total area of all the bins) represents the proportion of the passengers in a particular category relative to *all the Titanic passengers*. This is because R plots the absolute counts in the set of the histograms above.  You can check this with the data:
+
+```{r tidy = F}
+with(t.ship, table(Pclass[Survived == 0], Sex[Survived == 0]))
+# this is the equivalent to 
+# table(t.ship$Pclass[t.ship$Survived == 0], t.ship$Sex[t.ship$Survived == 0]).
+# the `with()` function allows you to tell R that all the data that you
+# are using are from the dataset `t.ship`.
+```
+
+```{r}
+with(t.ship, table(Pclass[Survived == 1], Sex[Survived == 1]))
+
+```
+
+--------
+
+Note that if we add in the `y = ..density..` argument the graph will give a different interpretation of the data:
+
+
+In this case the area of a bin represents the proportion of the passengers in a particular category relative to all the passengers that fall on *a particular grid with a particular color*.
+
+
+```{r tidy = F}
+ggplot(t.ship) + 
+   geom_histogram(mapping = aes(x = Age, y = ..density.., 
+                                fill = as.factor(Survived)), 
+                  position="identity", binwidth = 3, 
+                  alpha = .3) +  
+  facet_grid(as.factor(Pclass)~Sex) +
+  labs(x='Titanic Passenger Ages (Years)', 
+       y='Ticket Classes', 
+       title = 'Titanic Passenger Age Distributions by Ticket Class and Sex', 
+       fill = "Survived?" ) +
+ scale_fill_discrete(labels = c("Deceased", "Survived"))
+```
+
+--------
+
+## `ggpairs()`: investigating the overall pairwise relationship between variables.
+
+We will first extract out the variables that we need for the graph.
+
+
+```{r}
+library(GGally) 
+# you will always need the `ggplot2` package
+# when you are using the `GGally` package so 
+# make sure that you already load the 
+# `ggplot2` package too
+small.t.ship = t.ship[, c('Survived', 'Pclass', 'Sex', 'Age', 'Fare')]
+ggpairs(small.t.ship)
+
+```
+This is called a matrix plot.
+
+
+Some of the graphs on the matrix plot don't look right because they are not in the correct data types.
+
+```{r}
+str(small.t.ship)
+
+# change the categorical variables to factors
+small.t.ship$Survived = as.factor(t.ship$Survived)
+small.t.ship$Pclass = as.factor(t.ship$Pclass)
+
+ggpairs(small.t.ship)
+```
+
+Now, we can also compare the pairwise relationship of the variables within each of the survived and deceased groups.
+
+```{r}
+ggpairs(small.t.ship, aes(colour = Survived, alpha = 0.4),
+  upper = list(continuous = wrap("cor", size = 1.9))) +
+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+# Technical details related to concepts and functions covered in this chapter
+```{r}
+ggplot(t.ship) +
+  geom_boxplot(mapping = aes(x = as.factor(Pclass),
+               y = Age, fill = as.factor(Pclass))) +
+  labs(y = "Titanic Passenger Ages (Years)", 
+    x = "Ticket Classes", title = "Titanic Passenger Age Distributions by Ticket Class", fill = "Ticket Class")
+
+```
+
+
+We will create the dataset needed for this section.
+
+```{r}
+compl.air = na.omit(airquality)
+# remove NAs to prepare a dataset for the demo
+
+g = ggplot(data = compl.air) 
+# tells R that we are going to use the dataset
+# `compl.air` to make plots
+
+```
+
+## Tidy data format
+
+A dataset is in **tidy data** format[^1] if the observations are arranged as the rows and the variables are arranged as the columns of the dataset. For each row/observation the values of the variables are measured on the same object.
+
+Question:  Is the dataset `t.ship` in the tidy data format?  How about the `airquality` dataset?
+
+```{r}
+head(t.ship)
+
+head(airquality)
+```
+
+
+From: H. Wickham (2014), *Tidy Data*, _Journal of Statistical Software_
+
+## Restructure a dataset for ggplot
+
+The tidy format is not necessarily the correct form for making a plot with ggplot function.  Here we will show you how to prepare the data to be used for making ggplot graphs.
+
+We will first create a dataset for the example.  This dataset consisting of historical average scores for 5 students when they were at different grade levels.
+
+
+```{r}
+set.seed(8902) # this sets the seed for random number generation.
+# by setting the seed, everybody running the line of code below will
+# get the same numbers.
+grade = matrix(c(78, 90, 84, 95, 87) + rnorm(n=25, mean=0, sd = 2),nrow = 5)
+rownames(grade) = paste(rep("student", 5), 1:5, sep = '')
+colnames(grade) = paste(rep("scores.grade", 5), 1:5, sep = '')
+
+# take a look at the dataset:  
+grade
+```
+
+We would like to make a line plot for each student's scores.
+
+As it is now the dataset is not in the suitable object type or structure for `ggplot()`.  
+
+
+We want to restructure the data and the resulting data frame should have 3 variables: `scores`, `student_id` and `grade_levels`; this way we can supply the data frame to `ggplot()`.  We will first show you how to do this manually since doing so will help you understand the structure of the data frame needed for ggplot functions better. 
+
+
+```{r tidy = F}
+per.student = data.frame(score = as.vector(grade), 
+                         student_id = as.factor(rep(1:nrow(grade), times = ncol(grade))),
+                         grade_level = rep(colnames(grade), each = nrow(grade)) 
+                         )
+head(per.student, n=10)
+
+ggplot(per.student) + geom_line(mapping = aes(x = grade_level,
+y = score, color = student_id, group = student_id)) +
+labs(x = "Grade level", y = "Scores for each student", title='Student Scores')
+
+# If there were no temporal relationship between the x-values
+# (e.g., if the scores were for different subjects), you can 
+# also display the scores with dots
+ggplot(per.student) + geom_point(mapping = aes(x = grade_level,
+y = score, color = student_id), alpha=.5, size=4) +
+labs(x = "Grade level", y = "Score for each student", title='Student Scores')
+```
+
+Now you understand what you are supposed to do to transform the dataset into a new data frame that is suitable for `ggplot()` we will show you how to use the function in the `reshape` package to do this automatically:
+
+```{r}
+library(reshape2)
+long.grade <- melt(grade)
+head(long.grade, n=10)
+class(long.grade)
+names(long.grade) = c('student_id', 'grade_level', 'score')
+head(long.grade) # same as the data frame that we created manually
+```
+
+To put the data back to the original tidy format we can use the function `dcast()` in the `reshape` package.
+
+```{r}
+# This displays the values of one variable for the dataset and 
+# the info from the other two variables are shown in the row and
+# column names
+wide.grade <- dcast(long.grade, student_id ~ grade_level)
+head(wide.grade)
+
+# note that the output of `dcast()` is still a data frame
+class(wide.grade)
+```
+
+
+        
+## Setting the x- and y- variables for your graphs globally
+
+
+-------- 
+
+
+```{r eval=F}
+ggplot(data = compl.air) + 
+  geom_boxplot(mapping = aes(x=factor(Month), 
+                               y=Ozone, fill=factor(Month))) +
+  geom_point(mapping = aes(x=factor(Month), y=Ozone)) +
+  labs(title = "Ozone Level by Month for N.Y. State, May-Sept., 1973",
+       x = "Month", y = "Ozone Level")
+
+
+# The following line returns the same 
+# result as the line above
+ggplot(data = compl.air, mapping = 
+         aes(x=factor(Month), y=Ozone))+
+geom_boxplot(mapping = aes(fill=factor(Month)))+
+geom_point() +
+   labs(title = "Ozone Level by Month for N.Y. State, May-Sept., 1973",
+       x = "Month", y = "Ozone Level")
+```
+
+
+## Using the jitter function
+
+```{r}
+  
+g + geom_boxplot(mapping = aes(x=factor(Month), 
+                               y=Ozone, fill=factor(Month))) +
+  geom_jitter(mapping = aes(x=factor(Month), y=Ozone)) +
+  labs(title = "Ozone Level by Month for N.Y. State, May-Sept., 1973",
+       x = "Month", y = "Ozone Level")
+```
+
+
+-------- 
+
+
+We use `jitter()` to distinguish overlapping points; however, the spread for jittered data in the previous graph is too big.
+
+-------- 
+
+
+```{r}
+g + geom_boxplot(mapping = aes(x=factor(Month), 
+                               y=Ozone, fill=factor(Month))) +
+  geom_jitter(mapping = aes(x=factor(Month), y=Ozone), 
+              width=.1, height=.1) +
+  labs(title = "Ozone Level by Month for N.Y. State, May-Sept., 1973",
+       x = "Month", y = "Ozone Level")
+```
+`width` and `height` adjust the amount of jitter.
+
+
+-------- 
+
+
+```{r }
+ggplot(data = compl.air, 
+       mapping = aes(x=factor(Month), y=Ozone)) +
+  geom_boxplot(mapping = aes(fill=factor(Month))) +
+  geom_jitter(width=.1, height=.1, alpha=.4, size=4) +
+  labs(title = "Ozone Level by Month for N.Y. State, May-Sept., 1973",
+       x = "Month", y = "Ozone Level")
+```       
+
+`alpha` controls transparency; `size` controls the size of the dots. 
+
+
+
+
+-------- 
+
+## Adjust the variables for the theme
+
+We can also make the title bold faced, change its color and adjust the height of the line between the two lines in the title.  Note that we use `\n` to break the line of the title into two lines.
+
+```{r}
+ggplot(data = compl.air, mapping = aes(x=factor(Month), y=Ozone)) +
+  geom_boxplot(mapping = aes(fill=factor(Month))) +
+  geom_jitter(width=.1, height=.1, alpha=.4, size=4) +
+  labs(title = "Ozone Level by Month \n for N.Y. State, May-Sept., 1973",
+       x = "Month", y = "Ozone Level") + 
+  theme(plot.title=element_text(face="bold", 
+                                color="steelblue", 
+                                lineheight=1.2))
+```
+
+## Set theme locally 
+
+You can set the theme for your graph locally by adding a layer for the theme
+
+```{r fig.height=3, tidy = F}
+# use the minimal theme
+g + geom_histogram(mapping = aes(x=Ozone, ..density..), 
+                   binwidth=10) + 
+  labs(x = "Ozone level (ppb)",y = "Density", 
+       title = "Distribution of Ozone Levels (in ppb)") +
+  facet_grid(.~Month) + theme_minimal()
+```
+
+
+-------- 
+
+
+```{r fig.height=4, tidy = F}
+g + geom_histogram(mapping = aes(x=Ozone, ..density..), 
+                   binwidth=10) + 
+  labs(x = "Ozone level (ppb)",y = "Density", 
+       title = "Distribution of Ozone Levels (in ppb)") + 
+  facet_grid(.~Month) + theme_bw()
+```
+
+
+-------- 
+
+
+```{r fig.height=4, tidy = F}
+g + geom_histogram(mapping = aes(x=Ozone, ..density..), 
+                   binwidth=10) + 
+  labs(x = "Ozone level (ppb)",y = "Density", 
+       title = "Distribution of Ozone Levels (in ppb)") + 
+  facet_grid(.~Month) + theme_grey()
+```
+
+
+-------- 
+
+
+## Set theme globally 
+
+You can also set the theme globally by using the `theme_set()` function  
+
+theme_set(theme_bw())  
+theme_set(theme_grey())  
+theme_set(theme_minimal())  
+
+
+-------- 
+
+
+```{r}
+theme_set(theme_grey()) 
+
+g + geom_histogram(mapping = aes(x=Ozone, ..density..), 
+                   binwidth=15) + 
+  labs(x = "Ozone level (ppb)",y = "Density", 
+       title = "Distribution of Ozone Levels (in ppb)") + 
+  facet_grid(.~Month) 
+```

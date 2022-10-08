@@ -1,0 +1,408 @@
+---
+title: "Precept 4 Answers"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+    toc: no
+    toc_depth: '3'
+  pdf_document:
+    fig_caption: yes
+    number_sections: no
+    toc: no
+    toc_depth: 3
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=4, fig.width=6, collapse=TRUE, comment=NA, prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, tidy.opts=list(width.cutoff=63),tidy=TRUE)
+options(width=73)
+```
+
+# Objectives
+
+
+* `ggplot2` functions
+
+* `ggpairs()` in the `GGally` package
+
+
+# Demo
+
+We will use the dataset `ChickWeight` for the first part of the demo.
+
+
+## Check the data type for each column of the dataset with str()
+
+`strict.width` restricts the width of the output of `str`
+
+```{r}
+# We are going to use the `ChickWeight` dataset
+# Let's take a look at help manual of the dataset
+?ChickWeight
+
+str(ChickWeight, strict.width='cut')
+```
+
+## ggplot
+
+**You will need the packages `ggplot2` and `GGally` for this precept. Make sure that you have  installed and loaded the packages.**
+
+In previous weeks we learned graphic functions in R's basic `graphics` package. For this precept we will use `ggplot2` which gives us more advanced options in plotting. Creating a plot using this package always follows the following steps:
+
+1. Dataset - use the function `ggplot`() to specify what dataset we will work with to create the plot; the dataset needs to be a data frame.  
+2. Type of graph to make - use `geom_FunctionTpye()` to specify what kinds of graphs (such as scatterplots, histograms, or boxplots) we want to make.  
+3. Aesthetic mappings - specify the variables to use for the plot(s) and how they appear on the plot.  
+4. Appearance - using the various parameters to change the display of the plot, such as specifying the labels, colors or showing the data by groups.  
+
+Let's first get us familiar with the dataset used for the demo.
+
+```{r tidy=F}
+class(ChickWeight) # It's a data frame
+dim(ChickWeight)
+
+library(ggplot2)
+```
+
+
+Let's make a histogram for the chicken's weights.
+
+
+```{r tidy = F}
+# First step - defining the dataset to be used;
+# create a ggplot object and we name it `chickPlot` 
+chickPlot = ggplot(data=ChickWeight) 
+
+# at this point R knows we want to use the `ChickWeight` dataset 
+# Second step - use histogram plot
+# we use `geom_histogram(..., binwidth = ...)` to create a histogram with certain bin width
+# `y = ..density..` allows us to use "density" for the y-axis, not frequency
+chickPlot + geom_histogram(mapping = aes(x=weight, y=..density..))
+```
+
+We can see from the histogram above that the bin width is 10.  Let's try a few more options for the bin width before deciding on one.
+
+```{r}
+chickPlot + geom_histogram(mapping = aes(x=weight, y=..density..), binwidth=20) #too wide
+chickPlot + geom_histogram(mapping = aes(x=weight, y=..density..), binwidth=3) #too narrow
+
+# choose the appropriate bin width
+chickPlot + geom_histogram(aes(x=weight, y=..density..), binwidth =7) + 
+  labs(x="Wight of chicks (gram)",
+       y="Proportion per gram",
+       title = "Weight of chicks on different diets")
+```
+
+`binwidth =7` seems to be the best choice among the ones that we have tried since the graph shows enough details of the distribution without over-complicating the graph and making it harder to read.
+
+We now make a scatterplot for the weights of the chicken v.s. their ages.
+
+```{r tidy = F}
+# We add labels. All the points will have the same color
+chickPlot + 
+  geom_point(mapping = aes(x=Time, y=weight)) +
+  labs(x="Number of days since birth (days)",
+       y="Weight of chicks (gm)",
+       title = "Weight of chicks on different diets")
+```
+
+
+Let's give different colors to the points according to the chicken's diet.
+
+```{r}
+
+# Add color to the plot by `Diet`
+ggplot(ChickWeight) +
+  geom_point(mapping = aes(x=Time, y=weight, colour = Diet),
+  shape=18, alpha = 0.5) +
+  labs(x="Number of days since birth (days)",
+       y="Weight of chicks (gm)",
+       title = "Weight of chicks on different diets")
+```
+
+
+You can see a list of the available shapes for the `geom_point()` function here (http://sape.inf.usi.ch/quick-reference/ggplot2/shape).
+
+
+The examples here make histograms and scatterplots, but `ggplot2` has other additional functions for making different types of plots; these functions including:
+
+* geom_boxplot()  
+* geom_histogram()  
+* geom_line()  
+* geom_point()  
+* geom_smooth()  
+* geom_hex()  
+
+The syntax for these functions following similar reasonings as `geom_histogram()` and `geom_point` do.
+
+
+
+
+## `ggpairs()` in `GGally` package
+
+`ggpairs()` in the `GGally` package makes plots for each pair of variables in the input data frame; such matrix plot is very useful when we want to investigate the pairwise relationship of the variables in our dataset.   Since `GGally` is an extension of the `ggplot2` package, the syntax for `ggpairs()` is somewhat similar to that for functions in  `ggplot2`.
+
+*Note that you will need to load both the `ggpairs()` and `GGally` packages in order to use functions in the `GGally` package.*
+
+
+We will use the `iris` dataset for this part of the demo.  Let's get ourselves familiar with the dataset first.
+
+```{r}
+?iris 
+str(iris, strict.width='cut')
+class(iris)
+dim(iris)
+head(iris)
+```
+
+
+```{r, fig.height=7, tidy = F}
+library(GGally)
+
+ggpairs(iris)
+# We have boxplots for other_variables v.s. Species 
+# because `Species` is a factor;
+# also note that on the bottom row of the matrix plot
+# in each of the first 4 graphs from the left 
+# there are three histograms rather than one; 
+# this is also because `Species` is a factor;
+
+
+ggpairs(iris, aes(colour = Species, alpha = 0.4))
+# This shows the distributions by Species and
+# calculate the correlations between variables
+# by Species
+
+ggpairs(iris, aes(colour = Species, alpha = 0.4), 
+        upper = list(continuous = wrap("cor", size = 2.5, alignPercent = .8))) +  
+  # upper: are the variables associated with the upper-triangular 
+  # of the plot both continues (continues), both discrete (discrete) 
+  # or a combination of continuous and discrete (combo)?
+  # size:	text absolute size in pts; can also use rel(2) for relative size
+  # alignPercent:  right align position of numbers for the correlation
+# figures. Default is .6  which stands for 60 percent across the horizontal.
+
+  theme(axis.text.x = element_text(angle = 90))
+
+# rotate x-axis annotations for 90 degree counter-clockwise;
+
+```
+
+
+Preceptor: Please also remind students what `fig.height` and `fig.width` do.
+
+
+
+## Working through a question 
+**(Part a is optional; the purpose of this part is to show you the steps for solving a problem correctly.  If you are confident about the steps, you can skip part a; otherwise, please go through part a after you finish all the exercises in this precept.)**
+
+(a) Use the dataset `babynames`. Find the boy name and girl name that were used most often in 2015. For each of these most popular names in 2015, find out its frequency of use throughout the years in the period 1880 to 2017.
+
+
+(b) Use `ggplot` to plot the frequency of use throughout the years that you obtain in part a. Provide meaningful labels and use a different color for each name.
+
+```{r tidy = FALSE}
+
+library(babynames)
+head(babynames)
+
+#To solve this we will break down the question into steps
+#We extract the boy names used in 2015
+boys.2015.subset = babynames[babynames$year == 2015 & babynames$sex == "M",]
+#We extract the girl names used in 2015
+girls.2015.subset = babynames[babynames$year == 2015 & babynames$sex == "F",]
+
+#verify that we have one sex in each the table
+unique(boys.2015.subset$sex)
+unique(girls.2015.subset$sex)
+
+#Sort names by the number of usages for each gender
+girls.2015 = girls.2015.subset$n
+names(girls.2015) = girls.2015.subset$name
+
+boys.2015 = boys.2015.subset$n
+names(boys.2015) = boys.2015.subset$name
+
+girls.2015.sorted = sort(girls.2015, decreasing = T)
+boys.2015.sorted = sort(boys.2015, decreasing = T)
+
+#Check the vector that we created for the top female name uses
+head(girls.2015.sorted)
+
+#Create a data set for the most frequently used names
+frequent.names = babynames[babynames$name == names(boys.2015.sorted)[1] | 
+                             babynames$name == names(girls.2015.sorted)[1], ]
+
+head(frequent.names)
+ggplot(frequent.names, aes(x=year,y=n,colour=name))+
+         geom_point(shape=16, alpha = 0.5) +
+ labs( x="Year",
+       y="Number babies with the name",
+       title = "Frequency of 2015's-most-common-names over the years")
+```
+
+Why are there 2 points for each color per year? How can you check if this is a mistake?
+
+We should have checked the data frame that we created.
+
+```{r}
+# Take another look at the data frame that we created
+head(frequent.names)
+
+dim(frequent.names)
+frequent.names[frequent.names$year==1880,] 
+# now we realized that we should have extract out the rows 
+# that correspond to the popular name for each sex.
+```
+
+
+Now we can create the data frame for the plotting in part b.
+
+```{r}
+
+#Create a data set for the most frequently used names
+frequent.names = babynames[(babynames$name == names(boys.2015.sorted)[1] &
+                              babynames$sex == 'M')| 
+                             (babynames$name == names(girls.2015.sorted)[1] & 
+                                babynames$sex == 'F'), ]
+
+head(frequent.names)
+ggplot(frequent.names, aes(x=year,y=n,colour=name))+
+         geom_point(shape=16, alpha = 0.5) +
+ labs( x="Year",
+       y="Number babies with the name",
+       title = "Frequency of 2015's-most-common-names over the years")
+
+```
+
+*How can you create two plots, one for each gender, instead of having just one plot for both genders? Remember what you learned about facet_grid in class.*
+
+## Saving a plot (optional)
+
+When we use Rmarkdown we generate a full report including text, figures and tables etc. However, in some cases, we might want to save just the plots to a file. For example, we might want to include the plot in another document such as a power point presentation or a poster. In the example below, we will show you how to save the plot to a pdf file. Note that you can also save the graph in other file formats such jpg (by using `jpeg()`) instead of `pdf()`--see the help page for `jpeg()` for other options. 
+
+
+```{r}
+getwd() #check what your working directory is
+#We create a pdf file in the working directory
+pdf(file="myIrisPlot.pdf") #open the device to save pdf
+pairs(iris[1:4]) #generate a plot in the pdf
+dev.off() #close the device
+```
+
+After opening the device, each plot will be saved on a new page. Make sure to close the device.
+
+# Exercises
+
+*Make sure that your graph has a title and appropriate informative axis labels.*
+
+
+
+**Use "ggplot2" package for the following questions.**
+
+
+1. Load the "ggplot2" package and use the dataset named "diamonds".  Make a side by side box plot for "carat" across different categories of "cut".  You can use the following labels for your graph:
+
+```
+       x = "Quality of the cut",
+       y = "Weight of the diamond (carat)",
+       title = "Round cut diamonds"
+```
+```{r}
+library(ggplot2)
+
+ggplot(diamonds) +
+  geom_boxplot(mapping = aes(x=cut, y=carat, color=cut))+
+  labs(x = "Price in US dollars",
+       y = "Proportions of diamond per dollar",
+       title = "Round cut diamonds")
+```
+
+
+
+
+
+2. Use the dataset "diamonds".  
+
+a. Subset the diamonds data to include the rows for the diamonds of "Good" and  "Fair" cuts only. 
+```{r}
+diamonds.subset = subset(x = diamonds, subset = (diamonds$cut == "Good" | diamonds$cut == "Fair"))
+```
+
+
+
+    
+b. Use the function in the ggplot2 package.  Make two histograms, one for the prices for the fair-cut and one for the good-cut diamonds.  Allow one histogram to superimpose on the other. Make sure that the bin area   represents the proportion of the diamonds (of a certain price range) within a particular cut category.  Also, think about how you can show both histograms clearly.
+
+
+You can use the following labels for your graph:
+
+```
+       x = "Price in US dollars",
+       y = "Proportions of diamond per dollar",
+       title = "Round cut diamonds"
+```
+
+```{r}
+ggplot(diamonds.subset) +
+  geom_histogram(mapping=aes(x=price, y=..density..,fill=cut, alpha = 0.5)) +
+  labs(x = "Price in US dollars",
+       y = "Proportions of diamond per dollar",
+       title = "Round cut diamonds")
+```
+
+
+
+
+c. Use the subset in part a, draw histograms for the prices of diamonds for each different cut; display the two histograms side by side.
+
+```{r}
+ggplot(diamonds.subset) +
+  geom_histogram(mapping=aes(x=price, y=..density..,fill=as.factor(cut), alpha = 0.5)) +
+  facet_grid(as.factor(cut)) +
+  labs(x = "Price in US dollars",
+       y = "Proportions of diamond per dollar",
+       title = "Round cut diamonds")
+```
+
+    
+d. Now, repeat part c but for all types of the diamonds (i.e., use the original `diamond` dataset instead of the subset); also, color the histograms according to cut.  What trend do you observe?
+    
+Suggestion: Change binwidth for better interpretation.
+
+
+
+e. Compare the pairwise relationship between the variables: `price`, `carat`, `depth` and `table` for different categories in `cut`.  Use `ggpairs()` to do this.
+ 
+
+
+3. Use the `subset()` function to redo 2.a.  If you already used the `subset()` function in 2.a, use extraction with logical row indices to redo 2.a.
+
+`subset()` can be used on vectors, matrices and data frames.  The following is an example that demonstrates how `subset()` works.
+
+```{r}
+# The two objects below are equivalent.
+
+use.subset = subset(x = diamonds, subset = (diamonds$cut == "Good"))
+# Here `x` is the object to be subsetted.
+# `subset` is the logical expression indicating the rows 
+# to keep: missing values are taken as false.
+
+use.row.index = diamonds[diamonds$cut == "Good",]
+
+# The following checks if the corresponding elements in each vector
+# are equal and then count the number of the element pairs that are 
+# not equal
+sum(use.subset != use.row.index) 
+# all are equal
+
+```
+
+
+
+
+
+

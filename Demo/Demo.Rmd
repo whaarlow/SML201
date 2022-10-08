@@ -1,0 +1,86 @@
+---
+title: "SML_201 Problem Set 2"
+author: "Bill Haarlow"
+date: '2019-09-24'
+output:
+  pdf_document:
+    toc: no
+    toc_depth: 2
+  html_document:
+    df_print: paged
+    toc: no
+    toc_depth: '2'
+geometry: margin=1.5in
+---
+
+```{r}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE)
+```
+
+# Introduction
+
+```{r}
+x = seq(from = 30, to = 50, by = 2.5) ##here is a long long long long long long long long long long long long long comment that may be wrapped
+x
+```
+
+
+The average of x is `r mean(x)`.
+
+```{r}
+z = x + 1
+```
+
+```{r}
+head(cars)
+summary(cars)
+knitr::kable(summary(cars))
+```
+
+
+This is my ***first*** Rmarkdown report.
+
+<!--
+
+There is a function called `seq()`.
+
+10. My Item
+    * Item 1.a
+    * Item 1.b
+4. Even Items
+2. Another Item
+3. More Item
+
+-->
+
+[Click here for references](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+>To insert a break between paragraphs, include a single completely blank line.
+
+```
+---
+title: "SML_201 Problem Set 2"  
+author: "Your Name"  
+date: "2019-09-24"  
+output:  
+  pdf_document:   
+    toc: no  
+    toc_depth: 2
+geometry: margin=1.5in    
+---
+```
+
+# Background Information
+
+## Data Description
+
+## Existing Methods
+
+# Methods
+
+# Conclusion
+
+
+```{r}
+z # this is a comment.
+```

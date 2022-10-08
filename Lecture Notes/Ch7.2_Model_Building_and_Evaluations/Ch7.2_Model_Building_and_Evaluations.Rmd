@@ -1,0 +1,643 @@
+---
+title: "SML201 Chapter 7.2"
+subtitle:  'Model Selection II: Model Building and Evaluations'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+# R function covered
+
+* Function for model selection for linear models: `regsubsets(formula, data=, nbest=1,  
+
+nvmax=8, force.in=NULL, method=c("exhaustive", "backward", "forward", "seqrep"),  
+
+really.big=FALSE, nested=(nbest==1),...)`
+
+# Introduction
+
+----------
+
+Recall that overfitting happens when a model fits the dataset "too well" and capture the noise in the dataset as part of the fitted model. 
+
+In last chapter we introduced several measures for evaluating candidate models.
+
+* **Adjusted $R^2$**: The **bigger** the adjusted $R^2$ the better the model ($R^2$ is always between 0 and 1 and adjusted $R^2$ can never be bigger than 1);  
+* **BIC**: The more **negative** the BIC the better the model;
+* **Mallow's Cp**: The **lower** the better.
+
+All these measures are RSS-related-criteria that **penalize for having too many predictors** in the model; e.g., Bayesian Information Criterion (BIC) is defined as
+
+$$
+BIC(Model) = n + n log 2\pi + n log(\frac{RSS}{n}) + (p+1)(log n)
+$$
+where $n$ is the sample size and $p+1$ is the number of parameters (i.e., the number of $\beta$'s) in the model.  Note that
+
+$$
+MSE = \frac{RSS}{n}.
+$$
+
+
+# Controlling prediction errors with cross-validation
+
+When a model is overfitted and capture the noise in the dataset as part of the model, the model will perform well when making predictions on the current dataset but perform poorly on a new dataset.
+
+
+----------
+
+Cross-validation is a method used to prevent model overfitting.  Our goal is to make sure that our final model (which will be called the "champion model" here) will perform well when it is being used to make predictions on a *new* set of data.
+
+## Motivation
+
+----------
+
+**Model validation** is a step in a modeling process that is used to check the performance of a model against independent data. 
+
+**Goal of model validation:** Avoid overfitting. Overly complex models will not generalize well and can be avoided this way (hopefully).
+
+----------
+
+Some possible ways to obtain a validation set and why we want to do validation:
+
+* Collect new data as validation data set and check
+    + stability of regression coefficient estimation
+    + accuracy of prediction
+* Split data into training and validation set, and check
+    + stability of regression coefficient estimation
+    + accuracy of prediction
+    
+
+
+## The procedure
+
+----------
+
+### Steps for model selection with cross-validations (with MSE or RSS criterion)
+
+* **Step 1:  Reserve some data for estimating the average size of the (squared) prediction errors of the champion model.**
+
+
+
+```{r, echo = F}
+library(DiagrammeR)
+DiagrammeR("graph TB;
+    A(Our Dataset)-->B[Non-test set];
+    A(Our Dataset)-->C[Test set];")
+```
+
+The purpose of the test set is to estimate the prediction error for the champion model.
+
+
+* **Step 2: Select $p$ with cross-validations; utilize the training and the validation sets to avoid overfitting.**
+
+----------
+
+Let $p$ be the number of predictors (i.e., the number of $\beta$'s excluding $\beta_0$) that we would like to include in our champion model.  
+
+Goal: to make sure that the champion model will work well when it is used to make predictions on a *new* set of data; 
+
+**Select $p$** based on the performance of the best model for each given number of predictors when the model is being applied to a new set of data; the quality of the performance is measured by MSE.
+
+----------
+
+
+To get an estimate on how well each of the best models (for each given number of predictors) performs we split our non-test dataset into two sets: the training set and validation set.  
+
+```{r, echo = F}
+library(DiagrammeR)
+DiagrammeR("graph TB;
+    A(Our Dataset)-->B[Non-test set];
+    A(Our Dataset)-->C[Test set];
+    B[Non-test set]-->D[Training set];
+    B[Non-test set]-->E[Validation set];")
+```
+
+----------
+
+The **training set**: used to find out the best model **for each given number of predictors** and to estimate the coefficients $\beta$'s in the model; let's call these models the candidate models.  
+
+----------
+
+
+In R these candidate models can be obtained by using the `regsubsets()` function. For example, if the full model has 8 predictors $X_1, ..., X_8$; then the output of `regsubsets()` includes the best model with one $X$, the best model with two $X$'s and so on.
+
+----------
+
+
+Once we have all the candidate models we can then apply them to a new dataset, the **validation set**, to evaluate the prediction performance of the candidate models.
+
+----------
+
+Comparing the prediction performance (in terms of the MSE) of the candidate models on the validation set helps us to select the number of predictors that we want to include in our champion model; the main purpose of using a validation set is to prevent overfitting. 
+
+----------
+
+The way to pick $p$ is similar to how we pick $p$ based on the RSS-related-criteria:  We will look at the graph of the MSE for the candidate models and pick $p$ such that we have a good balance between the model complexity and low prediction error.
+
+----------
+
+* **Step 3: Find the predictors in the champion model and get the estimates of their coefficients (i.e., find the $\hat{\beta}$'s) with the non-test data.**
+
+----------
+
+Question: Once we found out how many predictors we want to include in our champion model, which dataset should we use to fit our champion model and to find out what predictors to include in our model?
+
+A. Training set  
+B. Validation set  
+C. Non-test set = Training set + Validation set  
+D. Test set  
+
+----------
+
+
+So far all we have done is to decide on the number of predictors $p$ in our champion model.  The more data we can use to fit the champion model the more accurate the coefficient estimates will be; thus, we find the best model with $p$ predictors again only this time with the entire non-test dataset.
+
+----------
+
+Since our champion model is not supposed to "meet" the test set before we finalize on the model, we will use all the data that are not in the test set: the non-test set (i.e., the training and validation sets combined).  We can achieve our champion model by going through a similar step that we did earlier with `regsubsets()`, except that now we do not care about any other best models except the one with $p$ predictors.  We now have our champion model!
+
+----------
+
+* **Step 4: Apply the champion model on the test set to estimate the prediction quality of the champion model.**
+
+----------
+
+
+
+## k-fold cross validations (optional)
+
+----------
+
+In terms of the procedures K-fold cross validation is **different** from cross-validations **only in step 2**.  
+
+
+```{r, echo = F, fig.cap="k-fold cross validation when k = 5"}
+library(DiagrammeR)
+DiagrammeR("graph TB;
+    A(Our Dataset)-->B[Non-test set];
+    A(Our Dataset)-->C[Test set];
+    B[Non-test set]-->D[Subset 1];
+    B[Non-test set]-->E[Subset 2];
+    B[Non-test set]-->F[Subset 3];
+    B[Non-test set]-->G[Subset 4];
+    B[Non-test set]-->H[Subset 5];")
+```
+
+
+## In-time and out-of-time test sets
+
+----------
+
+Sometimes time is a relevant element for our data, say, the predictions that we want our model to make are for observations in the future.  In this case we want to have two test sets: **in-time** and **out-of-time test sets**.  
+
+----------
+
+We apply our champion model on the **in-time** and **out-of-time test sets** in ways similar to how we would apply our champion model on the test set.  In general the MSE estimated by using the out-of-time test set is on average higher than that estimated by using the in-time test set, since our champion model was built based on observations that are similar to the ones in the in-time test set.  
+
+----------
+
+Comparing the MSE estimates achieved by using  the **in-time** and **out-of-time test sets** allows us to see how well our model works for future observations if we fit our model with the data in the past; 
+
+----------
+
+looking at the ratio of the MSE estimates for the two test sets allows us to get an idea on the increment of the MSE when making predictions on a new dataset with a model that is built with data in the past.  
+
+----------
+
+For example, if the in-time MSE is .4 and the out-of-time MSE is .5, then there is a $\frac{(.5-.4)}{.4} = .25$ increment; suppose we were to go through the procedures (for cross-validation or K-fold cross-validation) again to build the model with data available up to today; we can calculate the  in-time MSE estimate; however, we will not be able to calculate the out-of-time MSE estimate since we do not know the values of y-variable for the future.  With the ratio = .25 and with the in-time MSE estimate, I can then estimate the size of the out-of-time MSE.
+
+
+# Assessing the fit of a model
+
+
+
+-------
+
+
+## Residuals
+
+Recall that the assumptions on the errors are
+
+* the errors are independent;
+* they follow the Normal(0, sd = $\sigma$) distribution constant $\sigma$.
+
+
+
+-------
+
+
+Also, recall that **Residuals** are defined as 
+
+>*observed y-value - fitted y-value* = $y_i - \hat{y_i}$
+
+and they give an estimate of the distribution of the errors.  
+
+
+
+-------
+
+
+**Checking assumptions with residual analysis**
+
+```{r echo=F, fig.height=6, fig.width=8}
+par(mfrow=c(2,2))
+
+# plot 1
+plot(x=rnorm(200), y=rnorm(200), ylab="residuals", xlab="fitted values", main='uncorrelated residuals', cex.main=.9)
+abline(h=0, col='red')
+
+
+# plot 2
+x = rnorm(200)
+y = x^2 + rnorm(200, mean=.1, sd=1)
+plot(x=x, y=y, ylab="residuals", xlab="fitted values", main='dependent residuals', cex.main=.9)
+abline(h=0, col='red')
+
+# plot 3
+x = rnorm(200)
+y = -x + rnorm(200, mean=0, sd=1)
+plot(x=x, y=y, ylab="residuals", xlab="fitted values", main='dependent residuals', cex.main=.9)
+abline(h=0, col='red')
+
+# plot 4 
+x = abs(rnorm(200, sd=5))
+y = x + rnorm(200, mean=.1, sd=x)
+plot(x=x, y=y, ylab="residuals", xlab="fitted values", main='non-constant var(residuals)', cex.main=.9)
+abline(h=0, col='red')
+```
+
+----------
+
+The upper-left plot shows no any particular pattern and it implies that there are about the same number of points above the regression line and below the regression line; this plot indicates no model misfit problem.   
+
+The upper-right plot shows that the x-y relationship is non-linear while we are trying to use a linear model to describe the relationship.  
+
+The lower-left plot shows that the x-y relationship is down-slope but we model it as up-slope.  
+
+The lower-right plot shows that the constant SD assumption of the errors is violated.
+
+-------------------
+
+
+### Making residual plots in R
+
+
+```{r}
+ins = read.csv('/Users/billhaarlow/Desktop/SML201/Lecture Notes/Ch7.2_Model_Building_and_Evaluations/insurance.csv')
+
+mod_age_smk = lm(charges ~ age + smoker, data = ins)
+summary(mod_age_smk)
+```
+
+-------------------
+
+```{r}
+plot(mod_age_smk, which=1)
+```
+
+The red line is a smoothed line that tells you the "trend" of the pattern of the 
+residuals.  In the ideal case the red line would be a horizontal line at $residual=0$.
+
+-------------------
+
+```{r}
+# Checking Normality of the residuals
+plot(mod_age_smk, which=2)
+
+```
+
+-------------------
+
+
+
+You can also plot the histogram of the residuals
+
+```{r echo = F}
+hist(mod_age_smk$residuals, breaks=30, freq = F, main='Histogram of residuals',
+     xlab = 'residuals for lm(charges ~ age + smoker)')
+```
+
+If this does not look approximately Normal the errors might not be Normal.
+
+----------
+
+
+
+
+# Applications
+
+## `regsubsets()` in `leaps` package
+
+Model selection for linear models:  
+
+`regsubsets(formula, data=, nbest=1,  
+
+nvmax=8, force.in=NULL, method=c("exhaustive", "backward", "forward", "seqrep"),  
+
+really.big=FALSE, nested=(nbest==1),...)`
+
+## Example 1: How to use `regsubsets()` without cross-validation (Part of Precept 12)
+
+We will use `regsubsets()` in conjunction with Adjusted $R^2$, BIC and Mallow's Cp in this example.
+
+
+We will use a subset of the `bdims` dataset in `openintro` package. The dataset that we will use is called `d` (see below).  
+
+```{r}
+library(openintro)
+dim(bdims)
+names(bdims)
+
+# Creating dataset for the demo
+d = bdims[,c("wgt", "sex", "age", "sho.gi", "che.gi", 
+"thi.gi", "bic.gi", "for.gi", "kne.gi")]
+dim(d)
+
+# See descriptions of the interested variables
+?bdims
+
+str(d)
+
+# sex is not a factor when it is supposed to be
+# a categorical variable; let's change it to be
+# a factor
+d$sex = as.factor(d$sex)
+
+str(d)
+# The data types of other variables seem correct.
+# If needed, we can always modify the data types later.
+```
+
+
+We want to build a linear model with all, or a subset, of the variables in our dataset to predict the Weight of a person.  
+
+(a) Use the ggpairs() function in the `GGally` package to graph the pairwise relationships between the variables and make the plots for male and female separately.  Why do we want to make the plots for male and female separately?
+
+```{r fig.height=7, fig.width=8, message=F, tidy = F}
+
+d$sex = as.factor(d$sex)
+library(ggplot2)  
+library(GGally)
+# Instructors, please explain what the graph and the numbers 
+# on the graph mean
+ggpairs(d[, c(2:9, 1)], aes(colour = sex, alpha = 0.4), 
+         upper = list(continuous = wrap("cor", size = 2.2)),
+         lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+Answer the following questions with the scatterplot matrix above.
+
+(b) Should `sex` be included as one of the variables in the model?
+
+Yes, since the variable `wgt` seems to have different distribution for different values of `sex`.
+
+Parts c and d are skipped; please see Precept 12.
+
+(e) Use the `regsubsets()` function in the `leap` package to perform model selections with the BIC, adjusted R-squared, and Mallow's Cp criteria, searching through all the possible subsets of the predictors.  
+
+Here we will demonstrate how BIC, adjusted R-squared, and Mallow's Cp work in conjunction with `regsubsets()`.  We are not using cross-validation here.
+
+```{r}
+library(leaps)
+library(car)
+
+str(d)
+
+# For each given number of predictors, find the best model
+g <- regsubsets(wgt~., data=d, really.big=F, method='exhaustive', nvmax=8)
+
+
+# set really.big=T if your design matrix is very big;
+# can change option for method to forward selection, backward selection or sequential replacement to search when dataset is very big.
+plot(summary(g)$bic, 
+     main = 'BIC for best model for each given number of predictors',
+     xlab = 'Given number of predictors', 
+     ylab = 'BIC')
+
+plot(summary(g)$adjr2, main = 'Adjusted R-square for best model \nfor each given number of predictors', xlab = 'Given number of predictors', ylab = 'Adjusted R-square') # adjusted R^2 chooses a different model
+
+plot(summary(g)$cp, main = 'Mallows Cp for best model for each given number of predictors', xlab = 'Given number of predictors', ylab = 'Mallows Cp')
+abline(a = 1, b = 1, lty = "dashed")
+
+```
+
+Check what variables are included in each "best" model.
+
+```{r}
+summary.g <- summary(g)
+
+# The best model for each number of predictors included in model
+as.data.frame(summary.g$outmat)
+
+```
+
+Another way to find out the best model with 4 predictors and that with 5 predictors:
+
+```{r}
+coef(g, id = 4)
+
+coef(g, id = 5)
+
+```
+
+It looks like all the procedures that we used point us toward two possible models (in R's notation):
+
+Model 1:
+wgt ~ sex + che.gi + thi.gi + kne.gi
+
+Model 2: 
+wgt ~ sex + sho.gi + che.gi + thi.gi + kne.gi
+
+```{r}
+mod1 = lm(wgt ~ sex + che.gi + thi.gi + kne.gi, data=d)
+summary(mod1)
+
+mod2 = lm(wgt ~ sex + sho.gi + che.gi + thi.gi + kne.gi, data=d)
+summary(mod2)
+
+
+```
+
+The function `vcov()` gives the pairwise covariance between the estimates of two coefficients; e.g., the 3rd row and 4th column of `vcov(mod2)` gives the covariance of $\hat{\beta}_{sho.gi}$ and 
+$\hat{\beta}_{che.gi}$.  The numbers on the diagonal of `vcov(mod2)` give the variances of the $\beta$ estimates; e.g., the 3rd row and 3rd column of `vcov(mod2)` gives us the variance of $\hat{\beta}_{sho.gi}$.  
+
+```{r}
+round(vcov(mod1), 4)
+
+round(vcov(mod2), 4) 
+```
+
+
+Note that the correlation of two variables X and Y is defined as
+
+$$
+cor(X, Y) = \frac{cov(X,Y)}{sd(X)sd(Y)}
+$$
+
+We already saw in part (c) that the `sho.gi` and `che.gi` are highly positively correlated and as a result the $\hat{\beta}_{sho.gi}$ and 
+$\hat{\beta}_{che.gi}$ are highly negatively correlated.
+
+```{r}
+# a correlation(beta_i, beta_j) close to 1 or -1 is bad since it implies 
+# collinearity between X_i and X_j columns; 
+# we do not want to see high values for the correlations.
+
+# The correlation between beta_hat.sho.gi and beta_hat.che.gi is
+vcov(mod2)["sho.gi", "che.gi"]/sqrt(vcov(mod2)["sho.gi", "sho.gi"])/sqrt(vcov(mod2)["che.gi", "che.gi"])
+
+# this is high enough to get our attention
+
+```
+
+Also, since including the extra term `sho.gi` does not increase adjusted R-squared much, we favor model 1.
+
+(f)  Investigate the residual plots for model 1.
+
+```{r}
+plot(mod1, which=1:2)
+# which = 1 gives the residuals v.s. fitted values scatterplot
+# which = 2 gives the qqplot for the residuals
+
+hist(mod1$residuals, freq=F, breaks=30, main = "Histogram of residuals for model 1",
+     xlab = 'Residuals')
+```
+
+The residuals seem have a distribution that is close to Normal so that is a good sign.
+However, we see that the residuals have a slightly curve up (like a parabola opening up) pattern.  Any non-random pattern in residual v.s. fitted y-value plot is not desirable; however, this pattern is not very strong so this is not too bad.  We will try to improve on this in part (h).
+
+
+Parts g-i are skipped here; please see Precept 12.
+
+## Example 2: How to use `regsubsets()` for cross-validation
+
+Here we define a function `predict.reg()`.  Note that `object` is an output of `regsubsets()`.  `id` indicates which best model we want to use to make predictions; e.g., `id = 5` means to use the best model with 5 predictors.  `newdata` is the dataset that we want to make predictions on.  `predict.reg()` gives the predicted y-values based on the x-values in the dataset `newdata` with the best model with `id` predictors.  
+
+You are welcome to use `predict.reg()` in the final project.  You are not responsible for understand how `predict.reg()` is constructed.  You just need to know how to use the function.  
+
+```{r}
+# define a function to make prediction for an object that is the output of regsubsets()
+
+predict.reg = function(object,newdata,id){
+      form = as.formula(object$call[[2]]) # Extract the formula used when we called regsubsets()
+      mat = model.matrix(form,newdata)    # Build the model matrix
+      coefi = coef(object,id=id)          # Extract the coefficients of the id'th model
+      xvars = names(coefi)                # Pull out the names of the predictors used in the ith model
+      as.vector(mat[,xvars]%*%coefi)               # Make predictions using matrix multiplication
+}
+
+```
+
+### Split non-test set into training and validation sets
+
+For the sake of demonstration, let's **suppose that `d` is the non-test set** in the model selection process and suppose that we will use cross-validations to avoid overfitting in this case. We will first randomly divide `d` into training set and validation set.
+
+```{r}
+set.seed(78924)
+ind = sample(1:nrow(d), nrow(d)*.8, replace = F)
+
+train = d[ind,]
+validation = d[-ind,]
+
+dim(train)
+dim(validation)
+
+
+``` 
+
+
+### Get the best model (based on the training set) for each given number of predictors
+
+```{r}
+g.train <- regsubsets(wgt~., data=train, really.big=F, method='exhaustive', nvmax=8)
+
+```
+
+What predicted y-values does the best model with 4 predictors give?
+
+```{r}
+predicted.y = predict.reg(object = g.train, newdata = validation,id = 4)
+class(predicted.y)
+length(predicted.y)
+dim(validation)
+
+# y-values predicted by the best model with 4 predictors
+summary(predicted.y)
+# the actual y-values
+summary(validation$wgt)
+
+
+```
+
+The coefficient estimates for the best model with 4 predictors are
+
+```{r}
+coef(g.train, id = 4)
+```
+
+
+The MSE for using the best model with 4 predictors is 
+
+```{r}
+mse.4 = mean((validation$wgt - predicted.y)^2)
+mse.4 
+```
+
+The MSE for all the best models are
+
+```{r}
+cal.mse = function(x){
+  predicted.y = predict.reg(object = g.train, newdata = validation,id = x)
+  return(mean((validation$wgt - predicted.y)^2))
+}
+
+mse = sapply(1:8, FUN = cal.mse)
+plot(y = mse, x = 1:8, xlab = 'Number of predictors in the "best" model',
+     ylab = 'Mean squared error', main = 'MSE v.s. the number of predictors in the "best" model')
+```
+
+In this case we say that our champion model should have 5 predictors.  
+
+Now, find the best model with 5 predictors based on the non-test set.
+
+```{r}
+find.champion <- regsubsets(wgt~., data=d, really.big=F, method='exhaustive', nvmax=5)
+
+```
+
+The coefficient estimates for the champion model are
+
+```{r}
+coef(find.champion, id = 5)
+```
+
+
+

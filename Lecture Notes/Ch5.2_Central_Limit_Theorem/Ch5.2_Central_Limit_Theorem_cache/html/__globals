@@ -1,0 +1,4 @@
+unnamed-chunk-1	>	as.numeric	rpois
+unnamed-chunk-2	>	as.numeric	F	hist	rpois
+unnamed-chunk-3	round
+unnamed-chunk-4	c	dbinom	F	hist	rep	round

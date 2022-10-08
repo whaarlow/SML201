@@ -1,0 +1,8 @@
+unnamed-chunk-1	c	F	sample	set.seed	T
+unnamed-chunk-2	apply	class	matrix	median	range	sample	set.seed	T
+unnamed-chunk-3	class	mat	median	range	sapply
+unnamed-chunk-4	class	lapply	mat	range
+unnamed-chunk-5	head	iris
+unnamed-chunk-6	==	$	apply	class	iris	max	unique	which
+unnamed-chunk-7	runif	set.seed
+unnamed-chunk-8	c	F	hist	par	pop.unif	sample1000means	sample100means	sample1500means	sample3000means	sample500means

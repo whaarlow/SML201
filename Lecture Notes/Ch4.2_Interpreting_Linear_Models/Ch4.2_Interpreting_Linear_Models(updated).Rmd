@@ -1,0 +1,1062 @@
+---
+title: "SML201 Chapter 4.2"
+subtitle:  'Interpreting Linear Regression Models'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+<!-----
+---
+title: "SML201 Chapter 4.2"
+subtitle:  'Interpreting Linear Regression Models'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+geometry: margin=1.5in
+editor_options: 
+  chunk_output_type: console
+---
+
+---------->
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+
+# R functions covered
+
+---------
+
+* To fit linear models: `lm(formula, data,...)`
+* To make matrix plots:  `ggpairs(data, upper = list(continuous = wrap(...)), lower = list(continuous = wrap(...))) + ...`
+Graph with `ggplot` package:  
+* To add a regression line to an existing scatterplot: `ggplot(...) + ... + geom_smooth(method = "lm", se=F, ...)`
+* To add text strings on an existing plot: `ggplot(...) + ... + geom_text(aes(label=paste(...)), x, y, color, ... )`
+
+
+
+# Objectives
+
+-------------
+
+* Being able to interpret different Linear Regression models
+* Being able to choose the better models based on the exploratory analysis of the data
+
+# Introduction
+
+---------
+
+In last chapter we study simple linear regression, the simplest linear regression model with just one independent variable.  
+
+In this chapter we will study the more general form of linear models: multiple linear regression.  In multiple linear regression models we allow the model to have two or more independent variables.
+
+
+
+# Our ultimate goal: build linear models
+
+---------
+
+Linear modeling has wide range of applications; e.g.,
+
+* Predicting sold price of a house:
+https://www.redfin.com/NJ/Princeton/14-Governors-Ln-08540/home/36693866
+
+* Forecasting the medical expenses of health insurance customers
+
+
+---------
+
+Near the end of the semester you will learn in details how to build models similar to the ones mentioned in the previous slide.  In this unit, we will show you the interpretations on different models and why certain models are better than others for the data you have.  This will prepare you for model building later.
+
+
+
+# Assessing a model
+
+---------
+
+Recall that MSE is often used to evaluate **how good** a numerical predictor is:
+
+**MSE = avg((actual value - predicted value)^2)**
+
+This means that given two models, the model that gives prediction line(s) that have the points clustered more tightly around the line(s) is the better model.
+
+---------
+
+We will demonstrate the concepts with the `insurance` and the `iris` datasets.
+
+```{r}
+library(ggplot2)
+library(GGally)
+```
+
+
+-----------
+
+Let's read in the dataset.
+
+```{r tidy = F}
+ins = read.csv(file = "insurance.csv")
+```
+
+(The dataset was downloaded from Kaggle.com (https://www.kaggle.com/mirichoi0218/insurance).)
+
+
+
+# Variable definitions
+
+---------
+
+* **age**: The age of the primary beneficiary (excluding those above 64 years since they are generally covered by the government);  
+* **sex**:  The policy holder's gender; 0 for female and 1 for male;  
+* **bmi**:  Body mass index.  The index provides a sense of how over- or under- weight a person is.  BMI = (weight (in kg)/height (in m))^2An ideal BMI is in the range of 18.5 to 24.9.  
+* **children**:  Number of children/dependents covered by the insurance plan;  
+* **smoker**:  Whether the insured smokes tobacco regularly or not: 0 for no, 1 for yes;  
+* **region**:  The beneficiary's place of residence in the US, divided into four geographic regions: northeast, southeast, southwest, or northwest;  
+* **charges**:  Total medical expenses charged to the plan for the calendar year.
+
+
+
+
+-----------
+
+```{r}
+dim(ins)
+str(ins)
+summary(ins)
+```
+
+-----------
+
+# Investigate relationships between the variables
+
+```{r warning = F, message = F}
+# `upper` is used to set options for the graphs on the upper-triangle
+# `lower` is used to set options for the graphs on the lower-triangle
+ggpairs(ins,
+  upper = list(continuous = wrap("cor", size = 2.5)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(title = "Pairwise relationship between variables in the
+       insurance dataset")
+```
+
+# Selecting the first variable for the model
+
+-----------
+
+Which of the **numeric variables** has the strongest linear relationship with `charges`?
+
+(A.) age  
+(B.) bmi  
+(C.) children  
+
+-----------
+
+Answer: age
+
+-----------
+
+Let's build a model to predict the value of `charge` with `age`.
+
+Mathematically the model is:
+
+\[
+charges_i = \beta_0 + \beta_{age} age_i + error_i
+\]
+
+-----------
+
+
+```{r}
+# By default the lm() function includes the y-intercept for the model
+simple.mod = lm(charges ~ age, data = ins)
+simple.mod
+```
+
+```{r}
+summary(simple.mod)
+```
+
+-----------
+
+Recall that the mathematical form of the model fitted above is:
+
+\[
+charges_i = \beta_0 + \beta_{age} age_i + error_i
+\]
+
+
+What is the fitted model?  That is, what are the coefficients that minimize the MSE (in short, the least squares coefficient estimates of the model)?
+
+\[
+\hat{\beta_0} = 3165.9
+\]
+
+\[
+\hat{\beta}_{age} = 257.7
+\]
+
+Thus, the fitted model is 
+
+\[
+charges_i = 3165.9 + 257.7 age_i
+\]
+
+We can add this to the scatterplot of `charges` v.s. `age`.
+
+```{r tidy = F}
+slope = round(simple.mod$coef[2], 1)
+y.int = round(simple.mod$coef[1], 1)
+slope
+y.int
+
+ggplot(data = ins, mapping = aes(x = age, y=charges)) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se=F, size = 1.5, alpha=.5) +
+  geom_text(aes(label=paste("charges = ", y.int, "+", slope, "age")), 
+            x=35, y=32000, color = 2, size = 6) +
+  labs(x="Age (years)", y="Medical expenses charged to the plan (dollars)") 
+```
+
+
+------------
+
+**Residual** is defined as the (observed value - predicted value) for $Y$:  
+
+\[
+residual_i = y_i - \hat{y_i}
+\]
+
+Thus, MSE is just the average of the squared residuals:
+
+\[
+MSE = mean((residual_i)^2)
+\]
+
+
+Two models are compared and assessed based on how well the model fits the data.  The better model should have _______ residuals on average.
+
+(A.) smaller  
+(B.) larger
+
+------------
+
+## R-squared
+
+The proportion of variation explained by the fitted model (i.e., the proportion of variation that is reduced when using the model for prediction compared to when using just the mean of the y-variable for prediction) is called $R^2$ or $r^2$.  It can be calculated as:
+
+$$
+R^2 = \frac{\Sigma_i^n (y_i - \bar{y})^2 - \Sigma_i^n(y_i - \hat{y_i})^2}{\Sigma_i^n (y_i - \bar{y})^2} 
+= 1 - \frac{\Sigma_i^n((y_i - \hat{y_i})^2}{\Sigma_i^n (y_i - \bar{y})^2}
+$$
+
+-------
+
+Note that if your model has only the intercept and with no X-variable, i.e.,
+
+\[
+charges_i = \beta_0 + error_i
+\]
+
+
+then, 
+
+$$\Sigma_i^n((y_i - \hat{y_i})^2 = \Sigma_i^n (y_i - \bar{y})^2.$$
+
+In this case, using your model does not reduce any variation compared to using just the mean of the observed y-values for prediction.  Therefore, $R^2$ is 0 in this case.  
+
+
+-------
+
+
+Also, note that if you add more X-variables to the model the sum of the residual squares will always either decrease or remain the same; i.e., $$\Sigma_i^n((y_i - \hat{y_i})^2$$ is always less or equal to $$\Sigma_i^n (y_i - \bar{y})^2$$.  Thus, $R^2 = 1 - \frac{\Sigma_i^n((y_i - \hat{y_i})^2}{\Sigma_i^n (y_i - \bar{y})^2}$ tells us the fraction of the variations in the $Y$-variable that is reduced by using the model. The higher the $R^2$ the better your model fits your data.
+
+
+-------
+
+
+**A word of caution**
+
+$R^2$ is useful only when you include the intercept in your model.  Also, $R^2$ not a good criterion since $R^2$ always increases with model size.  Adjusted $R^2$ is better since it “penalized” bigger models.
+
+-------
+
+# Adding a contrast term to the model
+
+-----------
+
+From the matrix scatterplots which of the **categorical variables** will be the best to be added to the model?
+
+(A.) `sex`  
+(B.) `smoker`  
+(C.) `region`  
+
+If this is not clear on the first scatterplot matrix, we can also make the plot for each individual pair: `charges` and `sex`, `charges` and `smoker`, and  `charges` and `region`:
+
+```{r}
+boxplot(charges ~ sex, data = ins, main = 'Boxplots for medical charges by sex', ylab = 'medical charges', xlab = 'Gender')
+
+
+boxplot(charges ~ smoker, data = ins, main = 'Boxplots for medical charges by smoking status', ylab = 'medical charges', xlab = 'smoker?', names = c("No", "Yes"))
+
+
+# `las = 1` sets all axis labels always perpendicular to the axis
+boxplot(charges ~ region, data = ins, main = 'Boxplots for medical charges by region', ylab = 'medical charges', las = 2, cex = .7, cex.lab = .7, cex.main = .7, xlab = 'Regions')
+```
+
+-----------
+
+Now, let's investigate the pairwise relationship between the variables again but by smoking status.
+
+-----------
+
+We can also turn off (use `message = F` for the code chunk) the option of showing the output/error messages for the plot--you should always read the error message at least once to make sure that there is nothing really wrong with the procedure before turning the option of showing the message off.
+
+```{r message = F, tidy = F}
+
+ggpairs(ins, aes(colour = smoker, alpha = 0.4,),
+  upper = list(continuous = wrap("cor", size = 1.9)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Pairwise relationship, 
+                colored by smoking status,  
+                between variables in the insurance dataset")
+```
+
+
+Note that the variables `sex` and `region` do not separate the values of `charges` very well; e.g., see the ggpair plot colored by `sex`:
+
+
+```{r message = F, tidy = F}
+ggpairs(ins, aes(colour = sex, alpha = 0.4), 
+  upper = list(continuous = wrap("cor", size = 1.9)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(title = "Pairwise relationship, colored by sex, between variables in the
+       insurance dataset")
+```
+
+
+
+-----------
+
+
+Add variable `smoker` to your model in R:
+
+```{r}
+mod_age_smk = lm(charges ~ age + smoker, data = ins)
+mod_age_smk
+```
+
+```{r}
+summary(mod_age_smk)
+```
+
+-----------
+
+What is the actual mathematical model that R was fitting?
+
+To answer this we need to understand what a dummy variable is.  
+
+
+## **Dummy variable**
+
+A *dummy variable* is a variable that gives only 0 and 1 values.  For example, if $1_{smoker, i}$ is a dummy variable for observation $i$ then $1_{smoker, i}$ has the value 1 if the $i^{th}$ object is a smoker and 0 if not.
+
+----------
+
+
+The mathematical model is
+
+\begin{align}
+charges_i = \beta_0 + \beta_{1_{smoker='yes', i}}1_{smoker='yes', i} + \beta_{age}age_i +  error_i
+\end{align}
+
+$\beta_{1_{smoker='yes', i}}$ is the effect on `charges` for being a smoker.
+
+----------
+
+
+**Adding a categorical variable to the model results in including dummy variable(s) in the mathematical model.   The practical result is that we now have two lines for predicting `charges`, one for each group of the smokers and the non-smokers; each group can now have a line with different y-intercepts.**  
+
+
+$\beta_{smoker=}$ is the additional effect on `charges` for being a smoker; Note that the non-smokers are the reference group (also called the baseline group).  By default `R` will always use the group corresponding to the first level of the factor as the reference group.
+
+----------
+
+Can you see why the model above actually gives two predicting lines, one for the non-smokers and one for the smokers?
+
+
+
+# Adding an interaction term
+
+----------
+
+Can we have different slops?
+
+----------
+
+From the scatterplot matrix colored by `smoker` we see that it is actually not desirable for the two groups (smokers and non-smokers) to have two predicting lines with different slopes (why?).  However, just as a practice we will fit a model with different slopes.
+
+----------
+
+
+```{r}
+mod_age_x_smk = lm(charges ~ age*smoker, data = ins)
+summary(mod_age_x_smk)
+
+# This model is the same as 
+lm(charges ~ age + smoker + age:smoker, data = ins)
+
+```
+
+
+
+What is the mathematical model that corresponds to this?
+
+
+Question: Which of the following is the mathematical model that correspond to the model in R `lm(charges ~ age + smoker + age:smoker, data = ins)`
+
+(A.) \begin{align}
+charges_i = \beta_{1_{smoker='yes', i}}1_{smoker='yes', i} + \beta_{age}age_i +  \beta_{age:smoker}age:1_{smoker='yes', i} + error_i
+\end{align}
+(B.) \begin{align}
+charges_i = \beta_0 + \beta_{age}age_i +  \beta_{age:smoker}age:1_{smoker='yes', i} + error_i
+\end{align}
+(C.) \begin{align}
+charges_i = \beta_0 + \beta_{1_{smoker='yes', i}}1_{smoker='yes', i} +  \beta_{age:smoker}age:1_{smoker='yes', i} + error_i
+\end{align}
+(D.) \begin{align}
+charges_i = \beta_0 + \beta_{1_{smoker='yes', i}}1_{smoker='yes', i} + \beta_{age}age_i +  \beta_{age:smoker}age:1_{smoker='yes', i} + error_i
+\end{align}
+
+
+Answer: D
+
+The term $age:1_{smoker='yes'}$ is called an interaction term; including this interaction term in our model we allow the variable `age` to have different effect in `charges` depending whether the person that we are interested in is a smoker or not.
+
+
+# Predicting with a model 
+
+## Giving a point estimate
+
+To use the model in option D to predict the annual total medical expenses charged to the policy by the policy holder we will do the following:
+
+Let 
+
+* $\hat{\beta}_0 = -2091.42$  
+* $\hat{\beta}_{age} = 267.25$  
+* $\hat{\beta}_{smoker='yes'} = 22385.55$  
+* $\hat{\beta}_{age:1_{smoker='yes'}} = 37.99$  
+
+If the person is a **non-smoker** we will predict this person's annual total medical expenses to be:
+
+\[
+charges = \hat{\beta}_0 + \hat{\beta}_{age}age_i
+\]
+
+Thus, the **y-intercept** for this line is $\hat{\beta}_0$ and the **slope** is **$\hat{\beta}$**.
+
+If the person is a **smoker** we will predict this person's annual total medical expenses to be:
+
+\[
+charges = \hat{\beta}_0 + \hat{\beta}_{smoker='yes'} + \hat{\beta}_{age}age +  \hat{\beta}_{smoker='yes'}age
+\]
+
+In this case the **y-intercept** for this line is **$\hat{\beta}_0 + \hat{\beta}_{smoker='yes'}$** and the **slope** is **$\hat{\beta} + \hat{\beta}_{smoker='yes'}$**.
+
+
+Therefore, $\beta_{1_{smoker='yes', i}}$ is the additional effect on `charges` for being a smoker (compared to the non-smokers); $\beta_{age:smoker}$ is the additional effect on `charges` for each unit of increment in `age` (compared to the non-smokers).
+
+For example, for a 43 year old non-smoker we will predict this person's annual medical amount by using the fitted model
+
+\[
+\hat{\beta}_0 + \hat{\beta}_{age}*43 = -2091.42 + 267.25(43)
+\]
+
+Thus, we will predict the person's annual medical amount to be **9400.33**.
+
+```{r}
+sum(mod_age_x_smk$coef * c(1, 43, 0, 0))
+# remember not to hard code values
+```
+
+
+For a 43 year old smoker the prediction becomes
+
+
+\[
+(\hat{\beta}_0 + \hat{\beta}_{smoker='yes'}) + (\hat{\beta}_{age} +  \hat{\beta}_{smoker='yes'}) age = (-2091.42 + 22385.55) + (267.25 + 37.99)(43)
+\]
+
+this figure becomes **33419.35**.
+
+```{r}
+sum(mod_age_x_smk$coef * c(1, 43, 1, 43))
+# remember not to hard code values
+```
+
+This is saying that with everything else being equal being a smoker will have charge $22385.55 more to their insurance plan on average. 
+
+
+
+# Summary
+
+Including a **factor with m levels** in the model will 
+
+* induce **(m-1) dummy variables**, one for each level of the factor except for the first level, to the mathematical model;  
+
+* allow the model to **a different y-intercept** for different levels for the **prediction line**.
+
+Including an **interaction term** between a factor (with m levels) and a continuous variable in the model will 
+
+* induce **(m-1) variables**, one for each level of the factor except for the first level, to the mathematical model;  
+
+* allow the model to a **different slope** for different levels for the prediction line.
+
+# Technical details related to concepts and functions covered in this chapter
+
+--------
+
+In general a regression model has the form
+
+\[
+y_i = (\beta_0 + \beta_1 x_{1,i} + \dots + \beta_k x_{k,i}) + error_i
+\]
+
+for $i  = 1, 2, ..., n$ where n is the sample size and $k$ is smaller than $n$ in general.
+
+----------
+
+
+## The error term
+
+The error term is used to catch the deviations between an observation and the expected value of y for a given set of x values.  The distribution of the errors give you an idea of how much the y values vary around the regression line.  
+
+The assumption on the errors is that they have mean zero for each given x-value.
+
+## Interpretation on the points on the line
+
+Because the errors have mean zero, 
+
+\[
+mean(Y) = \beta_0 + \beta_1 x_{1,i} + \dots + \beta_k x_{k,i}
+\]
+
+i.e., the point on line gives the mean of all the y-values that share the same x-value.
+
+
+
+## More examples on model interpretations
+
+In this section we will use the data frame `iris` for demonstrations.  Given an iris our goal here is to predict its Petal Width based on the values for other variables in the dataset for this iris.
+
+
+We will first take a look at the pairwise relationship between the variables in the data frame.  We also want to investigate the pairwise relationship of the continuous variables within each Species category.
+
+```{r tidy = F}
+ggpairs(iris, aes(colour = Species, alpha = 0.4), 
+        upper = list(continuous = 
+                       wrap("cor", size = 2.5, alignPercent = .8))) +  
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+We will consider three models here.
+
+
+### Contrast and Interaction Terms in a Regression Model
+
+
+
+### Fitting regression models in R
+
+------
+
+
+**Simple Linear Regression Model**  
+
+$$
+Petal.Width_i = \beta_1 Petal.Length_i + \beta_0 + error_i  
+$$ 
+```{r}
+simple.mod = lm(data=iris, Petal.Width ~ Petal.Length)
+```
+
+----------
+
+```{r}
+summary(simple.mod)
+```
+
+
+---------
+
+Extract out coefficient estimates only
+```{r}
+simple.mod$coef 
+# This is equivalent to coef(simple.mod) and simple.mod$coefficient
+```
+
+With this simple model we will predict the Petal Width of a given iris with the fitted model:
+
+Petal.Width = -0.3631 + 0.4158* Petal.Length
+
+-------
+
+#### More complex models:  Allow different y-intercepts for different species
+
+
+
+**Model 1**:  
+
+\begin{align*}
+Petal.Width_i = & \beta_0 + \beta_{versicolor}1_{versicolor,i} \\
+& + \beta_{virginica}1_{virginica,i} + \beta_{Petal.Length}Petal.Length_i + error_i
+\end{align*}
+
+```{r}
+mod1 = lm(data=iris, Petal.Width ~ Species + Petal.Length)
+# where Species is a factor with 3 categories
+
+str(iris$Species)
+table(iris$Species)
+```
+
+
+
+```{r}
+mod1$coef
+```
+
+The fitted model 1 says that we will predict the petal width of a randomly chosen iris with its petal length and the info on its species this way:
+
+If the Specise = 'setosa': Petal.Width = -0.0908 + 0.2304* Petal.Length;   
+if the Specise = 'versicolor': Petal.Width = -0.0908 + 0.4354 + 0.2304* Petal.Length;    
+if the Specise = 'virginica': Petal.Width = -0.0908 + 0.8377 + 0.2304* Petal.Length.    
+
+Here 'setosa' is our reference group and -0.0908 is the effect "being in the group setosa" has on Petal.Width.  Thus, for an iris from the group "versicolor" 0.4354 is the additional effect from "being in the group versicolor" compared to the setosa effect.  Similarly, 0.8377 is the effect difference between the setosa group and the virginica group.
+
+Because setosa is the group that is being compared to, setosa is called the *baseline group* in this model.
+
+-------
+
+In model 1 the coefficients for the groups versicolor and virginica represent the **contrast** (relative to the baseline group setosa) of effects on Petal.Width.  
+
+
+-------
+
+
+
+```{r echo=F}
+
+mod2 = lm(data=iris, Petal.Width ~ Species*Petal.Length)
+
+library(ggplot2)
+fits <- data.frame(Petal.Length=iris$Petal.Length, Petal.Width=iris$Petal.Width, 
+                   mod1=mod1$fitted.values,
+                   mod2=mod2$fitted.values,
+                   Species=iris$Species)
+
+ggplot(data = fits) +
+  geom_line(aes(x=Petal.Length, y=mod1, color=Species), size=1.5, alpha=0.5) + 
+  geom_point(aes(x=Petal.Length, y=Petal.Width, color=Species)) +
+  scale_color_manual(values = c("red", "steelblue", "green")) + 
+  labs(x="Petal.Length", y="Petal.Width") +
+  ggtitle("Model 1")  
+```
+
+
+-------
+
+
+#### Allow different y-intercept and different slope for each species
+
+**Model 2**:  Allow different y-intercept and different slope for each species:  
+
+\begin{align*}
+Petal.Width_i = & \beta_{0} + \beta_{versicolor}1_{versicolor,i} \\
+& + \beta_{virginica}1_{virginica,i}  \\
+& + \beta_{length}Petal.Length_i \\
+& + \beta_{versicolor.length}1_{versicolor,i} Petal.Length_i\\
+& + \beta_{virginica.length}1_{virginica,i} Petal.Length_i \\
+& + error_i
+\end{align*}
+
+
+
+-------
+
+**Model 2 (con't)**
+
+```{r}
+mod2 = lm(data=iris, Petal.Width ~ Species*Petal.Length)
+
+```
+
+
+```{r}
+mod2$coef
+
+```
+
+The fitted model 2 says that we will predict the petal width of a randomly chosen iris with its petal length and the info on its species this way:
+
+If the Specise = 'setosa': Petal.Width = -0.0482 + 0.2012* Petal.Length;  
+if the Specise = 'versicolor': Petal.Width = -0.0843 + (0.2012 + 0.1298)* Petal.Length;  
+if the Specise = 'virginica': Petal.Width = 1.136 + (0.2012 - 0.0409)* Petal.Length.
+
+
+
+-------
+
+The term Species:Petal.Length is called an **interaction**.  With the interaction term we allow different amount of effect Petal.Length has on Petal.Width for different species.  
+
+
+
+
+-------
+
+
+
+```{r echo=F}
+ggplot(data = fits) +
+  geom_line(aes(x=Petal.Length, y=mod2, color=Species), size=1.5, alpha=0.5) + 
+  geom_point(aes(x=Petal.Length, y=Petal.Width, color=Species)) +
+  scale_color_manual(values = c("red", "steelblue", "green")) + 
+  labs(x="Petal.Length", y="Petal.Width") +
+  ggtitle("Model 2: Petal.Width ~ Species*Petal.Length") 
+```
+
+
+-------
+
+### Summary
+
+We have considered two complex models in addition to the simple linear regression model.
+
+
+----------
+
+
+**Model 1**:  Allow different y-intercepts for different species:  
+
+\begin{align}
+\begin{split}
+Petal.Width_i = & \beta_0 + \beta_{versicolor}1_{versicolor,i} \\
+& + \beta_{virginica}1_{virginica,i} + \beta_{Petal.Length}Petal.Length_i + error_i
+\end{split}
+\end{align}
+
+
+
+----------
+
+**Model 2**:  Allow different y-intercept and different slope for each species:  
+
+\begin{align}
+\begin{split}
+Petal.Width_i = & \beta_{setosa}1_{setosa, i} + \beta_{versicolor}1_{versicolor,i} \\
+& + \beta_{virginica}1_{virginica,i}  \\
+& + \beta_{setosa.length}1_{setosa, i} Petal.Length_i \\
+& + \beta_{versicolor.length}1_{versicolor,i} Petal.Length_i\\
+& + \beta_{virginica.length}1_{virginica,i} Petal.Length_i \\
+& + error_i
+\end{split}
+\end{align}
+-------
+
+### Exercises
+
+----------
+
+#### Exercises 1
+```{r}
+summary(mod2)$call
+mod2$coef
+```
+
+
+
+Is the following prediction consistent with the prediction made by model 2?  
+
+If the Specise = 'setosa': Petal.Width = -0.0482 + 0.2012* Petal.Length   
+
+
+(A.) Yes  
+(B.) No
+
+Answer: A.
+
+----------
+
+#### Exercises 2
+
+```{r}
+summary(mod2)$call
+mod2$coef
+```
+
+
+Which of the following is consistent with the prediction made by model 2 for a versicolor iris? 
+
+
+(A.) Petal.Width = (-0.0482 -0.0360) + (0.2012 + 0.1298)* Petal.Length;  
+(B.) Petal.Width = -0.0360 + 0.1298* Petal.Length;  
+(C.) Petal.Width = -0.0482 -0.0360 + 0.1298* Petal.Length; 
+
+Answer: A.
+
+----------
+
+The fitted model 2 says that we will predict the petal width of a randomly chosen iris with its petal length and the info on its species this way:
+
+If the Specise = 'setosa': Petal.Width = -0.0482 + 0.2012* Petal.Length;  
+If the Specise = 'versicolor': Petal.Width = (-0.0482 -0.0360) + (0.2012 + 0.1298)* Petal.Length;  
+If the Specise = 'virginica': Petal.Width = (-0.0482 + 1.1843) + (0.2012 + -0.0409) * Petal.Length.  
+
+
+As an exercise we will let you figure out the interpretation on the coefficients in this model.
+
+
+--------
+
+#### Exercises 3
+
+```{r}
+test.mod = lm(Petal.Width ~ Species + Petal.Length, data = iris)
+test.mod$coef
+```
+Which model is for the model fitted above?
+
+(A.) $$Petal.Width_i = \beta_1 Petal.Length_i + \beta_0 + error_i $$
+(B.) 
+\begin{align*}
+Petal.Width_i = & \beta_{setosa}1_{setosa, i} + \beta_{versicolor}1_{versicolor,i} \\
+& +  \beta_{virginica}1_{virginica,i} + \beta_{Petal.Length}Petal.Length_i + error_i
+\end{align*}
+(C.)
+\begin{align*}
+Petal.Width_i = & \beta_0 + \beta_{versicolor}1_{versicolor,i} \\
+& + \beta_{virginica}1_{virginica,i} + \beta_{Petal.Length}Petal.Length_i + error_i
+\end{align*}
+(D.)
+\begin{align*}
+Petal.Width_i = & \beta_{setosa}1_{setosa, i} + \beta_{versicolor}1_{versicolor,i} \\
+& + \beta_{virginica}1_{virginica,i}  \\
+& + \beta_{setosa.length}1_{setosa, i} Petal.Length_i \\
+& + \beta_{versicolor.length}1_{versicolor,i} Petal.Length_i\\
+& + \beta_{virginica.length}1_{virginica,i} Petal.Length_i \\
+& + error_i
+\end{align*}
+
+
+Answer: C.
+
+-----------
+
+You can also have a model that includes all the variables except Petal.Width in your data frame.  This is done with the dot(.). Note that this does not include the interaction terms.
+
+```{r}
+mod5 = lm(data=iris, Petal.Width ~ .)
+coef(mod5)
+
+# Another example
+lm(data=iris, Petal.Width ~ . + Species : Petal.Length)$coef
+```
+
+
+```{r}
+library(openintro)
+head(possum)
+max.possum = function(x){
+  y = possum$age[possum[,x] == max(possum[,x])]
+  return(y)
+}
+max.possum("headL")
+max.possum("skullW")
+max.possum("totalL")
+max.possum("tailL")
+```
+--->
+<!----
+
+## `factor()` and `levels()` 
+
+------
+
+Recall that if we include a factor with `m` levels (i.e., `m` unique categories) in the R syntax when fitting a model, the corresponding mathematical model will have `m-1` dummy variables, one for each category (except the first category) of the factor. 
+
+The coefficients of the dummy variables have special meanings.  E.g., when the model has an intercept, the coefficient of the dummy variable for the second level of the factor gives the average effect of being in the second category on `Y` compared to the average effect of being in the first category.  Because of this, it is important to have the categories in the order that we want.  This can be done with the `factor()` function.
+
+-------- 
+
+### Changing the order of the categories with `factor()` 
+
+The function `factor()` is used to create or modify a factor vector in `R`.  The syntax for `factor()` is  
+
+>factor(x = character(), levels, labels = levels,...)
+
+where `x` is a vector, `levels` tells `R` the order of the unique categories in `x` (i.e., which one is category 1 and which one is category 2, etc), and `labels` tells `R` how you want to display/label the categories specified in `levels`.  Note that the elements in the vector that you supply to `labels` should be in the same corresponding order of the elements in the vector that you supply to `levels`.
+
+
+ 
+
+------
+
+
+Because of the syntax `x = character()` you actually do not have to convert `x` into a character vector yourself--`R` will do this for you automatically; but it is important to remember that whatever you supply to `x` will be converted into a character vector first before it is being converted to a factor.
+
+Now, let's look at an example.
+
+
+------
+
+
+**Use the function `factor()` to change the order and the labels of the categories**
+
+```{r}
+head(airquality$Temp) 
+# daily temperature for the first 6 days in the dataset
+
+head(airquality$Temp >= 80) 
+# This is a logical vector; 
+# F means Cool days and T means Warm days.
+
+head(factor(x = airquality$Temp >= 80))
+# `FALSE` will be the 1st category 
+# and `TRUE` will be the 2nd category.  
+```
+Since `R` will define the order the categories alphabetically
+`FALSE` will be the 1st category and `TRUE` will be the 2nd category.  
+
+
+------
+
+
+Since the categories are: `FALSE` and `TRUE` and since `levels` is 
+used to *rearrange* the categories, we set
+`levels = c('TRUE', 'FALSE')` to rearrange the order of the categories.
+
+
+------
+
+
+Once we rearrange the categories, we can now relabel the categories
+with new labels.  Remember that you need to list the elements in the vector for `labels` in the same order as you list the elements for `levels`.  In our case, `levels = c('TRUE', 'FALSE')` and `labels = c('Warm days', 'Cool days')`:
+
+```{r}
+cool.warm = factor(airquality$Temp >= 80, 
+                   levels = c('TRUE', 'FALSE'), 
+                   labels = c('Warm days', 'Cool days'))
+
+head(cool.warm)
+```
+
+Note that if you include the input argument `levels`, labels will follow this *new order* of the categories that is specified by `levels`.
+
+
+------
+
+
+
+**Use the `levels` argument to change the order of the categories**
+
+Sometimes we are satisfied with the labels of the categories and we just want to change their orders.  E.g., let's say we already have the vector `cool.warm2`
+
+```{r tidy = F}
+cool.warm2 = factor(airquality$Temp >= 80, 
+                    labels = c('Cool days', 'Warm days'))
+# Remember that the first category for `factor(airquality$Temp >= 80)` 
+# is `FALSE` and the second is `TRUE` so `FALSE` will be relabeled 
+# as `Cool days` and `TRUE` will be relabeled as `Warm days`.
+
+head(cool.warm2)
+```
+
+  
+
+
+------
+
+
+Now, we want to rearrange the categories with `levels` so we will do
+
+```{r}
+head(factor(cool.warm2, 
+            levels = c('Warm days', 'Cool days')))
+```
+
+
+
+
+
+
+## Matrix representation of the model
+
+\[
+y_i = (\beta_0 + \beta_1 x_{1,i} + \dots + \beta_k x_{k,i}) + error_i
+\]
+
+can be written in matrix form as
+
+$$
+\begin{bmatrix}
+y_1\\
+y_2\\
+y_3\\
+\vdots\\
+y_n
+\end{bmatrix}
+=
+\begin{bmatrix}
+1&x_{11}&x_{12}&\cdots &x_{1k} \\
+1&x_{21}&x_{22}&\cdots &x_{2k} \\
+\vdots&\vdots & \vdots & \ddots & \vdots\\
+1&x_{n1}&x_{n2}&\cdots &x_{nk}
+\end{bmatrix}
+\begin{bmatrix}
+\beta_0\\
+\beta_1\\
+\beta_2\\
+\vdots\\
+\beta_k
+\end{bmatrix}
++
+\begin{bmatrix}
+error_1\\
+error_2\\
+error_3\\
+\vdots\\
+error_n
+\end{bmatrix}
+$$

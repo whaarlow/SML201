@@ -1,0 +1,23 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	dim	head	read.csv	str
+unnamed-chunk-3	aes	as.factor	c	element_text	ggpairs	house	list	theme	waterfront	wrap
+unnamed-chunk-4	$	aes	bedrooms	c	geom_point	ggplot	grade	house	labs	mean	price	scale_x_continuous	sort	tapply	unique	with
+unnamed-chunk-5	aes	as.factor	coord_flip	geom_boxplot	ggplot	house	labs	price	zipcode
+unnamed-chunk-6	~	house	lm	summary
+unnamed-chunk-7	~	lm
+unnamed-chunk-8	^	$	house
+unnamed-chunk-9	!=	<=	as.factor	as.numeric	bathrooms	bedrooms	condition	data.frame	date	floors	grade	house	price	sqft_basement	sqft_living	trans.grade	waterfront	with	yr_renovated	zipcode
+unnamed-chunk-10	$	as.Date	dim	format	head	length	mod.variables
+unnamed-chunk-11	!	c	date.format	dim	mod.variables	names
+unnamed-chunk-12	!	c	date.format	dim	mod.variables	names	nrow	round	sample	set.seed
+unnamed-chunk-13	colnames	test2
+unnamed-chunk-14	dim	rbind	train	val
+unnamed-chunk-15	~	$	aes	c	geom_point	ggplot	labs	library	non_test	regsubsets	summary	T
+unnamed-chunk-16	~	lm	non_test	summary
+unnamed-chunk-17	~	regsubsets	T	train
+unnamed-chunk-18	[[	^	$	as.formula	as.vector	coef	g.train	h.train	mean	model.matrix	names	return	sapply	val
+unnamed-chunk-19	aes	c	geom_point	ggplot	labs	mse.g	mse.h
+unnamed-chunk-20	~	coef	non_test	regsubsets	T
+unnamed-chunk-21	!	~	coef	names	non_test	regsubsets	T
+unnamed-chunk-22	~	$	abline	champion	F	hist	lm	plot	predict.reg	qqline	qqnorm	summary	val
+unnamed-chunk-23	^	$	aes	c	champion	geom_point	ggplot	labs	mean	predict.reg	return	sapply	test1	test2

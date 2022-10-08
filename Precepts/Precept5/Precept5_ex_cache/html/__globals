@@ -1,0 +1,16 @@
+unnamed-chunk-1	aes	geom_point	ggplot	ggtitle	iris	labs	library	Sepal.Length	Sepal.Width
+unnamed-chunk-2	^	~	$	class	cor	head	iris	length	lm	ls	mean	summary	var
+unnamed-chunk-3	~	aes	F	geom_point	geom_smooth	ggplot	iris	labs	lm	Sepal.Length	Sepal.Width	summary
+unnamed-chunk-4	~	iris	lm	summary
+unnamed-chunk-5	$	aes	c	data.frame	geom_line	geom_point	ggplot	iris	labs	mod3	mod4	scale_color_manual	Sepal.Length	Sepal.Width	Species
+unnamed-chunk-6	?	[[	$	by	c	class	cor	iris	sapply
+unnamed-chunk-7	~	aes	F	geom_point	geom_smooth	ggplot	ggtitle	iris	labs	lm	Sepal.Length	Sepal.Width	Species	summary
+unnamed-chunk-8	~	iris	lm	summary
+unnamed-chunk-9	library
+unnamed-chunk-10	lm
+unnamed-chunk-11	$	aes	data.frame	geom_line	geom_point	ggplot	headL	labs	mod12	possum	sex	summary	totalL
+unnamed-chunk-12	lm	summary
+unnamed-chunk-13	$	aes	data.frame	geom_line	geom_point	ggplot	headL	labs	mod13	possum	sex	totalL
+unnamed-chunk-14	~	lm	some.data.frame
+unnamed-chunk-15	~	lm	some.data.frame
+unnamed-chunk-16	~	lm	some.data.frame

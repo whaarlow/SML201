@@ -1,0 +1,18 @@
+unnamed-chunk-1	c	data.frame	length	rep	runif
+unnamed-chunk-2	head	students
+unnamed-chunk-3	$	range	students	tapply
+unnamed-chunk-4	==	$	head	list	mean	students	tapply
+unnamed-chunk-5	^	return
+unnamed-chunk-6	class	dim	iris	list	return	summary
+unnamed-chunk-7	c	F	hist	max	min	nhtemp	par
+unnamed-chunk-8	c	F	hist	nhtemp	nhtempC	par
+unnamed-chunk-9	c	par
+unnamed-chunk-10	==	$	abline	head	iris	max	mean	plot	points	sd	which
+unnamed-chunk-11	$	cor	iris
+unnamed-chunk-12	==	$	abline	cor.w.l	iris	max	mean	paste	plot	points	round	sd	text	which
+unnamed-chunk-13	&	==	>=	$	babynames	c	dim	library
+unnamed-chunk-14	$	mean	popular.names	tapply
+unnamed-chunk-15	c	letters	names<-	rank
+unnamed-chunk-16	==	$	c	names<-	popular.names
+unnamed-chunk-17	^	abline	c	legend	lines	plot
+unnamed-chunk-18	c

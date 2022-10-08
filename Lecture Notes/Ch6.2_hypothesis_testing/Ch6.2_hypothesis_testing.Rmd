@@ -1,0 +1,633 @@
+---
+title: "SML201 Chapter 6.2"
+subtitle:  'More on Hypothesis Testing: Various Tests'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=F, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+
+
+# R functions covered
+
+-----------
+
+* To perform a t-test or to construct a confidence interval with the t-distribution:  
+t.test(x=..., y=..., alternative = ..., conf.level =, mu = ..., paired = ...) ; 
+* To perform an ANOVA test: aov(formula);  
+* Functions related to the F-distribution: df(x = ..., df1= ..., df2 = ...), pf(q = ..., df1= ..., df2 = ...), qf(p = ..., df1= ..., df2 = ...), rf(n = ..., df1= ..., df2 = ...).  
+
+
+# Introduction
+
+--------
+
+In this chapter we will introduce a couple more tests.  All tests follow the general test procedure that described in the last chapter.  
+
+In order to decide which test to use for an application it is important to understand the assumptions for each test so that we can determine the distribution of the test statistic in our case.
+
+--------
+
+Just a reminder: all tests are about **population properties**.
+
+
+
+# Test for the difference of two population means
+
+Suppose $\bar X_1$ and $\bar X_2$ are the sample means for two **independent** samples drawn from two **independent** populations, populations 1 and 2.   
+
+We denote the population mean and SD for population 1 by $\mu_1$ and $\sigma_1$, and population mean and SD for population 2 by $\mu_2$ and $\sigma_2$.  Also, denote the sample sizes for sample 1 and sample 2 by $n_1$ and $n_2$, respectively.
+
+------
+
+If $\frac{\bar{X_1}-\mu_1}{\sigma_1/\sqrt{n_1}}$ and $\frac{\bar{X_2}-\mu_2}{\sigma_2/\sqrt{n_2}}$ each follows Normal(0, 1), then $\bar{X_1} - \bar{X_2}$ also follows a Normal distribution.
+
+Similarly, If $\frac{\bar{X_1}-\mu_1}{\sigma_1/\sqrt{n_1}}$ and $\frac{\bar{X_2}-\mu_2}{\sigma_2/\sqrt{n_2}}$ each follows a t-distribution, then $\bar{X_1} - \bar{X_2}$ also follows a t-distribution distribution with certain degree of freedom.
+
+In this case the procedure of calculating the p-value is more involved since we will need to figure out the degree of freedom for the distribution of the sample mean difference.  Therefore, we will use `t.test()` to do the test.
+
+
+----------
+
+
+When dealing with two populations, the syntax for the function `t.test()` takes the form 
+
+```
+t.test(x, y = NULL,
+       alternative = c("two.sided", "less", "greater"),
+       mu = 0, paired = FALSE, var.equal = FALSE,
+       conf.level = 0.95, ...)
+
+```
+
+
+* `x` is the data in the first sample;
+* `y` is the data in the second sample;
+* `alternative` specifies the alternative hypothesis, must be one of "two.sided" (default), "greater" or "less". You can specify just the initial letter.
+* `mu` is a number indicating the true value the difference in the population means under $H_0$;
+* `var.equal` (default value is FALSE): this asks you if you assume that the two populations have equal variances.  In general, one should set this equal to be `TRUE` only if at least one of the samples is small *and* you have strong evidence that the two populations share the same variance.  **In most cases this should be set to FALSE** and this is what we will do in this course.  
+* `paired` (default value is FALSE): set this equal be `TRUE` if the two samples are paired. Note that **paired samples are dependent**.
+
+----------
+
+## Example 1  (Example 6.10 in OpenIntro)
+
+The way a question is phrased can influence a person's response. For example, Pew Research Center conducted a survey with the following question:
+
+"As you may know, by 2014 nearly all Americans will be required to have health insurance. [People who do not buy insurance will pay a penalty] while [People who cannot afford it will receive financial help from the government]. Do you approve or disapprove of this policy?"
+
+For each randomly sampled respondent, the statements in brackets were randomized: either they were kept in the order given above, or the order was reversed. 
+
+
+----------
+
+
+The table below shows the results of this experiment. 
+
+1st Statement | Sample Size | Approve Law (%) | Disapprove Law (%)| Other (%)
+------------- | ----------- | ----------- | -------------- | -----
+"people who cannot afford it will receive financial help from the government" | 771 | 47 | 49 | 3
+"people who do not buy it will pay a penalty" | 732 | 34 | 63 | 3
+
+
+-----------
+
+
+### Set up the hypotheses
+
+$H_0$:  The way a question is phrased cannot influence a person's response.  There is no difference in the approval rates between the two groups of people receiving the two versions of the survey;
+
+$H_1$:  The way a question is phrased can influence a person's response. There is a real difference in the approval rates between the groups of people receiving either version of the survey.
+
+
+-----------
+
+### Calculate the p-value
+
+
+```{r}
+# Number of people approving the law
+num.appr1 = round(771*.47, 0) 
+num.appr1
+num.appr2 = round(732*.34, 0) 
+num.appr2
+
+# Construct sample data that is suitable 
+# for making the requested CI
+samp1 = rep(c(0,1), times=c(771-num.appr1, num.appr1))
+samp2 = rep(c(0,1), times=c(732-num.appr2, num.appr2))
+
+# size of each sample
+length(samp1) 
+length(samp2)
+```
+
+-----------
+
+```{r}
+# Check the data
+table(samp1) 
+table(samp2)
+
+# Check sample means
+mean(samp1) 
+mean(samp2)
+
+```
+
+-----------
+
+### Calculate the p-value (con't)
+
+```{r}
+# Outputs for a two-sided test
+# The two samples are independent, so paired = FALSE
+t.test(x=samp1, y=samp2, alternative = "two.sided")
+```
+
+```{r}
+# Extract out the p-value only
+t.test(x=samp1, y=samp2)$p.value
+```
+
+We can reject $H_0$ at .01 significance level.
+
+
+
+### Interpretation of the result
+
+Given that the Null hypothesis is true (i.e., given that the two population have equal means) the chance that we will have two samples, one from each of the populations, with with sample means that are so different is less than 0.00002.926%.  However, we did observe two samples with sample means there are different by this much.  Thus, the samples provide strong evidence against the Null so perhaps the Null is not true.
+
+-----------
+
+## Example 2
+
+**Grade Point Average**
+Independent simple random samples of 18 seniors and 15 juniors attending a large university yield the following data on grade point averages:
+
+```{r}
+seniors =c(2.56, 2.69, 2.56, 3.11, 2.70, 3.18, 3.25, 2.09, 3.50, 2.25, 2.32, 2.79, 2.34, 2.78, 2.56, 3.45, 2.56, 2.19)
+juniors = c(2.66, 2.75, 2.99, 3.04, 2.73, 3.37, 2.99, 3.43, 3.01, 2.85, 2.71, 3.16, 3.35, 2.47, 3.31)
+```
+We would like to test the following hypotheses:
+
+$H_0$: The averages of the GPA's for the juniors and the seniors are the same for all the juniors and the seniors in the university;  
+$H_1$: The averages are different.
+
+
+(a)  Check the sample size:
+
+```{r}
+length(seniors)
+length(juniors)
+```
+
+We do not know the population SD's or the variances and our samples are quite small: 18 and 15.  We might be able to use the t.test if there is no obvious evidence that the populations are not normally distributed or at least are too skewed.
+
+(b)  Check the normality of each sample.
+
+```{r, fig.height=10, echo = F}
+par(mfrow=c(2,1))
+
+hist(seniors, breaks=20, main='Senior GPAs in sample', freq=F, xlab='Senior GPA', cex.lab = 0.8, cex.main = 0.8)
+xseq = seq(from = min(seniors)*.9, to = max(seniors)*1.1, length = 100)
+lines(y = dnorm(xseq, mean = mean(seniors), sd = sd(seniors)), x = xseq, col = "blue")
+lines(density(seniors), lty = 2) # This adds a line estimating 
+# the distribution of seniors GPA dataset; lty = 2 give a dashed line
+
+
+legend(x = 2.9, y= 2, 
+       legend = c('Density estimate for \nseniors GPA dataset', 'Normal density'),
+       lty = c(2, 1), col = c('black', 'blue'), cex = .6)
+
+
+hist(juniors, breaks=20, main='Junior GPAs in sample', freq=F, xlab='Junior GPA', cex.lab = 0.8, cex.main = 0.8)
+xseq = seq(from = min(juniors)*.9, to = max(juniors)*1.1, length = 100)
+lines(y = dnorm(xseq, mean = mean(juniors), sd = sd(juniors)), x = xseq, col = "blue")
+lines(density(juniors), lty = 2) # This adds a line estimating 
+# the distribution of juniors GPA dataset; lty = 2 give a dashed line
+
+legend(x = 3.05, y= 3.7, 
+       legend = c('Density estimate for \njuniors GPA dataset', 'Normal density'),
+       lty = c(2, 1), col = c('black', 'blue'), cex = .6)
+
+par(mfrow=c(2,1))
+qqnorm(y = seniors, main = "Normal Q-Q Plot for Senior GPAs",
+xlab = "Theoretical Quantiles", ylab = "Senior GPA Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = seniors, col = "blue")
+
+qqnorm(y = juniors, main = "Normal Q-Q Plot for Junior GPAs",
+xlab = "Theoretical Quantiles", ylab = "Junior GPA Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = juniors, col = "blue")
+```
+
+
+(c)  Are the two samples independent?
+
+Yes.
+
+(d)  Caculate the p-value
+
+```{r}
+# t.test(x, y = NULL,
+#        alternative = c("two.sided", "less", "greater"),
+#        mu = 0, paired = FALSE, var.equal = FALSE,
+#        conf.level = 0.95, ...)
+
+# it does not matter which one is sample 1 and which one is sample 2
+t.test(x = juniors, y = seniors, alternative = "two.sided", mu = 0,
+       paired = FALSE, var.equal = FALSE)
+```
+
+We can extract out the p-value of the test
+
+```{r}
+t.test(x = juniors, y = seniors, alternative = "two.sided", mu = 0,
+       paired = FALSE, var.equal = FALSE)$p.value
+```
+
+We can reject the test at .05 significance level but we will fail to reject the test at .01 significance level.
+
+
+## Example 3
+
+ **Special Tutoring**  15 students were given special tutoring after taking a midterm exam in a particular class.  After the tutoring, a second midterm was administered and the scores were compared.  Assume that the difficulty levels for the two midterms are the same.  The following results were recorded:
+
+```{r}
+midterm1 = c(67, 74, 54, 51, 62, 49, 65, 69, 66, 70, 53, 58, 66, 52, 84)
+
+midterm2 = c(64, 75, 85, 96, 96, 88, 94, 66, 80, 48, 51, 90, 69, 94, 72)
+```
+The $i^{th}$ element on each vector is the score for student $i$ in the group.  Is the tutoring effective?  Test the following hypotheses:
+
+$H_0$: The tutoring is not effective.  If the tutoring were given to a population similar to the students in the sample, midterm 2 average score $\leq$ midterm 1 average score for the population of students.  
+
+
+$H_1$: The tutoring is effective.  midterm 2 average score $>$ midterm 1 average score for the population of students.
+
+------
+
+(a)  Are the two samples independent?
+
+No.
+
+
+------
+
+
+(b)  Are the data paired?
+
+
+Yes
+
+
+
+Since the data are paired the data points between the samples are not independent.  We will need to reconstruct our data to make the data points independent.  
+
+------
+
+
+```{r}
+diff = midterm2 - midterm1
+diff
+```
+
+Now we are back to a one sample case; all the points in the sample are independent.  The sample size is small; we want to check if the distribution of the population difference seem Normal or at least not too skewed.  
+
+
+------
+
+(c)  Does the distribution of the midterm score difference seem roughly symmetric?
+
+```{r echo = F}
+hist(diff, breaks=20, freq=F, 
+     main = 'Histogram for (midterm 2 score - midterm 1 score)',
+     xlab = 'midterm 2 score - midterm 1 score',
+     ylab = 'Proportion per point') 
+
+lines(density(diff), lty = 2) # This adds a line estimating 
+# the distribution of midterm2 dataset
+xseq = seq(from = min(diff)*.9, to = max(diff)*1.1, length = 100)
+lines(y = dnorm(xseq, mean = mean(diff), sd = sd(diff)), x = xseq, col = "blue")
+
+legend(x = 0, y= .04, 
+       legend = c('Density estimate for score diff 
+between midterms one and two', 'Normal density'),
+       lty = c(2, 1), col = c('black', 'blue'), cex = .6)
+
+qqnorm(y = diff, main = "Normal Q-Q Plot for Midterm Score differences",
+xlab = "Theoretical Quantiles", ylab = "Midterm Score difference Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = diff, col = "blue")
+```
+
+The distribution of the sample difference is not too far from being symmetric.
+
+--------
+
+(d) Test the hypothesis by calculating the p-value.
+
+```{r}
+mean(midterm2)
+mean(midterm1)
+# t.test(x, y = NULL,
+#        alternative = c("two.sided", "less", "greater"),
+#        mu = 0, paired = FALSE, var.equal = FALSE,
+#        conf.level = 0.95, ...)
+
+t.test(x=midterm2, y=midterm1, alternative = "greater", paired=T, mu = 0)
+
+```
+
+```{r}
+t.test(x=midterm2, y=midterm1, alternative = "greater", paired=T, mu = 0)$p.value
+```
+
+We can reject the $H_0$ at .01 significance level.
+
+
+(e) Can you use `t.test()` without the `y` input argument to solve this problem?  If so, how?
+
+```{r}
+t.test(x=diff, alternative = "greater", mu = 0)
+```
+
+
+
+# Test for the equality of multiple population means
+
+
+## Motivation 
+
+The **One-way Analysis of Variance (ANOVA)** is a procedure for testing the hypothesis that K
+population means are equal, where K $\geq$ 2. One-way ANOVA compares the means of the
+samples or groups in order to make inferences about the population means. 
+
+In particular, ANOVA compare the **variability *between* group means** and the **variability of the observations *within* the groups**. 
+
+
+-------------------
+
+You might wonder why we do not use multiple t-tests.
+
+Problems with using multiple t-tests:
+
+* Need to perform n(n-1)/2 tests for n samples
+* Inflating Type 1 error rate.
+
+## Assumptions for ANOVA
+
+* All populations are normal.
+* All populations have the same
+variance.
+* The samples (and populations) are
+independent.
+* All populations have the same mean (i.e., under the null).
+
+## Hypothese
+
+For 4 populations the hypotheses for ANOVA are
+
+$H_0$:  $\mu_1 = \mu_2 = \mu_3 = \mu_4$;  
+$H_1$:  At least one of the population means is different from the others. 
+
+## Test statistic (optional)
+
+The test statistic for ANOVA is in the form of
+
+
+$$
+\frac{sum(between \ group \ squared \ variations)/df1}{sum(within \ group \ squared \ variations)/df2}
+$$
+
+where df1 = number of groups - 1 and df2 = total number of data points - number of groups.
+
+----
+
+Under the assumptions for ANOVA the test-statistic follows a certain F distribution.
+
+
+## Example 4 (when all samples are of the same size)
+
+```{r}
+summary(iris)
+```
+
+
+-------------------
+
+$H_0$:  All three population means are equal;  
+$H_1$:  At least one of the population means is different from the others.  
+
+-------------------
+
+```{r, echo=F}
+boxplot(iris$Sepal.Length~iris$Species, xlab = 'Sepal Length') 
+# plotting Sepal lengths for 3 different species
+```
+
+-------------------
+
+
+
+```{r}
+# Use aov() function for one-way ANOVA
+# on the left of ~: all the data used for making the comparison
+# on the right of ~: the label that tells the membership of the data points
+my.anova = aov(iris$Sepal.Length~iris$Species)
+```
+
+```{r}
+summary(my.anova)
+```
+
+The p-value is about zero in this case so we will reject the Null.  Note that the test does not tell us which population mean(s) is different from the rest of the population means.
+
+# Multiple testing problem
+
+
+## Inflated error rate
+
+Recall that type I error is the error of rejecting the null hypothesis when the hypothesis is actually true.  
+If we perform m independent hypothesis tests at the $\alpha$ level, 
+
+P(Making a type I error on one test) = $\alpha$  
+P(Not making  a type I error on a test) = 1 - $\alpha$  
+P(Not making a type I error in m tests) $= (1 - \alpha)^m$  
+P(Making at least one type I error in m tests)$= 1-(1 - \alpha)^m$
+
+
+-------
+
+For example, for two tests at $\alpha=.05$ level the error that we are willing to tolerate for making at least one mistake is
+
+```{r}
+1-(1 -.05)^2
+```
+This increases the type I error rate from .05 to 0.0975.
+
+For 100 tests this number increases to 0.99.
+
+```{r}
+1-(1 -.05)^100
+```
+
+
+-------
+
+
+We want to make sure that P(Making at least one type I error in m tests) is not bigger than a certain value, say $\delta$.
+
+We will talk about two ways to adjust $\alpha$ to achieve our goal:
+
+* **Bonferroni Correction factor:** replace $\alpha$ with $\delta = \frac{\alpha}{m}$  
+Note that in this case, P(Making at least one type I error in m tests) $\leq \Sigma_1^m \frac{\alpha}{m} = \alpha$
+Disadvantage: a conservative bound that lower the power of the tests.
+
+* **False Discovery Rate (FDR):** Control for the average proportion of false positives among the tests with significant results; i.e., control for the fraction of tests where the null hypothesis is actually true among the tests with significant results.
+
+
+-------
+
+
+### Control FDR at level $\delta$ (optional):
+
+To control FDR at level $\delta$:
+
+Step 1:  For m tests, order the p-values $p_{(1)} \leq p_{(2)} \leq ...  \leq p_{(m)}$  
+
+Step 2:  Then, find the test with the highest rank, $j$, such that the p
+value, $p_{(j)} \leq \frac{j}{m} \delta$  
+
+Step 3:  Declare the tests with rank 1, 2, ..., j as significant.  
+
+
+If you would like to understand the reasoning behind FDR more, please read this
+http://www.nonlinear.com/support/progenesis/comet/faq/v2.0/pq-values.aspx
+
+
+-------
+
+
+## Example
+
+Below are the p-values for 200 hypothesis tests that were tested at $\alpha = 0.05$ level.
+
+```{r}
+set.seed(45213)
+p.v = c(runif(180), rgamma(n=20, scale=.05, shape=1))
+head(p.v)
+
+```
+
+
+-------
+
+
+(a) Without any adjustment to the p-values, how many tests will you call significant?
+
+```{r}
+sum(p.v < .05)
+```
+
+
+-------
+
+
+(b) Use The Bonferroni Correction factor to adjust for the p-value; now how many tests will you call significant?  Print out the index and the p-values of these tests.
+
+```{r}
+sum(p.v < .05/200)
+# Bonferroni Correction factor is very conservative.
+
+# which tests will you call positive with the Bonferroni Correction factor?
+which(p.v < .05/200)
+# What is the p-value of this test?
+p.v[p.v < .05/200]
+```
+
+
+-------
+
+
+(c) (Optional) Control the False Discovery Rate at .05 by using the method that we talked about in lecture. Now how many tests will you call significant?  Print out the index and the p-values of these tests.
+
+```{r}
+sort.p = sort(p.v)
+sort.p[sort.p <= (1:200)/200*.05] 
+# see all the tests satisfying this condition
+
+# Look for the cutoff for FDR
+cutoff  = max(sort.p[sort.p <= (1:200)/200*.05])
+
+# which tests will you call positive with the FDR adjustment?
+which(p.v <= cutoff)
+
+# What are the p-values of these tests?
+p.v[p.v <= cutoff]
+```
+
+
+
+# Summary of the tests you have learned so far and when to use them
+
+-------------------
+
+* t-test, Normal test:  
+    i.) test if the population mean equals certain number;  
+    ii.) test if the difference of **two** population means equals certain number (the two samples are assumed to be **independent** and so are the two populations);   
+    iii.) test if the difference of **two** population means equals certain number (the data in the two samples are **paired** and so are the two populations ).
+
+
+* One-way ANOVA: test if the means of **multiple** independent populations are equal. 
+
+
+-----------
+
+# Side notes
+
+**“statistically significant” does not mean "important"**
+
+As the sample size increases our test becomes more sensitive; however, being statistically significant does not mean the difference is important.
+
+
+-----------
+
+**Should decide on which hypothesis to test before you see the data**
+
+Data snooping--decide on which hypothesis to test only after you see the data.
+E.g., look at your sample data before decide on whether you want to do a one-side or two side test.
+
+If you have a p-value that is higher than $\alpha$ and you believe that $H_0$ is not true, you should refine the experimental technique, gather more data, use sharper analytical methods.  
+

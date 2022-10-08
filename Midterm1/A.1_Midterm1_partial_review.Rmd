@@ -1,0 +1,133 @@
+---
+title: "A.1 Midterm1 Partial Review"
+subtitle: 
+author: 
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+
+
+# Introduction
+
+
+Here we will review some of the topics/concepts that some of you find particularly difficult.  For a more extensive list of the topics that we have covered so far, see Midterm 1 Study Guide posted on Piazza.
+
+
+# Exercises
+
+We will use the `possum` dataset that we used in Precept 5.  Let's get ourselves familiar with the data.
+
+```{r}
+library(openintro)
+
+?possum
+dim(possum) # 104 rows and 8 columns
+
+str(possum) # `possum` is a data frame
+
+summary(possum)
+
+```
+
+## Different objects in R
+
+**Two main classes of objects in R**:
+
+* With homogeneous elements: Vectors, matrices, arrays.
+* With heterogeneous elements: Lists, data frames.
+
+## Different data types in R
+
+
+* integer
+* numeric
+* logical
+* character/string, 
+* factor 
+* complex (not covered in this course)
+
+## Extractions in R
+
+There are pretty much three main ways to extract elements out in a R object: with numerical indices, with names and with logical arguments.  The syntax changes slightly depending on the kind of R object that you are dealing with.
+
+**Ex. Extract out the columns `site`, `age` from the dataset `possum` and look at the first 6 rows of the output.**
+
+```{r}
+head(possum) # `site` and `age` are the first and fourth columns
+
+## Extraction with numerical indices
+head(possum[, c(1, 4)])
+
+## Extraction with names 
+head(possum[, c("site", "age")])
+
+```
+
+**Ex. Extract out the rows for the possums with head length at least 100mm.**
+
+```{r}
+## Extraction with logical arguments
+possum[possum$headL >= 100 , ]
+```
+
+
+
+## Calculate numerical summaries for each subset.
+
+**Ex. What is the median total length (in cm) for the possums in Victoria and in Queensland/New South Wales, respectively?**
+```{r}
+tapply(X = possum$totalL, INDEX = possum$pop, FUN = median)
+```
+
+**Ex. Calculate the median total length (in cm) again for possums in Victoria and in Queensland/New South Wales for each gender group. **
+
+```{r}
+tapply(X = possum$totalL, INDEX = list(possum$pop, possum$sex), FUN = median)
+```
+
+Ex. Write a function that takes one of the four body measurements of the possums and returns the age(s) of the possum(s) that gives the maximum number of that body measurement.
+
+```{r}
+age.for.max = function(x){
+  y = possum$age[x == max(x)]
+  return(y)
+}
+  
+
+age.for.max(x = possum$headL)
+age.for.max(possum$skullW)
+age.for.max(possum$totalL)
+age.for.max(possum$tailL)
+
+```
+
+
+# Topics reviewed
+
+* R object types
+* Data types in R
+* Extractions in R
+* `tapply()` function
+* How to create a function
+
+
+
+
+

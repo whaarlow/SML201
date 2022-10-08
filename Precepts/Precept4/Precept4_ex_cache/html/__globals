@@ -1,0 +1,16 @@
+unnamed-chunk-1	?	ChickWeight	str
+unnamed-chunk-2	ChickWeight	class	dim	library
+unnamed-chunk-3	..density..	aes	ChickWeight	geom_histogram	ggplot	weight
+unnamed-chunk-4	..density..	aes	chickPlot	geom_histogram	labs	weight
+unnamed-chunk-5	aes	chickPlot	geom_point	labs	Time	weight
+unnamed-chunk-6	aes	ChickWeight	Diet	geom_point	ggplot	labs	Time	weight
+unnamed-chunk-7	?	class	dim	head	iris	str
+unnamed-chunk-8	aes	element_text	ggpairs	iris	library	list	Species	theme	wrap
+unnamed-chunk-9	&	==	|	$	aes	babynames	geom_point	ggplot	head	labs	library	n	name	names	names<-	sort	T	unique	year
+unnamed-chunk-10	==	$	dim	frequent.names	head
+unnamed-chunk-11	&	==	|	$	aes	babynames	boys.2015.sorted	geom_point	ggplot	girls.2015.sorted	head	labs	n	name	names	year
+unnamed-chunk-12	dev.off	getwd	iris	pairs	pdf
+unnamed-chunk-13	aes	carat	cut	diamonds	geom_boxplot	ggplot	labs	library
+unnamed-chunk-14	==	|	$	diamonds	subset
+unnamed-chunk-15	..density..	aes	cut	diamonds.subset	geom_histogram	ggplot	labs	price
+unnamed-chunk-16	!=	==	$	diamonds	subset	sum

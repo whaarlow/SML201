@@ -1,0 +1,219 @@
+---
+title: "SML201 Chapter 7.3"
+subtitle:  'Causality, Correlation and Design of Experiments'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+# Introduction
+
+Recall that **population** is the entire set of objects whose characteristics we are interested in studying.
+
+
+Oftentimes we want to study the characteristic of a population.  For example, in forecasting the U.S presidential election results the population consist of all the eligible U.S. voters.  Studying the entire population is usually impractical and sometimes might not even be feasible.  Only a subset of the population are accessible.
+
+A **sample** is a subset of a population.
+
+Our goal is to make generalizations about a population by using the data from a sample; i.e., to *infer* the characteristics of a population based on results observed in a sample.
+
+# Challenges
+
+Many statistical methods rely on having a large sample (e.g., the CLT and the LLN).  The statistics tend to have nice properties when the sample size is large.  However, most of these methods also assumes that the sample is a random sample.
+
+
+In statistics bias refers to the tendency of over- or under-estimating the value of a population parameter. 
+
+"When a selection procedure is biased, taking a large sample does not help.  This just repeats the basic mistake on a large scale."
+
+-- *Statistics* by Freedman, Pisani, Purves (3rd Edition) *W.W. Norton \& Company*
+
+# Design of experiment
+
+
+## Types of bias  
+
+--------  
+
+### Selection bias
+
+Examples  
+
+* Surveying students in Frist between 8-9am  
+* Survey students whose cellphone numbers have area codes 609  
+
+--------
+
+* Way to prevent: Randomized experiments  
+
+--------  
+
+### Non-response bias 
+
+Example  
+
+* A high percentage of the objects in your study did not respond to your survey 
+
+--------
+
+* Way to identify bias: compare the demographic profiles (e.g. age, gender, and income) of subjects to some reliable  source (e.g., census data)   
+* Way to reduce: follow up on non-respondents
+
+--------  
+
+  
+
+### Placebo effect
+
+Linus Pauling (Nobel Prize laureate: 1954, for Chemistry and 1962, for Peace) thought that vitamin C prevents colds and cures them too.  Thomas Chalmers and associates did a randomized controlled double-blind experiment to find out. The subjects were 311 volunteers at the National Institutes of Health.  The subjects were assigned at random to four groups$^1$  
+
+
+-- from *Statistics* by Freedman, Pisani, Purves (3rd Edition) *W.W. Norton \& Company*
+
+--------  
+
+```{r echo=F}
+placebo = data.frame(Group=c(1:4), Prevention=c('placebo', 'vitamin C', 'placebo', 'vitamin C'), Therapy = c('placebo', 'placebo', 'vitamin C', 'vitamin C'))
+knitr::kable(placebo)
+```
+
+All subjects were given 6 capsule a day for prevention, and additional 6 capsules a day for therapy if they came down with a cold.  
+
+--------  
+
+High dropout rate in the first 3 groups than group 4.  A lot of the subject found out that they were getting placebo.  Study on the subjects remained blinded show that vitamin C had no effect.  Among those who broke the blind, group 2 & 4 reported fewest colds; group 3 & 4 had the shortest colds.
+
+--------  
+
+**Placebo effect**--a beneficial effect that were thought produced by the treatment by the subjects when in fact was by the subjects' belief in the treatment.  
+
+* Way to prevent: Double blind studies  
+
+
+Another study that shows that it is important to have double blind studies is study of facilitated communication.  Facilitated communication is a controversal technique that is intended to be used to assist handicapped people or autism sufferers to communicate.
+
+https://www.youtube.com/watch?v=PRo8TytvIDw
+
+
+- Janyce Boynton worked as a facilitator, helping Betsy, a student with severe autism.
+
+https://www.youtube.com/watch?v=DQcPsCVUHbs
+
+
+- With Janyce’s help leading her arm and elbow, Betsy appeared to reveal that she had been abused by her parents. She and her brother were forcibly removed and the parents charged with abuse.
+
+- Before the case went to court, Janyce and Betsy were tested.
+
+- Betsy was shown a picture of a simple object such as a banana, a shoe, or a ball, while Janyce was shown a different picture.
+
+- When asked what picture she had seen, Betsy did not once write the correct answer.
+
+- In another test, Betsy was taken away from Janyce and shown a key. When Betsy came back to Janyce, she was asked to write what she had seen,
+
+- Betsy could not answer the question.
+
+- The testers held up the key in front of both Betsy and Janyce, and they asked Betsy again, what she had seen. The answer came quickly: A key.
+
+https://sciencenordic.com/autism-denmark-therapy/ouija-board-study-highlights-ineffective-treatment-for-autism/1457845
+
+## Types of bias in comparison studies
+
+
+
+Statisticians use the method of comparison to identify effect.  
+
+--------  
+
+
+
+An example  
+
+Question: **Does getting private tutoring improve/lower the students' GPA in a particular high school?**
+
+
+--------  
+
+
+
+* Population: All students in the high school  
+* Sample**: Students selected for the study 
+* Treatment: Getting private tutoring (since we are interested in finding out the effect of getting tutoring) 
+* Measure of effect: average GPA of the students
+
+--------  
+
+
+
+
+### Bias in observation study  
+
+--------  
+
+**observation study**  
+
+* Treatment group: Students in the sample who *choose* to receive private tutoring at a regular basis  
+* Control group: The rest of the students in the sample 
+
+--------  
+
+**Possible bias**  
+
+**Confounding factor**--a difference between the treatment and control groups--other than the treatment--which affects the responses being studied.  A variable that associated with the treatment and the effect.  
+E.g., Ambition to achieve better grades; academically challenged.
+
+
+--------  
+
+
+**Way to reduce bias: Randomized experiment**
+
+
+Randomization is often used to reduce bias in experiments.
+
+--------  
+
+How does it work?  
+
+In a randomized experiment we *assign* subjects into the treatment and control groups randomly:
+
+* Treatment group: Provides students in this group private tutoring at a regular basis    
+* Control group: No tutoring provided and make sure that students do not get private tutoring themselves
+
+
+--------  
+
+The control group is comparable to the treatment group, apart from the treatment.
+
+## Correlation is not causation
+
+In an observation study just because two variables are correlated it does not necessarily mean that one causes the other.
+
+http://www.tylervigen.com/spurious-correlations

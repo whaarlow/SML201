@@ -1,0 +1,21 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	dim	read.csv	str
+unnamed-chunk-3	ins	summary
+unnamed-chunk-4	element_text	ggpairs	ins	labs	list	theme	wrap
+unnamed-chunk-5	aes	element_text	ggpairs	ins	labs	list	sex	theme	wrap
+unnamed-chunk-6	aes	element_text	ggpairs	ins	labs	list	smoker	theme	wrap
+unnamed-chunk-7	[<-	&	<	==	>=	$	as.factor	data.frame	ins	nrow	rep	summary
+unnamed-chunk-8	aes	element_text	ggpairs	labs	list	new.ins	smk.hbmi	theme	wrap
+unnamed-chunk-9	~	ins	lm	summary
+unnamed-chunk-10	~	ins	lm	summary
+unnamed-chunk-11	data.frame	dim	head	rnorm	set.seed
+unnamed-chunk-12	~	anova	d	lm
+unnamed-chunk-13	~	anova	ins	lm
+unnamed-chunk-14	data.frame	dim	head	rnorm	set.seed
+unnamed-chunk-15	~	d	drop1	lm
+unnamed-chunk-16	~	drop1	mod3	update
+unnamed-chunk-17	~	drop1	mod3	update
+unnamed-chunk-18	~	add1	d	lm
+unnamed-chunk-19	~	add1	lm.null	update
+unnamed-chunk-20	~	mod3	summary	update
+unnamed-chunk-21	~	lm.null	summary	update

@@ -1,0 +1,6 @@
+unnamed-chunk-2	?	dim	library	possum	str	summary
+unnamed-chunk-3	c	head	possum
+unnamed-chunk-4	>=	$	possum
+unnamed-chunk-5	$	median	possum	tapply
+unnamed-chunk-6	$	list	median	possum	tapply
+unnamed-chunk-7	==	$	max	possum	return

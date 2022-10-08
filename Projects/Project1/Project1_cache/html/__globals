@@ -1,0 +1,15 @@
+unnamed-chunk-1	class	head	read.csv	str	summary	tail
+unnamed-chunk-2	$	dating	max
+unnamed-chunk-3	$	as.vector	dating	length	mean	sum	tapply	unique
+unnamed-chunk-4	==	$	aes	as.vector	c	data.frame	dating	dec_o	geom_line	ggplot	labs	library	mean	prob	scale_colour_discrete	sort	tapply	unique
+unnamed-chunk-5	..density..	~	$	aes	as.factor	c	data.frame	dating	facet_grid	gender	geom_histogram	ggplot	labs	mean	merge	Percentage	scale_fill_discrete	tapply	unique
+unnamed-chunk-6	grid.raster	library	readPNG
+unnamed-chunk-7	c	data.frame	na.omit
+unnamed-chunk-8	c	dating	dec	dec_o	dim	exphappy	gender	iid	match	na.omit	nrow	subset
+unnamed-chunk-9	$	as.vector	compl.date	length	mean	tapply	unique
+unnamed-chunk-10	$	aes	as.factor	as.vector	compl.date	data.frame	ggpairs	mean	tapply
+unnamed-chunk-11	==	$	c	dating
+unnamed-chunk-12	as.matrix	c	dim	head	m	unique
+unnamed-chunk-13	c	m
+unnamed-chunk-14	$	apply	as.vector	cbind	diff	dim	list	male2	mean	return	tapply
+unnamed-chunk-15	boxplot	c	m.action	m.professed	par

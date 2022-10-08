@@ -1,0 +1,377 @@
+---
+title: "Precept 7 Exercises"
+author: "Your Name"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: no
+  pdf_document:
+    fig_caption: yes
+    toc: no
+geometry: margin=1.5in
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, tidy=FALSE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+# Objectives
+
+* Learning apply-like functions in R.
+* Understand the Central Limit Theorem (CLT)
+* Understand the concepts of independent events and mutually exclusive events 
+
+# R functions covered
+
+--------
+
+* Function allows you to sample from a set of elements with or without replacement: `sample(x, size, replace = FALSE, prob = NULL)`
+* `apply()` like functions: `apply(X, MARGIN, FUN)`, `lapply(X, FUN)`, `sapply(X, FUN)`
+
+
+# Demo
+
+## Introduction
+
+---------
+
+In this precept we will go over some programming techniques that will be useful for running simulations.  Here *simulation* refers to the imitation of a process.  Computer simulations are often used to study the behavior of certain process that is of interest.  For example, we might want to draw independent samples from a population and see how the sample means vary with respect to the population mean.
+
+---------
+
+## R programming
+
+--------
+
+
+### set.seed()
+
+set.seed() allow us to generate the same result each time when we generate random numbers; set.seed() is often used to produce reproducible analysis.
+
+
+### sample()
+`sample()` takes a sample of the specified `size` from the elements in `x` either with or without `replacement`.
+
+`sample(x, size, replace = FALSE, prob = NULL)`
+
+```{r}
+# set.seed() allows everyone running this code chunk 
+# to get the same outputs
+set.seed(7899)
+
+# The following draws a sample of size 4 without
+# replacement from the set of numbers {1, 2, 3, 4}
+sample(x=(1:4), size = 4, replace = F)
+
+# This will not work because the sample is taken
+# without replacement and we have only 4 items
+# to sample from 
+# sample(x=(1:4), size = 6, replace = FALSE)
+
+# The following draws a sample of size 4 with
+# replacement from the set of numbers {1, 2, 3, 4}
+sample(x=(1:4), size = 6, replace = T)
+
+# give more weight to 1--more likely to get 1
+sample(x=(1:4), size = 6, replace = T, 
+       prob = c(.9, .1, .1, .1))
+
+```
+
+
+### apply(), lapply() and sapply() 
+
+#### apply() 
+
+`apply()` allows you to apply a function to each of the rows/columns of a **matrix** simultaneously. 
+
+* The output of the function used in `apply()` is a usually vector (or occassionally a matrix); usually you expect that the output from each of your iteration have the same length.
+
+#### lappy() and sapply()
+
+The **inputs** for lappy() and sapply() are usually **vectors or lists**.  
+
+* Use lapply() when you expect the output to be a list; i.e., each element of the output could be of different lengths.   
+* Use sapply() when you expect the output to be a vector or a matrix or even a list of the same length.  
+
+**Oftentimes you can use apply() and sapply() interchangeably (see example below).**
+
+--------
+
+
+##### Example for `apply()`
+
+For a matrix `mat`, take the median for each column or row of `mat`:
+
+```{r}
+set.seed(789)
+# create a matrix for the example
+# Preceptor: please explain how this matrix is created
+mat = matrix(sample(1:25, size=25, replace=T), ncol=5) 
+mat
+
+# this takes the median for each column
+# `Mar = 2` means by columns
+apply(mat, MAR=2, FUN = median)
+
+# the output is a vector
+class(apply(mat, MAR=2, FUN = median))
+
+# this takes the median for each row
+# `Mar = 1` means by rows
+apply(mat, MAR=1, FUN = median)
+
+# output can be longer than one element
+apply(mat, MAR=1, FUN = range)
+class(apply(mat, MAR=1, FUN = range))
+```
+
+
+#### sapply() 
+
+You can also use `sapply()` for the tasks above.
+
+
+```{r}
+# this takes the median for each column
+sapply(1:5, FUN=function(i){median(mat[,i])})
+
+# this takes the median for each row
+sapply(1:5, FUN=function(i){median(mat[i,])})
+
+# output can be longer than one element
+sapply(1:5, FUN=function(i){range(mat[i,])})
+class(sapply(1:5, FUN=function(i){range(mat[i,])}))
+```
+
+
+#### lapply()
+
+If we use `lapply()` instead of `sapply()` for the task above the output will be a list.  Lists are more combersome than vectors, so you should use `lapply()` only when it is necessary.
+
+```{r}
+# with lapply() we get a list as the output
+lapply(1:5, FUN=function(i){range(mat[i,])})
+class(lapply(1:5, FUN=function(i){range(mat[i,])}))
+
+```
+
+## Combine a user-created function with an apply-like function
+
+
+For each of the columns in `iris` I want to find the species that is responsible for the maximum value of the column.
+
+```{r}
+head(iris)
+```
+
+```{r}
+# Try this for one column first
+# `which()` gives you the index of the element that satisfies the
+# condition specified in the input of which()
+iris[, 5][which(iris[, 1] == max(iris[, 1]))]
+
+# Define the function
+max.species = function(x){
+    iris[, 5][which(x == max(x))]
+}
+
+# Use function with apply()
+apply(iris[, 1:4], MAR = 2, FUN = max.species)
+
+
+# Note that there are repeats for the output
+# Also, since the outputs for the columns are of 
+# different lengths, the output for apply() is
+# a list
+class(apply(iris[, 1:4], MAR = 2, FUN = max.species))
+
+# I want to fix this.  Modify the function with 
+# unique()--this make sense since all the max values
+# for the last column correspond to the same species
+max.species = function(x){
+   max.index = which(x == max(x))
+   unique(iris$Species[max.index])
+}
+
+# run apply() again
+apply(iris[, 1:4], MAR = 2, FUN = max.species)
+
+```
+
+
+
+## Conditional probability; independent and mutually exclusive events
+
+**Swing voters.** A 2012 Pew Research survey asked 2,373 randomly sampled registered voters their political affiliation (Republican, Democrat, or Independent) and whether or not they identify themselves as swing voters. 35% of respondents identified as Independent, 23% identified as swing voters, and 11% identified as both. \footnotemark[1]
+
+
+(a) If I randomly select a participant from the sample are the two events "being Independent"" and "being a swing voter" mutually exclusive?  
+Not mutually exclusive since someone can be Independent and a swing voter at the same time; in fact, 11% of the 2,373 randomly sampled registered voters are Independent and swing voters.
+
+*Use a Venn diagram for probability to help visualization when explaining part b-e below.*     
+
+(b) What percent of voters are Independent but not swing voters?  
+35% - 11%  = 24%.
+
+(c) What percent of voters are Independent or swing voters?  
+35% + 23% - 11% = 47%
+
+(d) What percent of voters are neither Independent nor swing voters?  
+1-47% = 53%
+
+(e) If I randomly select a participant from the sample, is the event that this person is a swing voter independent of the event that he/she is a political Independent? 
+
+The chance that someone is a swing voter is 23%, and the chance that someone is a swing voter given that this person is a political Independent is 11%/35% = 31.43%.  Since the chance that a person is a  swing voter becomes much higher (increases from 23% to 31.43%) given that the person is a political Independent, the event that someone is a swing voter is dependent of the event that someone is a political Independent.
+
+
+
+
+
+
+# Exercises
+
+1. Run the line below and it will generate a vector (named `pop.unif`) of 1000 values; treat this vector of values as your population.  
+
+```{r}
+set.seed(7891)
+pop.unif = runif(n=1000, min=200, max = 500)
+```
+
+
+Draw a histogram of these values so that you can get an idea of how the distribution of these 1000 points are like.  You do not have to add in title or labels for the axes since this histogram is just for you to be familiar with the distribution of these 1000 points.
+
+```{r}
+hist(pop.unif, freq=F)
+```
+
+
+(a) Use either `apply()` or `sapply()` to do this 10,000 times: take a sample of 100 with replacement from the vector `pop.unif` and calculate the sample mean for your sample.   
+
+Store all these sample means in a vector called `sample.mean`; `sample.mean` should be of length 10,000. (Hint: Think about what is being reiterated and write out that part first with just one iteration; then, modify your code for the problem.)
+
+```{r, results='hide'}
+mat = matrix(sample(pop.unif, size = 100*100, replace = T), ncol = 10000)
+mat
+sample.mean = apply(mat, MAR = 2, FUN = mean)
+```
+
+
+(b) Calculate the mean and sd of the original population.
+
+```{r}
+mean(pop.unif)
+sd(pop.unif)
+```
+
+
+(c) Calculate the mean and sd of the sample means of the 10,000 samples.
+
+```{r}
+mean(sample.mean)
+sd(sample.mean)
+```
+
+
+
+(d) Compare the mean of your sample means to the mean of the original distribution.  Compare the sd of your sample means to $\frac{1}{\sqrt{sample \ size}}$ (sd of the original distribution).
+
+Sample mean = 351.2061
+Population mean = 349.6876
+Sample sd = 87.96959
+Population sd = 87.99196
+
+(e) Modify your codes in part (a) and make a function `repeat.sample(pop, iteration, sample.size)` where 
+
+* `pop`: the vector of values in the population;
+* `iteration`: the number of times you are going to iterate the sampling procedure (10,000 in the case above);
+* `sample.size`: the sample size for each iteration (1000 in the case above).
+The function should output the sample mean from each iteration.
+
+```{r}
+repeat.sample = function(pop, iteration, sample.size){
+  mat = matrix(sample(pop, size = sample.size*iteration, replace = T), ncol = iteration)
+  y = apply(mat, MAR = 2, FUN = mean)
+  return(y)
+}
+```
+
+
+
+(f) For sample sizes: 100, 500, 1000, 1500, 3000, use your function in part e to generate 10,000 sample means for each of these sample sizes, and assign them to five new variables named `sample100means`, `sample500means`, `sample1000means`, `sample1500means` and `sample3000means` respectively.
+
+```{r}
+sample100means = repeat.sample(pop = pop.unif, iteration = 10000, sample.size = 100)
+sample500means = repeat.sample(pop = pop.unif, iteration = 10000, sample.size = 500)
+sample1000means = repeat.sample(pop = pop.unif, iteration = 10000, sample.size = 1000)
+sample1500means = repeat.sample(pop = pop.unif, iteration = 10000, sample.size = 1500)
+sample3000means = repeat.sample(pop = pop.unif, iteration = 10000, sample.size = 3000)
+```
+
+
+
+
+The following code chunk uses par() to designate 6 spots for 6 histograms.  The first histogram is for the distribution of the population, and the rest 5 are for the 10,000 means for each of the sample sizes mentioned at the beginning of the question.  Examine the histograms, how does the distribution of the sample mean change as the sample size increases?  For each of the last 5 histograms where is the histogram centered?  Comment on how the shapes of the histograms change as the sample size becomes large.
+
+
+```{r eval = F}
+par(mfrow=c(2,3))
+hist(pop.unif, breaks=100)
+hist(sample100means, freq = F, main='sample.size=100', xlim = c(320, 380), 
+     xlab = 'sample means')
+hist(sample500means, freq = F, main='sample.size=500', xlim = c(320, 380), 
+     xlab = 'sample means')
+hist(sample1000means, freq = F, main='sample.size=1000', xlim = c(320, 380), 
+     xlab = 'sample means')
+hist(sample1500means, freq = F, main='sample.size=1500', xlim = c(320, 380), 
+     xlab = 'sample means')
+hist(sample3000means, freq = F, main='sample.size=3000', xlim = c(320, 380), 
+     xlab = 'sample means')
+
+```
+
+This histograms for the sample means become more and more concentrated around the population mean; i.e., the distributions have smaller and smaller spread as the sample size increases.  All 5 histograms are centered around the population mean.  The histograms all follow a bell-shape curve and as the sample size increases the peak of the curve becomes narrower.
+
+
+2. Use the dataset `iris` for this problem.  For each length or width column in `iris` calculate the variance of the data *within each species*; then, display the name of the species with the lowest variance. (Hint: you can create a function and use it in the `apply()` function.)
+
+
+
+
+3. **Poverty and language.** The American Community Survey is an ongoing survey that provides data every year to give communities the current information they need to plan investments and services. The 2010 American Community Survey estimates that 14.6% of Americans live below the poverty line, 20.7% speak a language other than English (foreign language) at home, and 4.2% fall into both categories.  Assume that the figures provided by the American Community Survey are accurate and answer the following questions. \footnotemark[1]
+
+(a) Are living below the poverty line and speaking a foreign language at home two events that are mutually exclusive?  
+
+
+(b) About what percent of Americans live below the poverty line and only speak English at home?  
+
+(c) What percent of Americans live below the poverty line or speak a foreign language at home?  
+
+(d) What percent of Americans live above the poverty line and only speak English at home?  
+
+(e) Is the event that someone lives below the poverty line independent of the event that the person speaks a foreign language at home?   
+
+
+
+
+\footnotetext[1]{Question was taken and modified based on a question from Diez, D. M., Barr, C. D., and Çetinkaya-Rundel, M. (2015). \emph{OpenIntro Statistics} third edition.}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

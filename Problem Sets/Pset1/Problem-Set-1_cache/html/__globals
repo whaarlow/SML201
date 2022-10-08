@@ -1,0 +1,17 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	babynames	class
+unnamed-chunk-3	babynames	dim
+unnamed-chunk-4	babynames	help
+unnamed-chunk-5	babynames	str
+unnamed-chunk-6	$	babynames	range
+unnamed-chunk-7	$	babynames	min
+unnamed-chunk-8	$	babynames	range
+unnamed-chunk-9	$	babynames	c	dim
+unnamed-chunk-10	==	$	c	head	names1997.2000
+unnamed-chunk-11	::	==	$	babynames	c	head	sort	unique
+unnamed-chunk-12	!	$	head	names2017	top.names1997.8.9.20
+unnamed-chunk-13	$	babynames
+unnamed-chunk-14	$	data2017	IQR	summary	T
+unnamed-chunk-15	==	>=	$	data2017	IQR.2017
+unnamed-chunk-16	$	data2017	length	outliers2017
+unnamed-chunk-17	==	$	babynames	c	plot

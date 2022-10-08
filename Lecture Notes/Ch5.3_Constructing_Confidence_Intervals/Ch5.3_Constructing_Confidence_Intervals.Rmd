@@ -1,0 +1,1484 @@
+---
+title: "SML201 Chapter 5.3"
+subtitle:  'Constructing Confidence Intervals'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+# Introduction
+
+-------
+
+In this chapter we will show you how to take into account the sample variation when making estimate on a population parameter by using a sample statistic.
+
+
+## What is a good estimator?
+
+The behavior the sample mean described in the CLT makes the sample mean a very good estimator for the population mean.
+
+
+---------
+
+A good estimator should possess two qualities:
+
+* **Unbiasedness**: the mean of the distribution of the estimator should be the value that we want to predict;  
+* **Small Spread**:  the spread of the the distribution of the estimator should be small.
+
+---------
+
+1.  Which of the following random variables (X, Y and Z) is the best estimator for predicting the value 5?
+
+```{r echo = F, fig.width=8, fig.height=6}
+par(mfrow = c(3,1))
+set.seed(789)
+d = rnorm(20000, mean = 5, sd=sqrt(20))+3
+hist(d, freq = F, main = 'Distribution of a random variable X',
+     xlab = 'x', breaks = 30, xlim = c(-15, 30), xaxp = c(-10, 30, 8))
+abline(v=mean(d), col = 'red')
+text(x = mean(d), y = .002, label = 'mean', col = 'red', cex = 2)
+
+
+d = rnorm(20000, mean = 5, sd=sqrt(20))
+hist(d, freq = F, main = 'Distribution of a random variable Y',
+     xlab = 'y', breaks = 30, xlim = c(-15, 30), xaxp = c(-10, 30, 8))
+abline(v=mean(d), col = 'red')
+text(x = mean(d), y = .002, label = 'mean', col = 'red', cex = 2)
+
+d = rnorm(20000, mean = 5, sd=8)
+hist(d, freq = F, main = 'Distribution of a random variable Z',
+     xlab = 'z', breaks = 60, xlim = c(-15, 30), xaxp = c(-10, 30, 8))
+abline(v=mean(d), col = 'red')
+text(x = mean(d), y = .002, label = 'mean', col = 'red', cex = 2)
+```
+
+---------
+
+Y is the best predictor since its distribution has mean 5 and the its spread is smaller than that for Z.
+
+
+--------
+
+# Constructing a confidence interval to estimate the population mean
+
+------
+
+The CLT gives a relationship between the sample mean and the population mean that makes the sample mean an attractive estimator for the population mean when the sample size is large.
+
+--------
+
+
+**Point Estimator v.s. Interval Estimator**
+
+We can use the sample mean as a point-estimate for the population mean; however, it will be better to have interval-estimate and say how confident you are about that your interval will cover the population mean.
+
+------
+
+## Question we would like to answer in this chapter
+
+---------
+
+(Hypothetical) **Company A** started broadcasting a popular **alternate history TV series** that attracted a good number of viewers and increased its subscriber count.  Company N wants to create a similar TV series to compete with Company A; thus, Company N is trying to understand the demographics of the viewers of Company A's TV series; in particular, **Company N wants to find out the average age of the viewers of the show**.
+
+
+
+---------
+
+From a third party Company Company N was able to purchase the demographic information on 10,000 viewers of the show.  Let's assume that these 10,000 people are a simple random sample from the 8 million U.S. viewers of the show.
+
+---------
+
+For the sample of the 10,000 viewers:
+
+* The average age: 41.29 year old
+* The SD of the ages of the viewers: 10.98
+
+<!---The actual population mean is 41.2 and SD 11---->
+
+---------
+
+As an educational program Company A also allows students to download some of the information on the TV show's viewers (with all the private information removed, of course); however, each student is allowed to download the information for only up to 20 viewers only, and the 20 viewers are randomly selected by Company A from its viewers.
+
+----------
+
+Tania and Brandon are two former SML 201 students and they each downloaded the information of 20 randomly selected viewers.
+
+Tania's sample:
+
+```{r}
+tania = c(49, 35, 54, 64, 46, 34, 44, 42, 36, 34, 28, 48, 46, 43, 53, 57, 27, 36, 58, 20)
+```
+
+Brandon's sample:
+
+```{r}
+brandon = c(48, 32, 64, 57, 68, 54, 35, 38, 29, 38, 39, 36, 42, 35, 51, 40, 50, 33, 50, 37)
+```
+
+----------
+
+How should Company N, Tania and Brandon each provide an interval estimate for the average age of the viewers of the show?
+
+----------
+
+## Constructing a confidence interval to estimate the population mean
+
+
+---------
+
+
+### Case 1a: When the sample size is large and the population SD=$\sigma$ is known to us
+
+--------
+
+We can construct a 90% confidence interval with a sample mean this way (we will fill in this part in class with some sketch on blackboard):
+
+```{r}
+# This gives me the .95 quantile of the standard normal distribution
+qnorm(p=.95) # 1.64
+```
+> (sample_mean - 1.64 population_SD/sqrt(sample_size), sample_mean + 1.64 population_SD/sqrt(sample_size))
+
+We use 1.64 here in the formula to display the formula in a more intuitive way.  In your reports you should always use `qnorm(p=.95)` instead of 1.64 since you **should not hand-code** in any values in your code.  
+
+--------
+
+Recall that if the population has mean $\mu$ and SD $\sigma$ and if the sample size $n$ is large enough then the sample mean follows a N(mean = $\mu$, SD = $\frac{\sigma}{n}$); thus, about 90% of the sample means fall within 1 SD $\frac{\sigma}{\sqrt{n}}$ of the mean $\mu$.
+
+```{r echo = F, fig.height=5.5, fig.width=10}
+den = dnorm(seq(from = -4, to=4, by=.01))
+xseq = seq(from = -4, to=4, by=.01)
+plot(0, ylim = c(0,.45), xlim = c(-4, 4), type = "n", ylab = 'Density', 
+     main = expression(paste("Sample Mean Distribution is N(Mean = ", mu, ", SD = ", sigma/sqrt(n), ")")), 
+     xlab = 'x values', xaxt="n")
+
+lines(y=den, x=xseq, lty = 1)
+polyx = seq(-qnorm(.95), qnorm(.95), by = .01)
+polyy = c(0, dnorm(polyx[-c(1, length(polyx))]), 0)
+polygon(polyx, polyy, col='skyblue')
+text(x = 0, y = .07, labels = "~90% of the sample means \nhave values on this interval",
+     col = 'darkblue')
+lines(x = polyx, y = rep(0, length(polyx)), col = 'darkblue', lwd = 8)
+
+axis(side=1, at= c(-4, -3, -2, -1, 0, 1, 2, 3, 4), 
+     labels=c(expression(paste(mu, "-4", sigma/sqrt(n))),
+              expression(paste(mu, "-3", sigma/sqrt(n))),
+              expression(paste(mu, "-2", sigma/sqrt(n))),
+              expression(paste(mu, "-1", sigma/sqrt(n))),
+              expression(paste(mu)),
+              expression(paste(mu, "+1", sigma/sqrt(n))),
+              expression(paste(mu, "+2", sigma/sqrt(n))),
+              expression(paste(mu, "+3", sigma/sqrt(n))),
+              expression(paste(mu, "+4", sigma/sqrt(n))))
+              )
+```
+
+
+--------
+
+Copying the length of the dark blue interval on the previous graph we can construct confidence interval by using the sample mean as the center of our confidence interval:
+
+```{r echo = F, fig.height=5.5, fig.width=10}
+den = dnorm(seq(from = -4, to=4, by=.01))
+xseq = seq(from = -4, to=4, by=.01)
+plot(0, ylim = c(0,.45), xlim = c(-4, 4), type = "n", ylab = 'Density', 
+     main = expression(paste("Sample Mean Distribution is N(Mean = ", mu, ", SD = ", sigma/sqrt(n), ")")), 
+     xlab = 'x values', xaxt="n")
+lines(y=den, x=xseq, lty = 1)
+polyx = seq(-qnorm(.95), qnorm(.95), by = .01)
+polyy = c(0, dnorm(polyx[-c(1, length(polyx))]), 0)
+polygon(polyx, polyy, col='skyblue')
+text(x = 0, y = .07, labels = "~90% of the sample means \nhave values on this interval",
+     col = 'darkblue')
+lines(x = polyx-1, y = rep(0, length(polyx)), col = 'darkblue', lwd = 8)
+points(x = -1.1, y = 0, col = 'green', pch = 16)
+#lines(x = polyx+.5, y = rep(0, length(polyx)), col = 'darkblue', lwd = 8)
+
+
+axis(side=1, at= c(-4, -3, -2, -1, 0, 1, 2, 3, 4), 
+     labels=c(expression(paste(mu, "-4", sigma/sqrt(n))),
+              expression(paste(mu, "-3", sigma/sqrt(n))),
+              expression(paste(mu, "-2", sigma/sqrt(n))),
+              expression(paste(mu, "-1", sigma/sqrt(n))),
+              expression(paste(mu)),
+              expression(paste(mu, "+1", sigma/sqrt(n))),
+              expression(paste(mu, "+2", sigma/sqrt(n))),
+              expression(paste(mu, "+3", sigma/sqrt(n))),
+              expression(paste(mu, "+4", sigma/sqrt(n))))
+              )
+```
+
+
+--------
+
+```{r echo = F, fig.height=5.5, fig.width=10}
+den = dnorm(seq(from = -4, to=4, by=.01))
+xseq = seq(from = -4, to=4, by=.01)
+plot(0, ylim = c(0,.45), xlim = c(-4, 4), type = "n", ylab = 'Density', 
+     main = expression(paste("Sample Mean Distribution is N(Mean = ", mu, ", SD = ", sigma/sqrt(n), ")")), 
+     xlab = 'x values', xaxt="n")
+lines(y=den, x=xseq, lty = 1)
+polyx = seq(-qnorm(.95), qnorm(.95), by = .01)
+polyy = c(0, dnorm(polyx[-c(1, length(polyx))]), 0)
+polygon(polyx, polyy, col='skyblue')
+text(x = 0, y = .07, labels = "~90% of the sample means \nhave values on this interval",
+     col = 'darkblue')
+lines(x = polyx + 1.4, y = rep(0, length(polyx)), col = 'darkblue', lwd = 8)
+points(x = 1.4, y = 0, col = 'green', pch = 16)
+
+
+axis(side=1, at= c(-4, -3, -2, -1, 0, 1, 2, 3, 4), 
+     labels=c(expression(paste(mu, "-4", sigma/sqrt(n))),
+              expression(paste(mu, "-3", sigma/sqrt(n))),
+              expression(paste(mu, "-2", sigma/sqrt(n))),
+              expression(paste(mu, "-1", sigma/sqrt(n))),
+              expression(paste(mu)),
+              expression(paste(mu, "+1", sigma/sqrt(n))),
+              expression(paste(mu, "+2", sigma/sqrt(n))),
+              expression(paste(mu, "+3", sigma/sqrt(n))),
+              expression(paste(mu, "+4", sigma/sqrt(n))))
+              )
+```
+
+
+--------
+
+```{r echo = F, fig.height=5.5, fig.width=10}
+den = dnorm(seq(from = -4, to=4, by=.01))
+xseq = seq(from = -4, to=4, by=.01)
+plot(0, ylim = c(0,.45), xlim = c(-4, 4), type = "n", ylab = 'Density', 
+     main = expression(paste("Sample Mean Distribution is N(Mean = ", mu, ", SD = ", sigma/sqrt(n), ")")), 
+     xlab = 'x values', xaxt="n")
+lines(y=den, x=xseq, lty = 1)
+polyx = seq(-qnorm(.95), qnorm(.95), by = .01)
+polyy = c(0, dnorm(polyx[-c(1, length(polyx))]), 0)
+polygon(polyx, polyy, col='skyblue')
+text(x = 0, y = .07, labels = "~90% of the sample means \nhave values on this interval",
+     col = 'darkblue')
+lines(x = polyx + 1.8, y = rep(0, length(polyx)), col = 'darkblue', lwd = 8)
+points(x = 1.8, y = 0, col = 'green', pch = 16)
+
+
+axis(side=1, at= c(-4, -3, -2, -1, 0, 1, 2, 3, 4), 
+     labels=c(expression(paste(mu, "-4", sigma/sqrt(n))),
+              expression(paste(mu, "-3", sigma/sqrt(n))),
+              expression(paste(mu, "-2", sigma/sqrt(n))),
+              expression(paste(mu, "-1", sigma/sqrt(n))),
+              expression(paste(mu)),
+              expression(paste(mu, "+1", sigma/sqrt(n))),
+              expression(paste(mu, "+2", sigma/sqrt(n))),
+              expression(paste(mu, "+3", sigma/sqrt(n))),
+              expression(paste(mu, "+4", sigma/sqrt(n))))
+              )
+```
+
+
+--------
+
+```{r echo = F, fig.height=5.5, fig.width=10}
+den = dnorm(seq(from = -4, to=4, by=.01))
+xseq = seq(from = -4, to=4, by=.01)
+plot(0, ylim = c(0,.45), xlim = c(-4, 4), type = "n", ylab = 'Density', 
+     main = expression(paste("Sample Mean Distribution is N(Mean = ", mu, ", SD = ", sigma/sqrt(n), ")")), 
+     xlab = 'x values', xaxt="n")
+lines(y=den, x=xseq, lty = 1)
+polyx = seq(-qnorm(.95), qnorm(.95), by = .01)
+polyy = c(0, dnorm(polyx[-c(1, length(polyx))]), 0)
+polygon(polyx, polyy, col='skyblue')
+text(x = 0, y = .07, labels = "~90% of the sample means \nhave values on this interval",
+     col = 'darkblue')
+lines(x = polyx + 2.5, y = rep(0, length(polyx)), col = 'darkblue', lwd = 8)
+points(x = 2.5, y = 0, col = 'green', pch = 16)
+
+
+axis(side=1, at= c(-4, -3, -2, -1, 0, 1, 2, 3, 4), 
+     labels=c(expression(paste(mu, "-4", sigma/sqrt(n))),
+              expression(paste(mu, "-3", sigma/sqrt(n))),
+              expression(paste(mu, "-2", sigma/sqrt(n))),
+              expression(paste(mu, "-1", sigma/sqrt(n))),
+              expression(paste(mu)),
+              expression(paste(mu, "+1", sigma/sqrt(n))),
+              expression(paste(mu, "+2", sigma/sqrt(n))),
+              expression(paste(mu, "+3", sigma/sqrt(n))),
+              expression(paste(mu, "+4", sigma/sqrt(n))))
+              )
+```
+
+--------
+
+A confidence interval constructed this way has 90% chance covering the population mean.
+
+--------
+
+**In general how do we find out the arm length of the confidence interval required?**
+
+--------
+
+Recall that in Precept 3 we saw that rescaling the data set is not going to change the area on the bars of a histogram for the corresponding intervals.
+
+This can be generalize to probability density curves.  Rescaling the data will not change the area under the density curves for the corresponding intervals.
+
+
+--------
+
+
+In practice this means that if $Z$ follows Normal(mean=0, SD = 1) and $Y$ follows Normal(mean=3, SD = 2).  The probability that Z is between -1 and 2 will be the same as the probability that Y is between 1 and 7. In both cases, we are trying to find out the probability that our Normal random variable is between 1 SD *below* the mean and 2 SD's *above* the mean.
+
+--------
+
+
+```{r echo = F, fig.height=7, fig.width=10}
+par(mfrow = c(2, 1))
+set.seed(789)
+xseq = seq(from = -4, to=4, by=.01)
+den = dnorm(xseq)
+plot(0, ylim = c(0,.45), xlim = c(-5, 10), type = "n", ylab = 'Density', main = "Normal Distribution with Mean = 0, SD = 1", xlab = 'Z values', xaxp = c(-4, 10, 14))
+lines(y=den, x=xseq, lty = 1)
+x = xseq[xseq >= -1 & xseq <= 2]
+polygon(x,c(0, dnorm(x[c(-1, -length(x))]), 0), col='skyblue')
+abline(v=0, col='red')
+
+xseq = seq(from = -5, to=11, by=.01)
+den = dnorm(xseq, mean = 3, sd = 2)
+plot(0, ylim = c(0,.45), xlim = c(-5, 11), type = "n", ylab = 'Density', main = "Normal Distribution with Mean = 3, SD = 2", xlab = 'Y values where Y = = 2Z+3', xaxp = c(-4, 10, 14))
+lines(y=den, x=xseq, lty = 1)
+x = xseq[xseq >= 1 & xseq <= 7]
+polygon(x,c(0, dnorm(x[c(-1, -length(x))], mean = 3, sd = 2), 0), col='skyblue')
+abline(v=3, col='red')
+```
+
+-------
+
+
+If for all the data points of $Y$ we subtract 3 (the mean of $Y$) from their values and divide by 2 (the SD of $Y$), the distribution of $Y$ will have mean 0 and SD 1; i.e., after performing the aforementioned operations on $Y$, the resulting values of $Y$ will form a distribution that is the same as $Z$.  Performing the operations above is called *standardizing* a random variable.
+
+--------
+
+**Normal(mean=0, SD = 1)** is called the **standard Normal distribution**.  In general if $Y$ follows a Normal(mean=$\mu$, SD = $\sigma$) distribution then the area under the density curve for $Y$ between $\mu$ + a $\sigma$ and $\mu$ + b $\sigma$ where $a \leq b$ is the same as the area between a and b under the density for the standard Normal distribution. Because of this equivalence, we can just use the standard Normal distribution to find the arm lengths when we already know the $SD(\bar{X})$, the SD of the sample mean.
+
+--------
+
+#### **SD and SE**
+
+The SD of an estimator is often called the Standard Error (SE).  E.g., when we are using a sample mean to estimate a population mean, the SD of the sample mean distribution is also called SE.  Note that **SD and SE are exactly the same thing**, the only difference is that SE is a name reserved for estimators!!  
+
+
+\begin{align}
+& SE(sample\ mean) = SD(sample\ mean) \\
+= & \frac{Population\ SD}{\sqrt{sample\ size}} = \frac{\sigma}{\sqrt{n}}
+\end{align}
+
+--------
+
+
+### Exercises: Constructing confidence intervals (CIs)
+
+Suppose I have a simple random sample of size 100 and the sample mean is 24.5 and the population SD = 5.  
+
+1. For a 80% CI, how long does the arm length need to be?
+
+--------
+
+```{r}
+
+# The SE(sample mean) is
+5/sqrt(100)
+
+
+# First find how many SE the arm length needs to be
+qnorm(p = .9)
+
+
+# The arm length is
+qnorm(p = .9)*5/sqrt(100)
+```
+
+
+--------
+
+2. Construct a 80% confidence interval to estimate the population mean
+
+--------
+
+```{r}
+c(24.5 - qnorm(p = .9)*5/sqrt(100), 24.5+qnorm(p = .9)*5/sqrt(100))
+```
+
+--------
+
+
+### How precise is your estimate?
+
+-----------
+
+Note that the arm length of a CI, $q_{(1-\alpha + \frac{\alpha}{2})} SE(\bar x)$, is called the *margin of error*.
+
+Ideally, we want high confidence with small range for a CI.  Once you construct a ($1-\alpha$) confidence interval, varying two quantities will change the arm length of your CI: 
+
+* $1-\alpha$;
+* $SE(\bar x)$.
+
+-----------
+
+<!------
+
+**Example 1** If the sample mean follows a Normal distribution, $q_{(1-\alpha + \frac{\alpha}{2})}$ for a 99% CI is `r round(qnorm(p=.995), 2)` compared to that for a 95% CI `r round(qnorm(p=.975), 2)`. A reduction of 4% the confidence can shorten the length of your CI by `r round(2*(qnorm(p=.995)-qnorm(p=.975)), 2)` $\frac{sample \ SD}{\sqrt{sample \ size}}$.
+
+-----------
+
+**Example 2**  If the sample mean follows a Normal distribution, $q_{(1-\alpha + \frac{\alpha}{2})}$ for a 85% CI is `r round(qnorm(p=.85+(1-.85)/2), 2)` compared to that for a 80% CI `r round(qnorm(p=.9), 2)`. A reduction of 5% the confidence can only shorten the length of your CI by `r round(2*(qnorm(p=.85+(1-.85)/2)-qnorm(p=.9)), 2)` $\frac{sample \ SD}{\sqrt{sample \ size}}$.  In this case, it might not make so much sense to adjust the confidence percent to shorten the interval.
+
+-----------
+
+----->
+
+#### **Example 1**   
+
+$SE(sample \ mean) = \frac{population \ SD}{\sqrt{sample \ size}}$.  If you
+increase your sample size by a factor by 9, the length of your CI will be reduced by a factor of 3:
+
+$$
+\frac{population \ SD}{\sqrt{new\ sample \ size}} =
+\frac{population \ SD}{\sqrt{9\  old\ sample \ size}}=
+$$
+
+$$
+\frac{population \ SD}{\sqrt{9} \sqrt{old\ sample \ size}}=
+\frac{population \ SD}{3 \sqrt{old\ sample \ size}}.
+$$
+
+---------
+
+Aside: When a sampling procedure is biased increasing your sample size will not reduce the bias in your sample--it will just repeat the same mistake on a larger scale. E.g., if you are surveying a lot of people who are not planning to vote, the data in your sample are not going to produce a good estimate of the voting result because of the selection bias. This is why is important to have simple random samples. 
+
+
+------------
+
+
+
+
+
+
+
+
+
+### Case 1b: When the sample size is large and the population SD=$\sigma$ is unknown 
+
+
+
+--------
+
+In the previous case we were given the population SD $\sigma$; however, in practice oftentimes we do not know the population distribution and therefore have also to estimate the population SD $\sigma$.  If the sample size is large we can just **use the sample SD, s, to substitute the population SD $\sigma$**.  This is justified by the Law of Large Number.
+
+--------
+
+
+To summarize for case 1: we will construct a ($1-\alpha$) confidence interval for the population mean by using one of the formulas below depending on if we know the population SD or not:
+
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{s}{\sqrt{n} } 
+$$
+
+where $s$ is the SD for the sample.
+
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{\sigma}{\sqrt{n} } 
+$$
+
+-------
+
+### Exercises: Construct a confidence interval when the sample size is large
+
+Back to the question discussed at the beginning of this chapter:
+
+**For Company N: a sample of the 10,000 viewers:**  
+
+* The average age: 41.29 year old
+* The SD of the ages of the viewers: 10.98
+
+
+----------
+
+3.  The quantile that corresponds to $90\%$ of the central area on standard Normal density curve is around
+
+
+(A.) -1.6449  
+(B.) 0.8416  
+(C.) 1.2816  
+(D.) 1.6449  
+
+
+----------
+
+4.  Let's construct a $90\%$ C.I. with this sample data!
+
+
+----------
+
+For Company N, $SE(\bar x) = \frac{10.98}{\sqrt{10000}} = .1098$. 
+
+
+a $90\%$ C.I. for the average age of the viewers has the form  
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{s}{\sqrt{n} }
+$$
+where $q_{(1-\alpha + \frac{\alpha}{2})}$ can be calculated by 
+
+```{r}
+qnorm(.95)
+```
+
+
+----------
+
+Thus, a $90\%$ C.I. for the average age of the viewers is (41.11 41.47) in years.
+
+```{r}
+c(41.29 - qnorm(.95)*(10.98/sqrt(10000)), 41.29 + qnorm(.95)*(10.98/sqrt(10000)))
+```
+
+
+
+-------
+
+
+### Case 2: When the sample size is small, $\sigma$ is unknown and the *population is normal*
+
+Previously (in case 1) we saw that when the sample size is large, the sample mean follows the $Normal(\mu, \frac{\sigma}{\sqrt{n} })$ where $\mu$ and $\sigma$ are the population mean and SD, respectively.  This is the result of the CLT.
+
+
+-------
+
+
+If the sample size is small but we know that the population has a Normal distribution (in practice, close to being symmetric is usually enough), instead of the standard normal distribution $N(0, 1)$, $\frac{\bar{X}-\mu}{\frac{s}{\sqrt{n}}}$ follows a t-distribution with degree of freedom = (sample size -1).
+
+-------
+
+
+In this case, we will construct a ($1-\alpha$) confidence interval this way
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{\sigma}{\sqrt{n} } 
+$$
+
+
+where $q_{(1-\alpha + \frac{\alpha}{2})}$ is the quantile from the t-distribution with degree of freedom = (sample size -1).
+
+--------
+
+The only parameter of a t-distribution is the degree of freedom.
+
+
+```{r fig.width=10, fig.height=8,echo=FALSE}
+
+xseq = seq(from = -4, to=4, by=.01)
+den = dnorm(xseq)
+plot(0, ylim = c(0,.4), xlim = c(-4, 4), type = "n", 
+#     main = expression(paste("T Distribution with Mean = ", mu, ", SD = ", sigma)), 
+      main = "T distribution with various values \nfor degree of freedom", cex.main = .9,
+     xlab = 'x values', ylab = 'Density')
+
+lines(y=den, x=xseq, lty = 1, col = 'red', lwd = 2)
+lines(y=dt(xseq, df = 30), x=xseq, lty = 2, col='darkmagenta', lwd = 2)
+lines(y=dt(xseq, df = 10), x=xseq, lty = 2, col='blue', lwd = 2)
+lines(y=dt(xseq, df = 5), x=xseq, lty = 2, col='green', lwd = 2)
+lines(y=dt(xseq, df = 2), x=xseq, lty = 2, col='orange', lwd = 2)
+
+
+# axis(side=1, at= 0, 
+#      labels=expression(paste(mu))
+#               )
+
+legend(x=2, y=.35, legend=c("Normal", "df=30", "df=10", "df=5", "df= 2"), col = c('red', 'darkmagenta', "blue", 'green', 'orange'), lty= c(1, 2,2,2,2))
+
+```
+
+
+
+
+--------
+
+**When the degree of freedom is large, the t-distribution will be very close to Normal(0, 1)**.  This means that when the sample size is large enough, even though we do not know the population SD, our sample SD provides a good  approximation of the population SD; note that this property is consistent with the fact that when the sample size is large the standardized the sample mean follows a distribution that is approximately Normal(0, 1).
+
+--------
+
+### Exercise
+
+5. Find the quantiles that capture 80% of the central area under the density curve for a t-distribution with degree of freedom = 5.
+
+------
+
+
+```{r}
+# t-dist for the quantile corresponding to 80% central area
+qt(p=.9, df = 5)
+# compared with the standard Normal distribution
+qnorm(p=.9)
+```
+
+Thus, for a t-distribution with degree of freedom = 5, 80% of the central area is between -1.48 and 1.48.  Note that 1.48 > 1.28, this is because the t-distribution has thicker tails.
+
+------
+
+**Tania's sample of size 20:**
+
+```{r}
+tania = c(49, 35, 54, 64, 46, 34, 44, 42, 36, 34, 28, 48, 46, 43, 53, 57, 27, 36, 58, 20)
+```
+
+
+--------
+
+
+For Tania the sample size (20) is a bit small so we need to check to see whether it is 
+okay to assume that the population is Normal.  In practice, as long as the population distribution is not too skewed we can just proceed with the procedure described in case 2.
+
+--------
+
+
+Investigate the sample data:
+
+```{r tidy = F}
+hist(tania, main = 'Age of the 20 viewers in sample',
+     xlab = 'Ages (in Years)', freq = F) 
+xseq = seq(from = .9*min(tania), to = 1.1*max(tania), length = 100)
+lines(y = dnorm(xseq, mean = mean(tania), sd = sd(tania)), x = xseq, col = "blue")
+```
+
+
+
+--------
+
+```{r}
+# quantile-quantile plot 
+qqnorm(y = tania, main = "Normal Q-Q Plot for Ages (years)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+
+qqline(y = tania, col = "blue")
+```
+
+
+
+--------
+
+
+The sample distribution is pretty symmetric, so the standardized sample mean $\frac{\bar{X}-\mu}{\frac{s}{\sqrt{n}}}$ follows the $t_{19}$ distribution.
+
+--------
+
+a $90\%$ C.I. for the average age of the viewers has the form  
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{s}{\sqrt{n} }
+$$
+where we find the value for $q_{(1-\alpha+ \frac{\alpha}{2})}$ from the $t_{19}$ distribution.
+
+
+6. Construct a 90% C.I. with Tania's sample.
+
+```{r}
+q.tania = qt(.95, df = length(tania)-1)
+```
+
+
+--------
+
+
+The 90% C.I. using Tania's sample is (38.27, 47.13).
+
+```{r}
+se.tania = sd(tania)/sqrt(length(tania))
+c(mean(tania) - q.tania*se.tania, mean(tania) + q.tania*se.tania)
+```
+
+
+Note that this 90% C.I. is longer than the one constructed with the data company N has.
+
+
+
+
+-------
+
+
+### Case 3: When the sample size is small and the population is *not* Normal
+
+In this case we do not know the distribution of the sample means.  We will use *Bootstrap sampling* to get an approximation of the distribution of the sample means and use this approximate distribution to construct a confidence interval to estimate the population mean.
+
+
+------
+
+
+#### **Basic idea of Bootstrap sampling**
+
+1.  Do not have information about the population distribution other than the sample;
+2.  need to find out how much the sample mean values vary around the population mean (i.e., to get an idea of the spread of the sample mean values);
+3.  to estimate the relationship between the population mean and the sample mean we do the following  
+
+------
+
+
+#### **Steps to construct CIs by using Bootstrap sampling**
+
+Your sample size is $n$ and the sample mean is $\bar x$.  
+
+1)  Use yours sample as a surrogate population; note that the surrogate population has population mean $\bar x$ and population SD that is the SD of the sample;
+2)  draw many many Bootstrap samples of size $n$ with-replacement from the surrogate population;
+3)  calculate the Bootstrap sample means for the Bootstrap samples; 
+4)  use the values of (Bootstrap sample means - surrogate population mean) to approximate the distribution of (sample mean - population mean);
+5) use the distribution in step 4 to construct a CI.
+
+
+------
+
+
+#### **The form of the CI** 
+
+A $1-\alpha$ confidence interval for the population mean is
+
+$$
+[\bar x - \delta_{(1-\alpha + \frac{\alpha}{2})},\ \bar x - \delta_{ \frac{\alpha}{2}}]
+$$
+where $\delta_{(1-\alpha + \frac{\alpha}{2})}$ and $\delta_{ \frac{\alpha}{2}}$ are the quantiles of the distribution of (Bootstrap sample means - surrogate population mean).
+
+Note that if the distribution of the sample means has a long right tail, the CI will have a long left arm.
+
+------
+
+
+### A derivation of the formula when $\alpha = 10\%$
+
+Since the distribution of (Bootstrap sample means - surrogate population mean) is approximating the distribution of (sample mean - population mean), we have
+
+\begin{align}
+\text{90}\% &\approx P(\delta_{.05} \leq \bar X - \mu \leq \delta_{.95})\\
+\Longleftrightarrow \text{90}\% &\approx P(-\delta_{.05} \geq \mu -\bar X \geq -\delta_{.95})\\
+\Longleftrightarrow \text{90}\% &\approx P(\bar X-\delta_{.05} \geq \mu \geq \bar X-\delta_{.95})\\
+\Longleftrightarrow \text{90}\% &\approx P(\bar X-\delta_{.95} \leq \mu \leq \bar X-\delta_{.05})
+\end{align}
+
+
+------
+
+**Brandon's sample of size 20:**
+
+```{r}
+brandon = c(48, 32, 64, 57, 68, 54, 35, 38, 29, 38, 39, 36, 42, 35, 51, 40, 50, 33, 50, 37)
+```
+
+----------
+
+For Brandon the sample size (20) is a bit small so we need to check to see whether it is 
+okay to assume that the population is Normal.
+
+--------
+
+
+Investigate the sample data:
+
+```{r tidy = F}
+hist(brandon, main = 'Age of the 20 viewers in sample',
+     xlab = 'Ages (in Years)', freq = F) 
+xseq = seq(from = .9*min(brandon), to = 1.1*max(brandon), length = 100)
+lines(y = dnorm(xseq, mean = mean(brandon), sd = sd(brandon)), x = xseq, col = "blue")
+
+```
+
+
+
+--------
+
+```{r}
+# quantile-quantile plot 
+qqnorm(y = brandon, main = "Normal Q-Q Plot for Ages (years)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+
+qqline(y = brandon, col = "blue")
+```
+
+
+
+--------
+
+
+The sample distribution is a bit skewed, so again we will use Bootstrap sampling to construct the C.I. and compare the result with the C.I. constructed by using the t-distribution.
+
+
+
+--------
+
+Use Bootstrap sampling to get a 90% CI:
+
+--------
+
+```{r}
+set.seed(1234)
+# Create Bootstrap samples
+mat = matrix(sample(brandon, size = 
+                         length(brandon)*10000, 
+                       replace = T), ncol = 10000)
+
+# Calculate the deviations of Bootstrap samples
+mean_pop.deviation = apply(mat, MAR = 2, FUN = mean)-mean(brandon)
+
+```
+
+--------
+
+```{r, echo=F}
+
+hist(mean_pop.deviation, breaks = 100, 
+     main = 'Histogram for Simulated Bootstrap Deviations  
+     between Sample Means and Population Mean', 
+     xlab= 'Simulated (sample means - population mean)',
+     cex.lab = .8, cex.main = .8, freq = F)
+```
+
+--------
+
+```{r, tidy=F}
+
+dev = quantile(mean_pop.deviation, 
+               prob = c(.90+(1-.90)/2, (1-.90)/2))
+```
+
+
+--------
+
+A 90% Bootstrap CI for the population mean is (39.85, 47.6).
+
+
+```{r}
+mean(brandon) - dev
+
+
+```
+
+--------
+
+With the t-distribution the 90% C.I. is (39.58 48.02).
+
+```{r}
+q.brandon = qt(.95, df = length(brandon)-1)
+se.brandon = sd(brandon)/sqrt(length(brandon))
+c(mean(brandon) - q.brandon*se.brandon, mean(brandon) + q.brandon*se.brandon)
+```
+
+
+--------
+
+The two different methods give similar results because the population where the sample is drawn from is actually Normal (I know this because I artificially created the population).
+
+
+--------
+
+Summary of the results:  90% C.I.'s are
+
+
+* Company N: (41.11 41.47);
+* Tania: (38.27 47.13);
+* Brandon: (39.85, 47.6).
+
+
+The true population mean is 41.2 and the population SD is 11.
+
+
+
+## Summary 
+
+------
+
+
+### Relationship between any Normal Random Variable and a N(0, 1) Random Variable
+
+------
+
+For any Normal Random Variable $X$ with certain mean and SD
+
+* $Z = \frac{X-mean(X)}{SD(X)}$ will always result in a standard Normal Random Variable; i.e., $Z \sim N(0,1)$.  The procedure described is called standardizing $X$.
+
+* For **N(mean(X), SD(X))** the area under the  density curve between **mean(X)-aSD(X)** and **mean(X)+bSD(X)**, where a, b >0, corresponds to the area under the **N(0, 1)** density curve **between -a and b**.
+
+------
+
+### Constructing C.I. (One population case)
+
+------
+
+We have learned how to construct confidence intervals to obtain interval estimates of the population mean ($\mu$) in different scenarios (population SD will be denoted as $\sigma$ and sample SD will be denoted as s in all scenarios)
+
+--------
+
+* **Case 1: When the sample size $n$ is large:** The standardized sample means form a Normal(0, 1) approximately.  If the population SD $\sigma$ is known we can calculate the $SE(\bar X) = \frac{\sigma}{\sqrt{n}}$ ; if the population SD $\sigma$ is unknown, because the sample size is large, the sample SD will be a good estimate of the population SD, $\sigma$. In this case, $\frac{\bar{x} - \mu}{SE(\bar{x})} \approx \frac{\bar{x} - \mu}{\frac{s}{n}}$ follows $N(0, 1)$ by the CLT.  **We use the Normal(0, 1) distribution to find out the value for $q_{(1-\alpha + \frac{\alpha}{2})}$.**
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{\sigma}{\sqrt{n} }  
+$$
+or
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{s}{\sqrt{n} }
+$$
+
+--------
+
+* **Case 2: When the sample size is small, $\sigma$ is unknown and the *population is normal*:** 
+
+If the population SD $\sigma$ is unknown to us, with the condition that the *population is normal* (or at least close to being symmetric) the standardized sample means form a t-distribution with degree of freedom = (sample size -1) = $n$-1.  In this case $\frac{\bar{x} - \mu}{SE(\bar{x})} \approx \frac{\bar{x} - \mu}{\frac{s}{n}}$ follows $t_{df = n-1}$ distribution.  **Thus, we will use the t-distribution with degree of freedom $n$-1 to find out the value for $q_{(1-\alpha + \frac{\alpha}{2})}$.**
+
+$$
+\bar x \pm \ q_{(1-\alpha + \frac{\alpha}{2})} \frac{s}{\sqrt{n} }  
+$$
+
+--------
+
+* **Case 3: When the sample size is small and the population is *not* normal:** In this case we do not know the distribution of the sample mean nor the distribution of $\frac{\bar{x} - \mu}{SE(\bar{x})}$.  We will use *Bootstrap sampling* to get an approximation of the distribution of $\bar{x} - \mu$ and use this approximated distribution to construct a confidence interval to estimate the population mean.
+
+
+
+# Proportion as a population mean
+
+-----------
+
+A proportion is just a special type of average where the data are just 0's and 1's only.  Instead of $\mu$ sometimes we will use $\pi$ to denote the population proportion (i.e., the population mean).  
+
+In case 2  where we have a small sample size we need to check that the population is approximately Normal before using the t-distribution to approximate the standardized sample mean distribution; however, it is impossible for a dataset with only 0 and 1 values that look like a Normal distribution, so we should just **make sure that the population distribution is not too skewed; i.e., $.05 \leq \pi \leq .95$**.
+
+
+# Applications
+ 
+## Exercise 1
+
+--------
+
+Suppose we have a simple random sample
+
+```{r}
+set.seed(8909)
+samp = rnorm(n = 45, mean = 3, sd = 2)
+samp
+```
+
+Construct a 95% CI to estimate the mean of the population where this sample came from:
+
+--------
+
+Note that since sample size is relatively large, we assume that the sample means form a Normal distribution approximately
+```{r}
+# find q
+qnorm(p = .95 + (1-.95)/2)
+
+# sd of the sample will be a good approximation of the sd of the population
+sd(samp)/sqrt(length(samp))
+```
+
+```{r}
+
+# a 95% CI for the mean of the population
+
+c(mean(samp) - qnorm(p = .95 + (1-.95)/2)* sd(samp)/sqrt(length(samp)),
+  mean(samp) + qnorm(p = .95 + (1-.95)/2)* sd(samp)/sqrt(length(samp))
+)
+
+
+```
+
+
+
+--------
+
+
+Note that you can also use the t-distribution to calculate the quantile
+since the df is large
+
+```{r}
+qt(p = .95 + (1-.95)/2, df= length(samp))
+
+# v.s.
+
+qnorm(p = .95 + (1-.95)/2)
+
+```
+
+--------
+
+## Exercise 2
+
+--------
+
+Construct a 90% CI for the sample below.  The sample contains measurements of the heights in inches of 10 men.
+
+```{r}
+v = c(86.65, 76.09, 77.76, 66.11, 89.07, 74.48, 72.98, 81.89, 83.33, 80.29)
+
+```
+
+--------
+
+a) Is it a reasonable assumption that the population is Normal?
+
+
+--------
+
+```{r, echo=F, tidy = F}
+hist(v, breaks=9, freq = F, 
+     main = 'Compare histogram with the Normal density curve for \nN(mean = sample mean,  sd = sample sd)', 
+     xlab = 'Height (inches)') 
+# to compare the sample data with 
+# the normal distribution with the same mean and sd
+
+xseq = seq(from = .9*min(v), to = 1.1*max(v), length = 100)
+lines(y = dnorm(xseq, mean = mean(v), 
+                sd = sd(v)), x = xseq, col = "blue")
+```
+
+--------
+
+Use qq-plot to compare the sample quantiles with the quantile from N(0, 1).
+
+```{r, eval=F}
+
+# quantile-quantile plot 
+qqnorm(y = v, main = "Normal Q-Q Plot for Height (in)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+
+qqline(y = v, col = "blue")
+```
+
+---------
+
+```{r, echo=F}
+
+# quantile-quantile plot 
+qqnorm(y = v, main = "Normal Q-Q Plot for Height (in)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = v, col = "blue")
+```
+
+Dots roughly fall on a straight line.  Sample distribution is roughly symmetric; there is no evidence that the population is not normal.
+
+--------
+
+b) Construct a 90% CI.
+
+Since we do not know the population SD, the sample size is relatively small and it seems to be a reasonable assumption that the population follows a normal distribution, we will construct the 90% CI this way:
+
+```{r}
+mean(v) + c(-1,1)*qt(.95, df = length(v)-1)*sd(v)/sqrt(length(v))
+
+```
+
+--------
+
+## Exercise 3
+
+--------
+
+Construct a 90% CI for the average height for the population where the sample below is from.  The sample contains measurements of the heights in inches of 22 people.
+
+```{r}
+u = c(68.61, 71.35, 71.01, 62.32, 68.39, 72.97, 71.19, 71.36, 67.46, 71.68, 69.37, 72.33, 68.69, 71.69, 63.23, 52.32, 58.17, 58.32, 61.00, 57.42, 53.20, 55.16)
+
+```
+
+--------
+
+a. Is it a reasonable assumption that the population is Normal?
+
+```{r, echo=F}
+hist(u, breaks=9, freq = F) # I'll let you add labels and title etc
+# to compare the sample data with 
+# the normal distribution with the same mean and sd
+xseq = seq(from = .9*min(u), to = 1.1*max(u), length = 100)
+lines(y = dnorm(xseq, mean = mean(u), sd = sd(u)), x = xseq, col = "blue")
+```
+
+--------
+
+Use qq-plot to compare the sample quantiles with the quantile from N(0, 1).
+
+```{r, echo=F}
+# quantile-quantile plot 
+qqnorm(y = u, main = "Normal Q-Q Plot for Height (in)",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = u, col = "blue")
+```
+
+
+
+--------
+
+
+Since the sample distribution is asymmetric and the points don't seem to form a straight line for the qq-plot, the population is probably not normal.
+
+--------
+
+b. Construct a 90% CI.
+
+Since we do not know the population SD, the sample size is relatively small and the population distribution is probably not normal, we will use Bootstrap sampling to get a 90% CI:
+
+--------
+
+```{r}
+# Create Bootstrap samples
+mat = matrix(sample(u, size = 
+                         length(u)*10000, 
+                       replace = T), ncol = 10000)
+
+# Calculate the deviations of Bootstrap samples
+mean_pop.deviation = apply(mat, MAR = 2, FUN = mean)-mean(u)
+
+```
+
+--------
+
+```{r, echo=F}
+
+hist(mean_pop.deviation, breaks = 100, 
+     main = 'Histogram for Simulated Bootstrap Deviations  
+     between Sample Means and Population Mean', 
+     xlab= 'Simulated (sample means - population mean)',
+     cex.lab = .8, cex.main = .8, freq = F)
+```
+
+--------
+
+```{r, tidy=F}
+
+dev = quantile(mean_pop.deviation, 
+               prob = c(.90+(1-.90)/2, (1-.90)/2))
+```
+
+
+--------
+
+A 90% Bootstrap CI for the population mean is:
+
+
+```{r}
+mean(u) - dev
+
+
+```
+
+----------
+
+## Exercise 4
+
+-----------
+
+(Modified from Exercise 6.5 in IntroStat) **Prop 19 in California**. In a 2010 Survey USA poll, 70% of the 119 respondents between the ages of 18 and 34 said they would vote in the 2010 general election for Prop 19, which would change California law to legalize marijuana and allow it to be regulated and taxed.  
+
+Construct a 90% confidence interval for the proportion of people supporting Porp 19 among all the eligible voters that are between 18 and 34. 
+
+-----------
+
+
+```{r}
+119*.7 
+# about 83 out of 119 people from the survey said that 
+# they would vote for Prop 19
+
+n.success = round(119*.7, digit=0)
+n.success
+
+# recreate the sample
+samp = rep(c(0,1), times = c(119-n.success, n.success))
+
+length(samp) # check that the sample size is correct
+samp.p = mean(samp)
+samp.p
+```
+
+-----------
+
+```{r tidy = F}
+# A 90% confidence interval for the proportion people 
+# with ages between 18 and 34 who would vote for Porp 19 in 2010 is
+
+CI.9 = samp.p + 
+  c(-1, 1)*qt(.95, df=119-1)*sd(samp)/sqrt(length(samp))
+
+CI.9
+```
+
+-----------
+
+
+```{r}
+
+# check this with the t.test()
+
+t.test(x = samp, conf.level = .9)
+
+# Please do not use t.test() for problem set 3.
+
+```
+
+-----------
+
+(a) **True or False**: If we considered many many random samples, each consists of 119 California voters between the ages of 18 and 34, and we calculated a 90% confidence interval with each sample, about 90% of these confidence intervals will cover the   proportion of Prop 19 supporters among all the 18-34 year old Californians.
+
+-----------
+
+
+(b) **True or False**: In order to decrease the margin of error (i.e. the arm length of the C.I.) by half, we would need to quadruple the sample size (i.e., multiply the original sample size by 4).
+
+
+
+
+# CIs for predicting population mean difference between two populations, population SDs unknown.
+
+------
+
+Note that for the case where we are dealing with one population, the C.I. for estimating the population mean has the form
+
+$$
+point \ estimator \pm \ q_{(1-\alpha + \frac{\alpha}{2})} SE(point \ estimator)
+$$
+
+------
+
+
+Now, for two *independent* populations with population means $\mu_1$ and $\mu_2$, a (1-$\alpha$) CI for predicting $\mu_1 - \mu_2$ again has this form: 
+
+$$
+point \ estimator \pm \ q_{(1-\alpha + \frac{\alpha}{2})} SE(point \ estimator)
+$$
+
+Just as we would use the sample mean as a point estimate for the population mean, we will now use the sample mean difference as a point estimate for the population mean difference. 
+
+-----------
+
+
+Suppose $\bar X_1$ and $\bar X_2$ are the sample means for two *independent* samples drawn from populations 1 and 2 and the populations are also *independent*.  Then, the previous expression can be re-written as
+
+$$
+(\bar X_1 - \bar X_2) \ \pm \ q_{(1-\alpha + \frac{\alpha}{2})} SE(\bar X_1 - \bar X_2)
+$$
+
+As long as the distribution of each of the $\bar X_1$ and $\bar X_2$ falls in case 1 or 2 described in the one population case we can use t-distribution with certain df to find $q$.  Therefore, we can use `t.test()` to construct the C.I.s.
+
+-----------
+
+When dealing with two populations, the syntax for the function `t.test()` takes the form 
+
+```
+t.test(x=..., y = ..., paired = ..., 
+var.equal = FALSE, conf.level = ...)
+```
+
+
+In addition to `y` and `conf.level` there are two additional input arguments for `t.test()` that we need to consider.
+
+
+* `var.equal` (default value is FALSE): set this equal to be `TRUE` only if at least one of your samples is small *and* you have strong evidence that the two populations share the same variance.  **In most cases this should be set to FALSE** and this is what we will do in this course.  
+* `paired` (default value is FALSE): set this equal be `TRUE` if the two samples are paired. Note that paired samples are not independent.
+
+
+
+-----------
+
+## Example 1  (Example 6.10 in OpenIntro)
+
+The way a question is phrased can influence a person's response. For example, Pew Research Center conducted a survey with the following question:
+
+"As you may know, by 2014 nearly all Americans will be required to have health insurance. [People who do not buy insurance will pay a penalty] while [People who cannot afford it will receive financial help from the government]. Do you approve or disapprove of this policy?"
+
+For each randomly sampled respondent, the statements in brackets were randomized: either they were kept in the order given above, or the order was reversed. 
+
+-----------
+
+Table 6.2 shows the results of this experiment, reproduced below. 
+
+2nd Statement | Sample Size | Approve Law (%) | Disapprove Law (%)| Other (%)
+------------- | ----------- | ----------- | -------------- | -----
+"people who cannot afford it will receive financial help from the government" | 771 | 47 | 49 | 3
+"people who do not buy it will pay a penalty" | 732 | 34 | 63 | 3
+
+-----------
+
+```{r}
+# Number of people approving the law
+num.appr1 = round(771*.47, 0) 
+num.appr2 = round(732*.34, 0) 
+
+# Construct sample data that is suitable 
+# for making the requested CI
+samp1 = rep(c(0,1), times=c(771-num.appr1, num.appr1))
+samp2 = rep(c(0,1), times=c(732-num.appr2, num.appr2))
+
+# size of each sample
+length(samp1) 
+length(samp2)
+```
+
+-----------
+
+```{r}
+# Check the data
+table(samp1) 
+table(samp2)
+
+# Sample means
+samp1prop = mean(samp1) 
+samp1prop
+samp2prop = mean(samp2)
+samp2prop
+```
+
+-----------
+
+Construct 90% CIs for $\mu_1 - \mu_2$:
+```{r}
+t.test(x=samp1, y=samp2, conf.level=.9)
+
+```
+
+
+-----------
+
+We can extract out the C.I. part this way
+
+```{r}
+t.test(x=samp1, y=samp2, conf.level=.9)$conf
+```
+
+
+
+Note that if you exchange the inputs for `x` and `y` you will get a C.I. for $\mu_2 - \mu_1$ instead
+
+```{r}
+t.test(y=samp1, x=samp2, conf.level=.9)$conf
+
+```
+
+-----------
+
+Note that zero is not in the CI.  In general when comparing two population means/proportions is that the CI covers zero a desirable result or not?
+
+(A) Desirable
+(B) Not desirable
+
+-----------
+
+Answer: not desirable since this means that we cannot determine if mean of one population is greater than that for the other or not.
+
+-----------
+
+
+## Exercise 1
+
+Independent simple random samples of 18 seniors and 15 juniors attending a large university yield the following data on grade point averages.
+
+```{r}
+seniors =c(2.56, 2.69, 2.56, 3.11, 2.70, 3.18, 3.25, 2.09,
+           3.50, 2.25, 2.32, 2.79, 2.34, 2.78, 2.56, 3.45, 
+           2.56, 2.19)
+juniors = c(2.66, 2.75, 2.99, 3.04, 2.73, 3.37, 2.99, 3.43, 
+            3.01, 2.85, 2.71, 3.16, 3.35, 2.47, 3.31)
+```
+
+Construct a 90% CI for the difference of the mean GPAs of the seniors and juniors.
+
+
+**Question:** Are the two samples independent?
+
+(A.) Yes  
+(B.) No  
+
+-----------
+
+Answer: Yes, these are two independent samples randomly drawn from two independent populations.
+
+-----------
+
+
+## Exercise 2
+
+We randomly select 20 couples and compare the weekly time the husbands and wives spent on watching TV. The husbands spent 12.3 hours per week with SD 3.1, and the wives spent 9.4 hours per week with SD 2.7. Construct a 90% CI for the difference of the mean hours spent on watching TV between the husbands and wives.
+
+
+**Question:** Are the two samples independent?
+
+(A.) Yes  
+(B.) No  
+
+-----------
+
+Answer: No, the two samples are paired since husbands and wives usually live in the same house and influence the behavior of each others.  Note that paired samples are not dependent, but dependent samples are not necessarily paired.
+
+# Technical details related to concepts and functions covered in this chapter
+
+-------
+
+## **Ways to check graphically if a dataset seem to come from a population that is not Normal**
+
+There are two types of graphs that you can use to check the Normality of a dataset; you should always use both graphs together:
+
+* Histogram with Normal density curve with mean = sample mean and sd = sample sd;
+* qq plot
+
+---------
+
+Histogram with Normal density curve for N(mean = sample mean,  sd = sample sd) superimposed on top.
+
+
+```{r, echo=F}
+v = c(86.65, 76.09, 77.76, 66.11, 89.07, 74.48, 72.98, 81.89, 83.33, 80.29)
+
+hist(v, breaks=9, freq = F, main = 'Compare histogram with the Normal density curve for \nN(mean = sample mean,  sd = sample sd)')
+# to compare the sample data with 
+# the normal distribution with the same mean and sd
+xseq = seq(from = .9*min(v), to = 1.1*max(v), length = 100)
+lines(y = dnorm(xseq, mean = mean(v), sd = sd(v)), x = xseq, col = "blue")
+```
+
+--------
+
+Use qq-plot to compare the sample quantiles with the quantile from N(0, 1).
+
+
+```{r, echo=F}
+
+# quantile-quantile plot 
+qqnorm(y = v, main = "Normal Q-Q Plot for data points in a sample",
+xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+cex.lab = 0.8, cex.main = 0.8) 
+qqline(y = v, col = "blue")
+```
+
+
+

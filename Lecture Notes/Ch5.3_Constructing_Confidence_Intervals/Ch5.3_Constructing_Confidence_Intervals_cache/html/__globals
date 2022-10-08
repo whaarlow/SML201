@@ -1,0 +1,56 @@
+unnamed-chunk-1	abline	c	F	hist	mean	par	rnorm	set.seed	sqrt	text
+unnamed-chunk-2	c
+unnamed-chunk-3	c
+unnamed-chunk-4	qnorm
+unnamed-chunk-5	axis	c	dnorm	expression	length	lines	plot	polygon	qnorm	rep	seq	text
+unnamed-chunk-6	axis	c	dnorm	expression	length	lines	plot	points	polygon	qnorm	rep	seq	text
+unnamed-chunk-7	axis	c	dnorm	expression	length	lines	plot	points	polygon	qnorm	rep	seq	text
+unnamed-chunk-8	axis	c	dnorm	expression	length	lines	plot	points	polygon	qnorm	rep	seq	text
+unnamed-chunk-9	axis	c	dnorm	expression	length	lines	plot	points	polygon	qnorm	rep	seq	text
+unnamed-chunk-10	&	<=	>=	abline	c	dnorm	length	lines	par	plot	polygon	seq	set.seed
+unnamed-chunk-11	qnorm	sqrt
+unnamed-chunk-12	c	qnorm	sqrt
+unnamed-chunk-13	qnorm
+unnamed-chunk-14	c	qnorm	sqrt
+unnamed-chunk-15	c	dnorm	dt	legend	lines	plot	seq
+unnamed-chunk-16	qnorm	qt
+unnamed-chunk-17	c
+unnamed-chunk-18	dnorm	F	hist	lines	max	mean	min	sd	seq	tania
+unnamed-chunk-19	qqline	qqnorm	tania
+unnamed-chunk-20	length	qt	tania
+unnamed-chunk-21	c	length	mean	q.tania	sd	sqrt	tania
+unnamed-chunk-22	c
+unnamed-chunk-23	brandon	dnorm	F	hist	lines	max	mean	min	sd	seq
+unnamed-chunk-24	brandon	qqline	qqnorm
+unnamed-chunk-25	apply	brandon	length	matrix	mean	sample	set.seed	T
+unnamed-chunk-26	F	hist	mean_pop.deviation
+unnamed-chunk-27	c	mean_pop.deviation	quantile
+unnamed-chunk-28	brandon	dev	mean
+unnamed-chunk-29	brandon	c	length	mean	qt	sd	sqrt
+unnamed-chunk-30	rnorm	set.seed
+unnamed-chunk-31	length	qnorm	samp	sd	sqrt
+unnamed-chunk-32	c	length	mean	qnorm	samp	sd	sqrt
+unnamed-chunk-33	length	qnorm	qt	samp
+unnamed-chunk-34	c
+unnamed-chunk-35	dnorm	F	hist	lines	max	mean	min	sd	seq	v
+unnamed-chunk-36	qqline	qqnorm	v
+unnamed-chunk-37	qqline	qqnorm	v
+unnamed-chunk-38	c	length	mean	qt	sd	sqrt	v
+unnamed-chunk-39	c
+unnamed-chunk-40	dnorm	F	hist	lines	max	mean	min	sd	seq	u
+unnamed-chunk-41	qqline	qqnorm	u
+unnamed-chunk-42	apply	length	matrix	mean	sample	T	u
+unnamed-chunk-43	F	hist	mean_pop.deviation
+unnamed-chunk-44	c	mean_pop.deviation	quantile
+unnamed-chunk-45	dev	mean	u
+unnamed-chunk-46	c	length	mean	rep	round
+unnamed-chunk-47	c	length	qt	samp	samp.p	sd	sqrt
+unnamed-chunk-48	samp	t.test
+unnamed-chunk-49	c	length	rep	round
+unnamed-chunk-50	mean	samp1	samp2	table
+unnamed-chunk-51	samp1	samp2	t.test
+unnamed-chunk-52	$	samp1	samp2	t.test
+unnamed-chunk-53	$	samp1	samp2	t.test
+unnamed-chunk-54	c
+unnamed-chunk-55	c	dnorm	F	hist	lines	max	mean	min	sd	seq
+unnamed-chunk-56	qqline	qqnorm	v

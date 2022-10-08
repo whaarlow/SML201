@@ -1,0 +1,36 @@
+unnamed-chunk-2	read.csv
+unnamed-chunk-3	class	dim	t.ship
+unnamed-chunk-4	head	t.ship
+unnamed-chunk-5	str	t.ship
+unnamed-chunk-6	library
+unnamed-chunk-7	..density..	~	aes	Age	as.factor	c	facet_grid	geom_histogram	ggplot	labs	scale_fill_discrete	Survived	t.ship
+unnamed-chunk-8	..density..	~	aes	Age	facet_grid	geom_histogram	ggplot	labs	t.ship
+unnamed-chunk-9	~	aes	Age	as.factor	c	facet_grid	geom_histogram	ggplot	labs	scale_fill_discrete	Survived	t.ship
+unnamed-chunk-10	c	data.frame	F	T
+unnamed-chunk-11	aes	Age	as.factor	class	geom_boxplot	ggplot	labs	Pclass	t.ship
+unnamed-chunk-12	aes	Age	as.factor	geom_boxplot	ggplot	labs	Pclass	t.ship
+unnamed-chunk-13	aes	Age	as.factor	geom_boxplot	ggplot	labs	Pclass	t.ship
+tidy	..density..	~	aes	Age	facet_grid	geom_histogram	ggplot	labs	t.ship
+unnamed-chunk-14	~	aes	Age	as.factor	c	facet_grid	geom_histogram	ggplot	labs	scale_fill_discrete	Survived	t.ship
+unnamed-chunk-15	==	Pclass	Sex	Survived	t.ship	table	with
+unnamed-chunk-16	==	Pclass	Sex	Survived	t.ship	table	with
+unnamed-chunk-17	..density..	~	aes	Age	as.factor	c	facet_grid	geom_histogram	ggplot	labs	scale_fill_discrete	Survived	t.ship
+unnamed-chunk-18	c	ggpairs	library	t.ship
+unnamed-chunk-19	$	$<-	as.factor	ggpairs	str	t.ship
+unnamed-chunk-20	aes	element_text	ggpairs	list	small.t.ship	Survived	theme	wrap
+unnamed-chunk-21	aes	Age	as.factor	geom_boxplot	ggplot	labs	Pclass	t.ship
+unnamed-chunk-22	airquality	ggplot	na.omit
+unnamed-chunk-23	airquality	head	t.ship
+unnamed-chunk-24	c	colnames<-	matrix	paste	rep	rnorm	rownames<-	set.seed
+unnamed-chunk-25	aes	as.factor	as.vector	colnames	data.frame	geom_line	geom_point	ggplot	grade	grade_level	head	labs	ncol	nrow	rep	score	student_id
+unnamed-chunk-26	c	class	grade	head	library	melt	names<-
+unnamed-chunk-27	~	class	dcast	head	long.grade
+unnamed-chunk-28	aes	compl.air	factor	geom_boxplot	geom_point	ggplot	labs	Month	Ozone
+unnamed-chunk-29	aes	factor	g	geom_boxplot	geom_jitter	labs	Month	Ozone
+unnamed-chunk-30	aes	factor	g	geom_boxplot	geom_jitter	labs	Month	Ozone
+unnamed-chunk-31	aes	compl.air	factor	geom_boxplot	geom_jitter	ggplot	labs	Month	Ozone
+unnamed-chunk-32	aes	compl.air	element_text	factor	geom_boxplot	geom_jitter	ggplot	labs	Month	Ozone	theme
+unnamed-chunk-33	..density..	~	aes	facet_grid	g	geom_histogram	labs	Ozone	theme_minimal
+unnamed-chunk-34	..density..	~	aes	facet_grid	g	geom_histogram	labs	Ozone	theme_bw
+unnamed-chunk-35	..density..	~	aes	facet_grid	g	geom_histogram	labs	Ozone	theme_grey
+unnamed-chunk-36	..density..	~	aes	facet_grid	g	geom_histogram	labs	Ozone	theme_grey	theme_set

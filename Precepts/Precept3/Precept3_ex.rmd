@@ -1,0 +1,401 @@
+---
+title: "Week 3 Precept Exercises"
+author: "Bill Haarlow"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: no
+    toc_depth: '3'
+  pdf_document:
+    fig_caption: yes
+    number_sections: no
+    toc: no
+    toc_depth: 3
+geometry: margin=1.5in
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=4, fig.width=6, collapse=TRUE, comment=NA, prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, tidy.opts=list(width.cutoff=57),tidy=TRUE)
+options(width=63)
+```
+
+# Objectives
+
+* Getting familiar with functions: tapply(), plot(), lines(), points(), abline(), par()
+* Learn how to interpret scatterplots
+* Understand how shifting and scaling affect a dataset in terms of its histogram
+* Practice on how to write a function
+
+# Demo
+
+
+# `tapply()` function
+
+We will create a data frame for the example here.  Please do not worry about how the data frame was created.
+
+```{r}
+# Let the following be the departments and education levels of
+# students in a given course
+major = c("Economics", "Biology", "Neuroscience", "Philosophy", "CS")
+education = c("Freshman", "Sophomore", "Junior", "Senior")
+
+# The data for the 40 students in the class. By using the input
+# argument `length`, we can make sure that all vectors are of the same size
+major.vec = rep(major, times = c(5, 13, 7, 2, 13))
+ed.vec = rep(education, length = length(major.vec)) 
+grades = runif(length(major.vec), min=60, max=100) 
+# generate grades; Preceptors: no need to explain to student what runif() does;
+# it's enough to just say that this generates some values for
+# `grades`.
+
+students = data.frame(st.major = major.vec,  
+                          st.ed = ed.vec,  
+                          st.grade = grades)
+
+```
+
+Get a glimpse of the data frame:
+
+```{r}
+head(students, n = 12)
+
+```
+
+Find the minimum and maximum scores of each major:
+
+```{r}
+tapply(X = students$st.grade, INDEX = students$st.major, FUN = range)
+```
+
+Find the average score for each major by class standing:
+
+```{r}
+tapply(X = students$st.grade, INDEX = list(students$st.ed, students$st.major), FUN = mean)
+
+# go back to check to see if it's reasonable to have NAs
+head(students)
+students[students$st.major == "Philosophy",]
+```
+
+
+## Creating functions:
+
+```{r}
+Function_name = function(input_var){
+ # a set of tasks performed on the input_var
+ # return(result to output)
+}
+
+RaiseToAPower = function(x, power){
+  y=x^power
+  return(y)
+}
+
+k = RaiseToAPower(2, 3)
+k
+```
+
+
+We would like to create a function called data.info()
+that takes a data.frame x and return the basic info on x.
+Preceptor should explain what list() does.
+
+
+```{r}
+# I want a function that will do the following for a data frame `x`:
+x = iris
+a = dim(x)
+b = class(x)
+c = summary(x)
+# and output the following:
+list(data.size=a, data.object.type=b, data.summary=c)
+# I am going to name this function `data.info()`.
+
+
+# Modify the code above to make the function:
+data.info = function(x){
+    a = dim(x)
+    b = class(x)
+    c = summary(x)
+    return(list(data.size=a, data.object.type=b, data.summary=c))
+} 
+
+# Check to see if `data.info()` works correctly
+data.info(x=iris)
+
+# I can make the code more concise this way:
+list(data.size = dim(x), data.object.type = class(x),
+     data.summary = summary(x))
+
+# A more concise way to write the function:
+data.info = function(x){
+  
+    return(list(data.size = dim(x), data.object.type = class(x), 
+                data.summary = summary(x)))
+  
+}
+# Check to see if it still gives me the same answer:
+data.info(iris)
+
+# Store the value from data.info(iris) into a object called
+# my.data.summary
+my.data.summary = data.info(iris)
+```
+
+## Transforming the data
+
+Recall from last week's precept that we can use the function par() to adjust the values for the graphic parameters that are used to display the graph.  Some useful ones that we talked about last week:
+
+**mfrow**: a vector for the number of rows and number of columns c(nr,nc), to describe the layout of the plotting area. Used to design the layout of several plots.
+
+**cex.main, cex.lab, cex, cex.aixs**: used to change the sizes of the font for the title, the x- and y- axis labels, the symbols and the axis annotations on a plot, respectively. These arguments can also be used in other graphical functions, such as, hist(), plot(), points(), lines(), abline().
+
+
+### Example
+
+In some cases, we'll need to shift and/or change the scale of the data from one range to another. For example, if we want to display the observations from `nhtemp` in Celsius, we can use the equation $t_c = (t_f - 32) * 5/9$ . Note that the new data records the same number of observations. Therefore, the bins marking the temperatures between, for example, 49 to 50 will still cover the same area since they are accounting for the same number of observations.
+
+
+```{r, fig.height=7, tidy = F}
+nhtempC = (nhtemp - 32) * 5/9
+
+# Preceptors: please explain the difference between having
+# cex.main, cex.lab, cex, cex.aixs in `par()` and in `hist()`
+par(mfrow = c(2,1), cex.main=.8, cex.lab=.8, cex.axis=.5)
+hist(nhtemp,freq = F, 
+     main='Average Yearly Temperatures in New Haven', 
+     xlab = 'Temp (F)', ylab = 'Proportion per fahrenheit',
+     breaks=60)
+hist(nhtempC, freq = F, 
+     xlim=c(min(nhtempC),max(nhtempC)), 
+     breaks=60, 
+     main='Average Yearly Temperatures in C', xlab = "temp (C)",
+     ylab = 'Proportion per celsius') 
+```
+
+
+Ideally, when we are comparing multiple distributions, the graphs for the distributions should be on the same scale; unfortunately, in this case it makes the graphs difficult to read.  Thus, we will use the previous graph.  In general, please make your graphs for the comparisons on the same scale whenever possible.
+
+```{r fig.height=7, tidy = F}
+# Preceptors: please explain the difference between having
+# cex.main, cex.lab, cex, cex.aixs in `par()` and in `hist()`
+par(mfrow = c(2,1), cex.main=.8, cex.lab=.8, cex.axis=.5)
+hist(nhtemp,freq = F, 
+     main='Average Yearly Temperatures in New Haven', 
+     xlab = 'Temp (F)', ylab = 'Proportion per fahrenheit',
+     breaks=30, xlim = c(7, 55))
+hist(nhtempC, freq = F, 
+#     xlim=c(min(nhtempC),max(nhtempC)), 
+     breaks=30, 
+     main='Average Yearly Temperatures in C', xlab = "temp (C)",
+     ylab = 'Proportion per celsius', xlim = c(7, 55)) 
+```
+
+
+
+```{r}
+# set mfrow back to c(1,1)
+par(mfrow = c(1,1), cex.main=.8, cex.lab=.8, cex.axis=.5)
+```
+
+
+## Scatterplots
+
+Scatterplots can be used to display the relationship between two variables. In the example below, we use the `iris` data to show the values of the Petal length as a function of its width. We then mark the points for each of the species using a different shape (pch) and color (col). 
+
+
+```{r, fig.height=5}
+head(iris)
+plot(y = iris$Petal.Length,x = iris$Petal.Width, 
+     ylab = "Petal Length (cm)", 
+     xlab = "Petal Width (cm)",
+     main = "Anderson Iris Dataset")
+
+# which data points of Petal.Length are within 1 SD of the mean?
+pl.mean = mean(iris$Petal.Length)
+pl.sd = sd(iris$Petal.Length)
+abline(h = pl.mean, col = "red")
+
+# we can add two blue lines to mark the 
+# region that is within 1 SD from the mean
+abline(h = pl.mean-pl.sd, col = "blue", lty = 'dashed')
+abline(h = pl.mean+pl.sd, col = "blue", lty = 'dashed')
+
+# color the max Petal.Length point
+points(x = iris$Petal.Width[
+  which(iris$Petal.Length==max(iris$Petal.Length))[1]], 
+y = max(iris$Petal.Length), col='blue', pch=12)
+```
+
+We can see that there is a linear trend between the variables `Petal.Width` and `Petal.Length`.  The strength of this linear relationship can be measured by the correlation between the two variables:
+
+```{r}
+cor.w.l = cor(iris$Petal.Width, iris$Petal.Length)
+```
+
+We can add this number to the graph (the following just repeats the code for the scatterplot earlier (except adding `cex = .5`) and added an extra line of code):
+
+```{r, fig.height=5}
+plot(y = iris$Petal.Length,x = iris$Petal.Width, 
+     ylab = "Petal Length (cm)", 
+     xlab = "Petal Width (cm)",
+     main = "Anderson Iris Dataset", cex = .5)
+
+# which data points of Petal.Length are within 1 SD of the mean?
+pl.mean = mean(iris$Petal.Length)
+pl.sd = sd(iris$Petal.Length)
+abline(h = pl.mean, col = "red")
+
+# we can add two blue lines to mark the 
+# region that is within 1 SD from the mean
+abline(h = pl.mean-pl.sd, col = "blue", lty = 'dashed')
+abline(h = pl.mean+pl.sd, col = "blue", lty = 'dashed')
+
+# color the max Petal.Length point
+points(x = iris$Petal.Width[
+  which(iris$Petal.Length==max(iris$Petal.Length))[1]], 
+y = max(iris$Petal.Length), col='blue', pch=12)
+
+text(x = 1.5, y = 2.2, labels = paste('cor = ', round(cor.w.l, 4)), cex = 1.5)
+```
+
+
+
+
+
+
+# Exercises
+
+Please **provide clear labels** for the histograms, plots, and axis):
+
+1. We will recreate the dataset `popular.names` that you created in last precept here for this exercise.
+
+```{r}
+library(babynames)
+pop.name = c("Emily", "Hannah", "Madison", "Emma", "Isabella", "Sophia")
+popular.names = babynames[(babynames$sex=="F" & 
+                             (babynames$name %in% pop.name) &
+                             babynames$year >= 2000),]
+dim(popular.names)
+
+```
+
+(a) For each female name appearing in `popular.names` what is its average number of use per year?
+
+```{r}
+tapply(X=popular.names$n,INDEX=popular.names$name,FUN=mean)
+```
+
+
+
+
+(b) Use the data frame `popular.names`.  Write a few lines of code to accomplish the following task:  For year 2000, find out the ranking of the name "Hannah" among the 6 names.  The most popular name should receive rank 1, and so on.   
+
+Recall that the function `rank()` gives you the ranking of a list of elements in a vector in an increasing order.  E.g.,
+
+```{r}
+v = c(3, 1, 4, 1, 5, 9, -2, 6) # create a vector for the example
+names(v) = letters[1:8] # assign some letters as the names to the elements in `v`
+v 
+rank(v) # ties are treated by taking average of the ranks for elements 
+# that are tied
+```
+
+```{r}
+year.2000 = popular.names[popular.names$year == 2000, ]
+n.2000 = year.2000$n
+names(n.2000) = c("Emily", "Hannah", "Madison", "Emma", "Isabella", "Sophia")
+n.2000
+rank(-n.2000)
+rank.Hannah = rank(-n.2000)
+```
+
+
+Hint: Follow the following steps:
+1) Extract out the `n` values that correspond to year 2000 as a vector;
+2) Extract out the names that correspond to the `n` values in step 1 and assign these names to the corresponding n values as the element names;
+3) Get the ranks of the names.  The most popular name should receive rank 1, and so on.
+4) Extract out the rank for the name "Hannah".
+
+
+
+
+
+(c) Copy and modify the code in part (b) to make a function `Hannah.rank`.  The function should take the input, year, and then output the rank of `Hannah` in that year.  Make sure to check that the function gives the correct answer by comparing the answers for year 2000  and compare it with the answer in part (b).
+
+
+
+
+2. Plot the number of applicants in the dataset `applicants` as a function of the year by filling in the values for the input arguments below. 
+
+Use **different line types and colors** for the values for each sex. Specify the overall mean for each gender with horizontal dashed lines and with its corresponding colors.  You can create a line plot by setting *type  = 'l'* in *plot()*; you can also add additional lines to an existing plot by using the function *lines()*.  *lines()* and *points()* behave similarly, except that lines() gives your lines and points() gives you points.
+
+
+```{r eval = F}
+# You will need to remove `eval = F` for this code chunk to run
+
+plot(y = ,
+     x = ,
+      ylim=, 
+      xlab = "Year",
+      ylab = "#applicants",
+      main = " SSA baby names data ",
+      col = , type = 'l')
+lines(y = ,
+     x = ,
+     cex = ,
+      col = 'blue', lty = 'dashed')      
+abline(h=, col=, lty = 'solid')
+abline(h=, col=, lty = 'dashed')
+
+# add legend for the graph
+# x and y are the coordinates for the upper-left corner of the legend
+# lty tells R what kind of lines should show up in the legend
+# col is for the colors of the lines shown on the legend in this case
+# `legend` is for the labels of the legend
+legend(x = , y = 10^6, lty = c(1,2), 
+       col = c('', ''), legend = c('', ''))
+# `x` and `y` are the coordinates of the upper-left conner
+# of the legend.
+# `lty` specifies the line types of the lines shown in
+# the legend box; here we have two lines and both of them 
+# are solid lines; this is why `lty = c(1, 1)` since `lty = 1`
+# indicates that we want a solid line.  Please see the help manual
+# for `par` for details for `lty`.
+#  `legend` specifies the labels shown for the lines
+# in the legend box;
+
+
+```
+
+
+**The questions below are optional.**
+
+3. Let toy.data = c(1, 3, 4, 5, 6, 6, 6, 8, 8, 10). Calculate its mean, variance and sd without using the built-in functions for these quantities; you can use the following functions and operations: sum(), /, length(), ^, sqrt().  Compare your answers with the results produced by the built-in functions: mean(), var() and sd().
+
+
+
+4. Create two more toy datasets by 
+    a. Adding 5 to every number in toy.data
+    b. Multiply 2 to every number in toy.data 
+
+Plot the histograms for these 3 datasets and display them by stacking them vertically for comparison. You can skip the titles and labels.  Adjust the scales to make sure that all histograms are on the same scale. What do you see?  How does adding a positive number or multiplying a positive number to the numbers in a dataset affect the shape of its distribution, its central location and spread?     
+
+```{r, fig.height=7, tidy=T}
+toy.data = c(1, 3, 4, 5, 6, 6, 6, 8, 8, 10)
+```
+
+
+
+
+
+
+
+5. What if you add -5 rather than 5, and what if you multiply -2 rather 2? 
+
+
+
+

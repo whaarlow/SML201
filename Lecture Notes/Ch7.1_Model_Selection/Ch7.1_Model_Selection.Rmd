@@ -1,0 +1,690 @@
+---
+title: "SML201 Chapter 7.1"
+subtitle:  'Model Selection'
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 4
+  revealjs::revealjs_presentation:
+    center: yes
+    font: 10
+    highlight: haddock
+    includes:
+      before_body: ../../doc_prefix.html
+    left: yes
+    transition: slide
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=F, echo = TRUE, cache=T, autodep=TRUE, cache.comments=FALSE, message = F,
+                      tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+```{r include = F}
+library(ggplot2)
+library(GGally)
+```
+
+
+
+
+# Introduction
+
+----------
+
+In Topic 4 we studied various models and learned how to interpret them.  However, how do we know how many and which predictors (predictors are the X-variables in the model) we should include in our model?  We will discuss a few model selection techniques in this chapter.
+
+----------
+
+# The data
+
+Let's refresh our memory on the insurance 
+
+## Variable definitions
+
+---------
+
+* **age**: The age of the primary beneficiary (excluding those above 64 years since they are generally covered by the government);  
+* **sex**:  The policy holder's gender; 0 for female and 1 for male;  
+* **bmi**:  Body mass index.  The index provides a sense of how over- or under- weight a person is.  BMI = (weight (in kg)/height (in m))^2An ideal BMI is in the range of 18.5 to 24.9.  
+* **children**:  Number of children/dependents covered by the insurance plan;  
+* **smoker**:  Whether the insured smokes tobacco regularly or not: 0 for no, 1 for yes;  
+* **region**:  The beneficiary's place of residence in the US, divided into four geographic regions: northeast, southeast, southwest, or northwest;  
+* **charges**:  Total medical expenses charged to the plan for the calendar year.
+
+
+----------
+
+```{r}
+ins = read.csv('insurance.csv')
+dim(ins)
+str(ins)
+```
+
+-----------
+
+```{r}
+
+summary(ins)
+```
+
+-----------
+
+# Selecting predictor candidates based on exploratory data analysis
+
+We can select the set of predictors to consider based on the relationships between the predictor candidates and the Y-variable.
+
+-----------
+
+## Using exploratory data analysis alone
+
+The **exploratory data analysis** (the techniques that we learned at the beginning of the semester) that we did in the last chapter is **necessary** for **understanding the relationships** between the potential predictors and the dependent variable.  The exploratory data analysis allows us to **get an idea** on **which variables** might be good **to be included in** the **model**.
+
+-----------
+
+```{r warning = F, message = F, echo = F}
+# `upper` is used to set options for the graphs on the upper-triangle
+# `lower` is used to set options for the graphs on the lower-triangle
+ggpairs(ins,
+  upper = list(continuous = wrap("cor", size = 2.5)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
+  labs(title = "Pairwise relationship between variables in the
+       insurance dataset")
+```
+
+
+From the matrix scatterplots which of the **categorical variables** will be the best to be added to the model?
+
+(A.) `sex`  
+(B.) `smoker`  
+(C.) `region`  
+
+
+------
+
+Note that the variables `sex` and `region` do not separate the values of `charges` very well; e.g., see the ggpair plot colored by `sex`:
+
+
+```{r message = F, tidy = F, echo = F}
+ggpairs(ins, aes(colour = sex, alpha = 0.4), 
+  upper = list(continuous = wrap("cor", size = 1.9)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) + 
+  labs(title = "Pairwise relationship, colored by sex, between variables in the
+       insurance dataset")
+```
+
+------
+
+```{r message = F, tidy = F, echo = F}
+
+ggpairs(ins, aes(colour = smoker, alpha = 0.4,),
+  upper = list(continuous = wrap("cor", size = 1.9)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 6)) +
+  labs(title = "Pairwise relationship, 
+                colored by smoking status,  
+                between variables in the insurance dataset")
+```
+
+
+## Using exploratory data analysis combined with subject knowledge
+
+-----------
+
+Can you think of a variable that is appropriate for the interaction between the variable `smoker` and the variable?
+
+Note that BMI $\geq$ 30 puts an adult in the obese range (see reference: https://www.cdc.gov/obesity/adult/defining.html) we would like to consider a variable that captures this information too.
+
+
+-------
+
+Let's consider a new factor for the model.
+
+`smk.hbmi` should have 3 leveles (i.e., 3 categories): 1 for non-smoker, 2 for smokers that are not obese, and 3 for smokers that are obese.
+
+```{r}
+# create a factor that indicates the three categories above
+new.vector = rep(1, len = nrow(ins))
+
+new.vector[ins$bmi >= 30 & ins$smoker=='yes'] = 3
+new.vector[ins$bmi < 30 & ins$smoker=='yes'] = 2
+
+summary(ins$smoker)
+summary(as.factor(new.vector))
+new.factor = as.factor(new.vector)
+
+new.ins = data.frame(ins, smk.hbmi = new.factor)
+```
+
+------
+
+```{r message = F, tidy = F, fig.height=7, echo = F}
+ggpairs(new.ins, aes(colour = smk.hbmi, alpha = 0.4),
+  upper = list(continuous = wrap("cor", size = 1.9)),
+  lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Pairwise relationship, 
+                colored by smk.hbmi,  
+                between variables in the insurance dataset")
+```
+
+
+-----
+
+According to the picture above should `smk.hbmi` be in the model or not?
+
+(A.) Yes  
+(B.) No
+
+----------
+
+According to the picture above should an interaction term between `age` and `smk.hbmi` be in the model or not?
+
+(A.) Yes  
+(B.) No
+
+
+According to the picture above should an interaction term between `age` and `smk.hbmi` be in the model or not?
+
+(A.) Yes  
+(B.) No
+
+
+
+----------
+
+With the exploratory data analysis we are able to come up with a list of potential predictors that we would like to consider, we are now ready to move on to the model building stage!
+
+# General assumptions on the model
+
+--------
+
+In general a regression model has the form
+
+\[
+y_i = (\beta_0 + \beta_1 x_{1,i} + \dots + \beta_k x_{k,i}) + error_i
+\]
+
+for $i  = 1, 2, ..., n$ where n is the sample size and $k$ is smaller than $n$ in general.
+
+----------
+
+
+## The error term
+
+The error term is used to catch the deviations between an observation and the expected value of y for a given set of x values.  The distribution of the errors give you an idea of how much the y values vary around the regression line.  
+
+## Assumptions on the errors
+
+We assume that for all the observations the errors
+
+* are independent;
+* follow the Normal(0, sd = $\sigma$) distribution where $\sigma$ is constant for any given X-values
+
+
+
+# Using p-value as a criterion for variable selection
+
+----------
+
+If the errors are Normally distributed, the $\hat{\beta}$'s are also Normally distributed and we can test individually whether $\beta_k = 0$.
+
+----------
+
+For example, for the **model** that gives **different y-intercepts** and **different slopes** for the groups of non-smokers and smokers:
+
+
+```{r}
+mod_age_x_smk = lm(charges ~ age + smoker + age:smoker, data = ins)
+summary(mod_age_x_smk)
+
+```
+
+-------
+
+
+This means that `R` tested the following hypothesis and calculated the p-value for the hypothesis and p-values are as the following:
+
+* $H_0$: Intercept = 0; $H_1: Intercept \neq 0$; p-value = 0.000343;  
+* $H_0$: $\beta_{age}$ = 0; $H_1$: $\beta_{age} \neq 0$; p-value = 0;  
+* $H_0$: $\beta_{1_{smoker='yes'}}$ = 0; $H_1$: $\beta_{1_{smoker='yes'}} \neq 0$; p-value = 0;   
+* $H_0$: $\beta_{age:1_{smoker='yes'}}$ = 0; $H_1$: $\beta_{age:1_{smoker='yes'}} \neq 0$; p-value = 0.222037 
+
+Note that the `*` after the p-values tells you how significant your test results are.
+
+----------
+
+Question: From the model output above which term should be excluded from the model?
+
+(A.)  y-intercept  
+(B.)  `age`  
+(C.)  $1_{smoker='yes'}$  
+(D.)  $age:1_{smoker='yes'}$  
+
+-------
+
+A small p-value means that given that the coefficient is zero (i.e., the term should not be included in your model) it would be unlikely that you would observe what you see in your data; therefore, you should keep the associated term in your model.  
+
+----------
+
+Note that if you change the predictors (i.e., explanatory variables) in your model, the estimates of the coefficients and the p-values will all change.  For example,
+
+```{r}
+mod_age_smk = lm(charges ~ age + smoker, data = ins)
+summary(mod_age_smk)
+```
+
+# Model selection with automated algorithms
+
+--------
+
+## backward or forward selection or sequential replacement
+
+
+We have seen how to decide whether to keep a variable in our model based on the p-value of testing the hypothesis that the coefficient for that variable is zero.
+
+A similar way to determine what variables to be included in our model is to use backward and forward selection.  You can use different criterion for the backward or forward selection.  Here we will demonstrate the idea by using p-value from the ANOVA as our criteria. 
+
+-------
+
+Backward selection begins with the largest model and eliminates variables one- by-one until all the remaining variables or the model satisfy/satisfies some kind of criterion. Forward selection starts with no variables included in the model other than the y-intercept, then it adds in variables according to their importance until no other important variables are found.  
+
+--------
+
+### Comparing multiple models with ANOVA
+
+Recall that if we run multiple independent tests together we will increase the significance level $\alpha$ of the tests.  
+
+We can compare two models with ANOVA.
+
+Let RSS be the residual sum of squares:
+
+\[
+RSS = \Sigma_i^n(y_i - \hat{y_i})^2
+\]
+
+#### Test statistic for ANOVA (optional)
+
+Then, 
+
+\[
+\frac{(RSS_{small} - RSS_{big})/(\# parameters.in.bigger. model-number.of.parameters.in.smaller.model)}{RSS_{big}/(sample.size - \# parameters.in.bigger.model)}
+\]
+
+follows an $F_{(\# parameters.in.bigger.model-\# parameters.in.smaller.model),
+(sample.size - \# parameters.in.bigger.model)}$ distribution.
+
+-------
+
+#### Null and alternative hypotheses in ANOVA
+
+The hypotheses in this case are:
+
+$H_0$: the smaller model is the true model; i.e., some of coefficients in the bigger model are zeros;  
+$H_1$: the bigger model is the true model.  
+
+
+where the smaller model is nested (i.e., its coefficients are a subset of the coefficients for the bigger model) in the bigger model.
+
+
+-------
+
+#### Example 1 
+
+Generate some data for the example.
+
+```{r}
+# understanding the code used to create the dataset for the example is not required
+
+set.seed(252)
+x = rnorm(50, mean = 30, sd=10)
+d = data.frame(y = x+rnorm(50, mean = 5), x1=x+rnorm(50, mean = 1 , sd = .5),
+           x2=x+rnorm(50, mean = 4 , sd = .5), x3=rnorm(50, mean = 4 , sd = .5))
+
+dim(d)
+head(d)
+```
+
+
+------
+
+We want to test:
+
+$H_0: \beta_3 = 0$ (i.e., whichever $\beta$'s that are not in the bigger model are zeros);  
+$H_1: \beta_3 \neq 0$
+
+```{r}
+bigger.mod = lm(y ~ x1 + x2 + x3, data=d)
+
+# see which term has the highest p-value
+smaller.mod =  lm(y ~ x1 + x2 , data=d)
+
+# same result
+anova(bigger.mod, smaller.mod)
+
+```
+
+The smaller model needs to be nested (i.e., its coefficients are a subset of the coefficients for the bigger model) in the bigger model.
+
+----------
+
+Exercise: Use ANOVA to decide which model to keep:
+
+**Model1**
+\begin{align}
+charges_i =& \beta_0 + \beta_{1_{smoker='yes', i}}1_{smoker='yes', i} + \beta_{age}age_i +\\
+& \beta_{bmi}bmi_i + \beta_{bmi:1_{smoker='yes', i}}bmi:1_{smoker='yes', i} + error_i
+\end{align}
+
+
+**Model2**
+\begin{align}
+charges_i = \beta_0 + \beta_{1_{smoker='yes', i}}1_{smoker='yes', i} + \beta_{age}age_i + error_i
+\end{align}
+
+----------
+
+
+State the hypotheses of the test.
+
+$H_0$:  $\beta_{bmi} = \beta_{bmi:1_{smoker='yes', i}} = 0$;
+
+$H_1$:  At least one of $\beta_{bmi}$ and $\beta_{bmi:1_{smoker='yes', i}}$ is not zero.
+
+----------
+
+```{r}
+
+bigger.mod = lm(charges ~ age + smoker + bmi + smoker:bmi, data = ins)
+
+
+smaller.mod = lm(charges ~ age + smoker, data = ins)
+
+anova(bigger.mod, smaller.mod)
+```
+
+
+-------
+
+Since the p-value is very small we will keep the bigger model (i.e., model 1).
+
+
+----------
+
+### Manual (ANOVA) backward and forward selection with p-value
+
+We can use p-value as a criterion to decide whether we would like to include an explanatory variable in our model.  
+
+Please do not worried about the code in this section.
+
+
+-------
+
+**Manual Backward selection (with ANOVA)**
+
+We will first pick a value for $\alpha$ of the test to decide when we would like to let a variable "leave" our model.  If the p-value for testing a coefficient equals zero is greater than $\alpha$, we will drop the term corresponding to that coefficient from the model.  We typically pick an $\alpha$ value that is larger than .05 so that it will not be too easy for a variable to leave our model.  Since we have only three variables to choose from in the examples below, to demonstrate the idea, we use .05 as the cutoff for the examples.
+
+---------
+ 
+```{r}
+# generate some data for the example
+# understanding the code used to create the dataset for the example is not required
+
+set.seed(252)
+x = rnorm(50, mean = 30, sd=10)
+d = data.frame(y = x+rnorm(50, mean = 5), x1=x+rnorm(50, mean = 1 , sd = .5),
+           x2=x+rnorm(50, mean = 4 , sd = .5), x3=rnorm(50, mean = 4 , sd = .5))
+
+dim(d)
+head(d)
+```
+
+---------
+
+We consider 3 Null hypotheses here:
+
+$H_0: \beta_1 = 0$  
+$H_0: \beta_2 = 0$  
+$H_0: \beta_3 = 0$  
+
+ 
+```{r}
+# fit the model
+mod3 = lm(y ~ x1 + x2 + x3, data=d)
+
+# see which term has the highest p-value
+drop1(mod3, test = "F")
+
+```
+
+Question: Which Null hypotheses to keep?
+
+(A.) $H_0: \beta_1 = 0$  
+(B.) $H_0: \beta_2 = 0$  
+(C.)  $H_0: \beta_3 = 0$  
+
+
+--------
+
+
+```{r}
+# drop the term with highest p-value
+drop1(update(mod3, ~ . -x3), test = "F")
+
+```
+
+--------
+
+
+```{r}
+# drop the term with highest p-value
+drop1(update(mod3, ~ . -x3 -x1), test = "F")
+
+```
+
+Then, stop since no coefficient associate with p-value less than .05.
+
+
+--------
+
+
+**Manual Forward selection (with ANOVA)**
+
+```{r}
+# set up the largest and the smallest models that you 
+# want R to search in between; note that the smallest 
+# model is nested in the largest model
+
+# start with the model with intercept only
+lm.null = lm(y ~ 1, data = d) 
+add1(lm.null, scope = ~x1+x2+x3, test = "F") 
+# scope tells R the set of possible variables that 
+# you want to consider
+```
+
+Question:  We start with the model that includes only the y-intercept.  Based on the result here which of the following model will you pick?
+
+
+(A.) $y_i = \beta_0 + \beta_1 x_{1,i} + error_i$   
+(B.) $y_i = \beta_0 + \beta_1 x_{2,i} + error_i$  
+(C.)  $y_i = \beta_0 + \beta_1 x_{3,i} + error_i$ 
+
+for $i  = 1, 2, ..., n$ where n is the sample size.
+
+
+--------
+
+
+```{r}
+add1(update(lm.null, ~ . +x2), scope = ~ x1 + x2 + x3, test = "F")
+# x1 and x2 both have p-value 0 but x2 has lower AIC
+```
+
+We stop here since no variable with p-values less than or equal to .05.
+
+
+--------
+
+
+The models chosen by the backward and forward selections with the p-value criterion are
+
+```{r}
+# Backward selection with p-value criterion
+summary(update(mod3, ~ . -x3 -x1), test = "F")
+```
+
+
+--------
+
+
+```{r}
+# Forward selection with p-value criterion
+summary(update(lm.null, ~ . +x2), scope = ~ x1 + x2 + x3, test = "F")
+
+```
+
+Thus, both backward and forward selections give us the same final model in this case.  
+
+
+-------
+
+Sequential replacement method does backward and forward selection alternately.
+
+-------
+
+
+
+Note that backward and forward selections and sequential replacement do not necessarily arrive at the same model since neither of these methods consider all the possible subsets of all the potential variables.  When the results of the two methods disagree we can consider other criteria, such as the adjusted R-square etc.  
+
+--------
+
+
+#  Underfitting and overfitting
+
+----------
+
+**Underfitting**: Your model does not capture the relationship between the dependent variable and the independent variables (i.e., the x-variables) or variables that are supposed to be in the model are not included (e.g., the first model in Precept 11 does not include the variable `Species` when it is supposed to include the variable).
+
+
+----------
+
+
+**Overfitting**:  Overfitting happens when our model includes too **many independent variables**; as a result our overfitted model predicts the **data in our dataset very well** but performs **poorly** when is used to make predictions **on a new dataset**.  The reason for this is that when too many predictors are included in the model, the model captures not only the underlying relationship between the dependent variable (i.e., the y-variable) and the predictors but also the noise in the dataset as part of the model.
+
+# How to avoid underfitting
+
+
+----------
+
+
+As shown in the last chapter going through the exploratory analysis thoroughly and having good knowledge of the subject matter help to discover the variables that are supposed to be considered for the model.
+
+
+----------
+
+
+It is not uncommon that sometimes after the first round of model building one discovers that more variables that are not in the dataset should be considered;  in that case we might need to collect additional data on the new variables.
+
+# How to avoid overfitting
+
+
+----------
+
+
+There are two branches of methods that aim at lowering the risk of overfitting.
+
+* Model selection based on RSS-related-criteria that penalize for having too many predictors in the model; 
+
+* Model selection with cross-validations or k-fold cross validations.
+
+
+
+## R-squared and adjust R-squared
+
+The proportion of variance explained by the fitted model is called $R^2$ or $r^2$.  It can be calculated by:
+
+$$
+R^2 = \frac{\Sigma_i^n (y_i - \bar{y})^2 - \Sigma_i^n(y_i - \hat{y_i})^2}{\Sigma_i^n (y_i - \bar{y})^2} 
+= 1 - \frac{\Sigma_i^n(y_i - \hat{y_i})^2}{\Sigma_i^n (y_i - \bar{y})^2}
+= 1 - \frac{RSS}{\Sigma_i^n (y_i - \bar{y})^2}
+$$
+Since when the model includes an intercept, 
+
+$$
+\Sigma_i^n (y_i - \bar{y})^2 = \Sigma_i^n(y_i - \hat{y_i})^2 + \Sigma_i^n(\hat{y_i} - \bar{y})^2
+$$
+
+You should always include the intercept ($\beta_0$) in your model unless you have a strong reason not to.
+
+
+----------
+
+Question
+
+Fill in blank:  The ________ the $R^2$ the better the model fits/explains the data.
+
+(A.) Higher  
+(B.) Lower
+
+
+-------
+
+In short, $R^2 = 1 - \frac{\Sigma_i^n((y_i - \hat{y_i})^2}{\Sigma_i^n (y_i - \bar{y})^2}$ tells us the fraction of the variations in the $Y$-variable that is reduced by using the model. The higher the $R^2$ the better your model fits your data.
+
+
+-------
+
+**A word of caution**
+
+$R^2$ is useful only when you include the intercept in your model.  Also, $R^2$ not a good criterion since $R^2$ always increases with model size.  Adjusted $R^2$ is better since it “penalized” bigger models.
+
+-------
+
+
+# Model selection with BIC, adjusted $R^2$ and Mallow's Cp
+
+
+BIC, adjusted $R^2$ and Mallow's Cp are RSS-related-criteria that penalize for having too many predictors in the model; e.g., Bayesian Information Criterion (BIC) is defined as
+
+$$
+BIC(Model) = n + n log 2\pi + n log(\frac{RSS}{n}) + (p+1)(log n)
+$$
+where $n$ is the sample size and $p+1$ is the number of parameters (i.e., the number of $\beta$'s) in the model.
+
+--------
+
+
+## The general rule
+
+With similar predictability models with fewer predictors are preferred since they are less likely to have overfitting problem and also since having fewer predictors in the model means easier to interpret the coefficients of the model.  The performance of a model can be measured by the following criteria:
+
+
+---------
+ 
+
+* **Adjusted $R^2$**: The **bigger** the adjusted $R^2$ the better the model ($R^2$ is always between 0 and 1 and adjusted $R^2$ can never be bigger than 1);  
+* **BIC**: The more **negative** the BIC the better the model;
+* **Mallow's Cp**: The **lower** the better; for the full model Cp is always equal to the number of predictors in the full model and this is the minimum value of Cp. Therefore, you should search for the model that has Cp that is around the number of predictors in the full model.  If all models, except the full model, yield a large Cp not near p, it suggests some important predictor(s) are missing from the analysis. In this case, we should try to add in the predictors that are missing.
+
+
+---------
+ 
+
+All these criteria above are related to RSS (residual sum of squares) and penalize for having too many predictors in the model.  The goal is to evaluate the performance of the models accurately and to prevent the risk of overfitting.
+
+

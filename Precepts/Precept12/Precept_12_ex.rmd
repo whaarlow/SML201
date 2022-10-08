@@ -1,0 +1,344 @@
+---
+title: "Precept 12 Exercise Answers"
+author: "Your Name"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: no
+  pdf_document:
+    fig_caption: yes
+    toc: no
+geometry: margin=1.5in
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=FALSE, echo = TRUE, cache=TRUE, autodep=TRUE, tidy=FALSE, message = F, warning = F, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+# Objectives
+
+* Being able to use multiple methods to assess the fitness of a model  
+* Understand how to do model selections
+
+
+
+**Please add in appropriate graph titles and axis labels yourself.**
+
+# Demo
+
+You will need to install the packages `car` and `leaps` if you have not yet.  
+
+
+## Example 1
+
+We will use a subset of the `bdims` dataset in `openintro` package. The dataset that we will use is called `d` (see below).  
+
+```{r}
+library(openintro)
+dim(bdims)
+names(bdims)
+
+# Creating dataset for the demo
+d = bdims[,c("wgt", "sex", "age", "sho.gi", "che.gi", 
+"thi.gi", "bic.gi", "for.gi", "kne.gi")]
+
+# See descriptions of the interested variables
+?bdims
+
+str(d)
+
+# sex is not a factor when it is supposed to be
+# a categorical variable; let's change it to be
+# a factor
+d$sex = as.factor(d$sex)
+
+str(d)
+# The data types of other variables seem correct.
+# If needed, we can always modify the data types later.
+```
+
+
+We want to build a linear model with all, or a subset, of the variables in our dataset to predict the Weight of a person.  
+
+(a) Use the ggpairs() function in the `GGally` package to graph the pairwise relationships between the variables and make the plots for male and female separately.  Why do we want to make the plots for male and female separately?
+
+```{r fig.height=7, fig.width=8, message=F, tidy = F}
+
+d$sex = as.factor(d$sex)
+library(ggplot2)  
+library(GGally)
+# Instructors, please explain what the graph and the numbers 
+# on the graph mean
+ggpairs(d[, c(2:9, 1)], aes(colour = sex, alpha = 0.4), 
+         upper = list(continuous = wrap("cor", size = 2.2)),
+         lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+
+Answer the following questions with the scatterplot matrix above.
+
+(b) Should `sex` be included as one of the variables in the model?
+
+Yes, since the variable `wgt` seems to have different distribution for different values of `sex`.
+
+(c) Explain why yes or why not: should *all* of these variables be included in our model as predictors: `che.gi` and `sho.gi` and `bic.gi` and `for.gi`?
+
+Most likely not; they have strong pairwise correlations (all around or above .9).  Collinearity between the variables will make the model unidentifiable. (Preceptors: students do not understand what collinearity mean: please explain in simple terms; e.g., there are infinitely many possible combination values for the estimated betas.  This makes interpretation of the beta's infeasible.)
+
+(d)  Do you expect `age` to be a better predictor compared to other continuous variables in the dataset?
+
+Probably not since the scatterplot for weight v.s. age does not seem very linear.  The correlation between the two variable is also low (which is expected from the scatterplot).
+
+
+(e) Use the `regsubsets()` function in the `leap` package to perform model selections with the BIC, adjusted R-squared, and Mallow's Cp criteria, searching through all the possible subsets of the predictors.  (Preceptor: Please explain what `regsubsets()` does.)
+
+```{r}
+library(leaps)
+# library(car)
+
+str(d)
+
+# For each given number of predictors, find the best model
+g <- regsubsets(wgt~., data=d, really.big=F, method='exhaustive', nvmax=8)
+
+
+# set really.big=T if your design matrix is very big;
+# can change option for method to forward selection, backward selection or sequential replacement to search when dataset is very big.
+plot(summary(g)$bic, 
+     main = 'BIC for best model for each given number of predictors',
+     xlab = 'Given number of predictors', 
+     ylab = 'BIC')
+
+plot(summary(g)$adjr2, main = 'Adjusted R-square for best model \nfor each given number of predictors', xlab = 'Given number of predictors', ylab = 'Adjusted R-square') # adjusted R^2 chooses a different model
+
+plot(summary(g)$cp, main = 'Mallows Cp for best model for each given number of predictors', xlab = 'Given number of predictors', ylab = 'Mallows Cp')
+abline(a = 1, b = 1, lty = "dashed")
+
+```
+
+Check what variables are included in each "best" model.
+
+```{r}
+summary.g <- summary(g)
+
+# The best model for each number of predictors included in model
+as.data.frame(summary.g$outmat)
+
+```
+
+Another way to find out the best model with 4 predictors and that with 5 predictors:
+
+```{r}
+coef(g, id = 4)
+
+coef(g, id = 5)
+
+```
+
+It looks like all the procedures that we used point us toward two possible models (in R's notation):
+
+Model 1:
+wgt ~ sex + che.gi + thi.gi + kne.gi
+
+Model 2: 
+wgt ~ sex + sho.gi + che.gi + thi.gi + kne.gi
+
+```{r}
+mod1 = lm(wgt ~ sex + che.gi + thi.gi + kne.gi, data=d)
+summary(mod1)
+
+mod2 = lm(wgt ~ sex + sho.gi + che.gi + thi.gi + kne.gi, data=d)
+summary(mod2)
+
+
+```
+
+The function `vcov()` gives the pairwise covariance between the estimates of two coefficients; e.g., the 3rd row and 4th column of `vcov(mod2)` gives the covariance of $\hat{\beta}_{sho.gi}$ and 
+$\hat{\beta}_{che.gi}$.  The numbers on the diagonal of `vcov(mod2)` give the variances of the $\beta$ estimates; e.g., the 3rd row and 3rd column of `vcov(mod2)` gives us the variance of $\hat{\beta}_{sho.gi}$.  
+
+```{r}
+round(vcov(mod1), 4)
+
+round(vcov(mod2), 4) 
+```
+
+
+Note that the correlation of two variables X and Y is defined as
+
+$$
+cor(X, Y) = \frac{cov(X,Y)}{sd(X)sd(Y)}
+$$
+
+We already saw in part (c) that the `sho.gi` and `che.gi` are highly positively correlated and as a result the $\hat{\beta}_{sho.gi}$ and 
+$\hat{\beta}_{che.gi}$ are highly negatively correlated.
+
+```{r}
+# a correlation(beta_i, beta_j) close to 1 or -1 is bad since it implies 
+# collinearity between X_i and X_j columns; 
+# we do not want to see high values for the correlations.
+
+# The correlation between beta_hat.sho.gi and beta_hat.che.gi is
+vcov(mod2)["sho.gi", "che.gi"]/sqrt(vcov(mod2)["sho.gi", "sho.gi"])/sqrt(vcov(mod2)["che.gi", "che.gi"])
+
+# this is high enough to get our attention
+
+```
+
+Also, since including the extra term `sho.gi` does not increase adjusted R-squared much, we favor model 1.
+
+(f)  Investigate the residual plots for model 1.
+
+```{r}
+plot(mod1, which=1:2)
+# which = 1 gives the residuals v.s. fitted values scatterplot
+# which = 2 gives the qqplot for the residuals
+
+hist(mod1$residuals, freq=F, breaks=30)
+```
+
+The residuals seem have a distribution that is close to Normal so that is a good sign.
+However, we see that the residuals have a slightly curve up (like a parabola opening up) pattern.  Any non-random pattern in residual v.s. fitted y-value plot is not desirable; however, this pattern is not very strong so this is not too bad.  We will try to improve on this in part (h).
+
+
+(g)  Now look at the pairs plot again should we include more terms?  Say, we want to try to include an interaction term; what kind of interaction term do we want to add?
+
+```{r message=F}
+ ggpairs(d[,c('sex', 'che.gi', 'thi.gi','kne.gi', 'wgt')], 
+         upper = list(continuous = wrap("cor", size = 3)),
+         lower = list(continuous = wrap("points", alpha = 0.3, size=0.1)),
+         aes(colour = sex, alpha = 0.4))
+```
+
+None of the three x-variables seem to have very different slopes for the two gender groups on the scatterplots for `wgt` v.s. the x-variables.  According to the scatterplots `thi.gi` might be the one that seem to be more likely to have different slopes for females and males.  Therefore, we will try to add the interaction term `thi.gi:sex`.
+
+
+(h)  Add `thi.gi:sex` to your model and fit the model again. Is the model with the interaction term an improvement on the model without?
+
+
+Looking at the relationship between weights and thigh girth on the scatterplot we see that the model could benefit from including an interaction term.  Lets compare the model with and the model without the interaction term:
+
+```{r}
+mod3 = lm(wgt ~ sex + che.gi + thi.gi + kne.gi + sex:thi.gi, data=d)
+
+# compare R-squared's
+summary(mod3)
+summary(mod1)
+```
+Adjusted R-squared values are about the same for the two models. 
+
+```{r}
+# look at p-value which is on the borderline of .05
+anova(mod1, mod3)
+```
+p-value is on the borderline of 5% so no conclusion can be made about whether the coefficient for the interaction is zero or not.  
+
+Let's compare the BIC values:
+```{r}
+# Compare BICs
+extractAIC(mod1, k=log(dim(d)[1]))
+extractAIC(mod3, k=log(dim(d)[1])) # This actually increase BIC
+```
+
+Adding the interaction term actually increases the BIC value.  Thus, for simplicity we favor model 1.
+
+
+
+(i) What is the model matrix of the model 1?  What is the mathematical model for model 1?
+
+```{r}
+head(model.matrix(mod1))
+colnames(model.matrix(mod1))
+
+```
+
+The mathematical model for model 1 is
+
+\[
+Wight = \beta_0 + \beta_{1_{male}}1_{male} + \beta_{che.gi}che.gi +\beta_{thi.gi}thi.gi +\beta_{kne.gi}kne.gi + error
+\]
+
+
+
+
+
+# Exercises 
+
+**Please fill in the missing graphic titles and labels yourself.**
+
+## Question 1
+
+Now it is your turn!  Use the dataset below and build a linear model with the variables in the dataset to predict the Height of a person.  Choose your champion model based on the BIC, Adjusted $R^2$ and Mallow's Cp values (we will not use cross-validation here).  Looking at the residual plots of your champion model to see if model assumptions are violated.  Consider adding possible interaction terms to improve your model.  
+
+Note:  You can turn off the warnings produced by `ggpairs()` by setting `message = F, warning = F` for the code chunk.
+
+```{r massage=F, warning = F}
+b = bdims[,c("hgt", "sex", "age", "bii.di", "bit.di", "che.de", "kne.di", "ank.di",
+             "wai.gi", "nav.gi", "hip.gi", "thi.gi")]
+
+dim(b)
+str(b)
+
+b$sex = as.factor(b$sex)
+
+# There are too many variables for plotting them all
+# on the same graph, so we will make two graphs
+
+ggpairs(b[,c(2, 3:7, 1)], aes(colour = sex, alpha = 0.4), 
+        upper = list(continuous = wrap("cor", size = 2.4)),
+        lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + 
+  theme(axis.text.x = element_text(angle = 45, size = 6))
+
+ggpairs(b[,c(2, 8:12, 1)], aes(colour = sex, alpha = 0.4), 
+        upper = list(continuous = wrap("cor", size = 2.4)),
+        lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) + 
+  theme(axis.text.x = element_text(angle = 45, size = 6))
+
+```
+
+```{r}
+g <- regsubsets(hgt~., data=b, really.big=F, method='exhaustive', nvmax=12)
+
+plot(summary(g)$bic, 
+     main = 'BIC for best model for each given number of predictors',
+     xlab = 'Given number of predictors', 
+     ylab = 'BIC')
+
+plot(summary(g)$adjr2, main = 'Adjusted R-square for best model \nfor each given number of predictors', xlab = 'Given number of predictors', ylab = 'Adjusted R-square') # adjusted R^2 chooses a different model
+
+plot(summary(g)$cp, main = 'Mallows Cp for best model for each given number of predictors', xlab = 'Given number of predictors', ylab = 'Mallows Cp')
+abline(a = 1, b = 1, lty = "dashed")
+
+coef(g, id = 8)
+coef(g, id = 9)
+
+mod1 = lm(hgt ~ sex + age + bii.di + bit.di + che.de + ank.di + wai.gi + thi.gi, data=b)
+summary(mod1)
+
+mod2 = lm(hgt ~ sex + age + bii.di + bit.di + che.de + ank.di + wai.gi + hip.gi + thi.gi, data=b)
+summary(mod2)
+
+round(vcov(mod1), 4)
+
+round(vcov(mod2), 4) 
+
+vcov(mod2)["hip.gi", "thi.gi"]/sqrt(vcov(mod2)["hip.gi", "hip.gi"])/sqrt(vcov(mod2)["thi.gi", "thi.gi"])
+# -0.68945 is high enough to attract attention
+
+plot(mod1, which=1:2)
+
+hist(mod1$residuals, freq=F, breaks=30)
+
+mod3 = lm(hgt ~ sex + age + bii.di + bit.di + che.de + ank.di + wai.gi + thi.gi + sex:thi.gi, data=b)
+
+summary(mod3)
+summary(mod1)
+
+anova(mod1, mod3)
+# p-value = 0.7457, so no interaction term required
+```
+

@@ -1,0 +1,8 @@
+unnamed-chunk-1	library
+unnamed-chunk-2	bdims	c
+unnamed-chunk-3	aes	body.dims	geom_point	ggplot	kne.di	labs	wgt
+unnamed-chunk-4	aes	as.factor	body.dims	c	geom_point	ggplot	kne.di	labs	scale_colour_discrete	sex	wgt
+unnamed-chunk-5	~	body.dims	lm	summary
+unnamed-chunk-6	==	>=	$	body.dims	nrow
+unnamed-chunk-7	c	matrix	sample	set.seed	T
+unnamed-chunk-8	>	apply	length	mat1	mean	table

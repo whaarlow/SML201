@@ -1,0 +1,19 @@
+unnamed-chunk-1	load
+unnamed-chunk-2	$	as.vector	data.frame	oct_poll	str	sum	tapply	unique
+unnamed-chunk-3	clinton.vote	dim	library	merge	mutate	poll.diff	poll.oct2016	rawpoll_clinton	rawpoll_trump	read.csv	str	trump.vote	vote.diff
+unnamed-chunk-4	[[	$	as.numeric	as.vector	c	election	lapply	mapply	mean	rawpoll_clinton	rawpoll_trump	rep	return	samplesize	sd	sqrt	state	tapply	with
+unnamed-chunk-5	<	==	>	|	$	as.numeric	election
+unnamed-chunk-6	<	>	|	$	as.logical	c	election	matrix	qnorm	se
+unnamed-chunk-7	mutate	same.sign	significant	std.unit	str
+unnamed-chunk-8	==	$	election	sum
+unnamed-chunk-9	&	==	$	election	sum
+unnamed-chunk-10	==	$	election	sum
+unnamed-chunk-11	&	==	$	election	sum
+unnamed-chunk-12	&	==	$	election
+unnamed-chunk-13	&	==	>	$	election
+unnamed-chunk-14	&	<	==	$	election
+unnamed-chunk-15	[<-	$	$<-	aes	as.character	coord_fixed	data.frame	element_blank	geom_path	geom_polygon	ggplot	group	inner_join	labs	lat	levels	library	long	map_data	names	names<-	scale_fill_gradient2	theme	theme_bw	tolower
+unnamed-chunk-16	$	c	create.map	election
+unnamed-chunk-17	$	abline	election	F	hist	text
+unnamed-chunk-18	<	$	election	sum
+unnamed-chunk-19	c	rep	t.test

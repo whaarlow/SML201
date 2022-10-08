@@ -1,0 +1,26 @@
+unnamed-chunk-1	DiagrammeR	library
+unnamed-chunk-2	DiagrammeR	library
+unnamed-chunk-3	DiagrammeR	library
+unnamed-chunk-4	^	abline	abs	c	par	plot	rnorm
+unnamed-chunk-5	~	lm	read.csv	summary
+unnamed-chunk-6	mod_age_smk	plot
+unnamed-chunk-7	mod_age_smk	plot
+unnamed-chunk-8	$	F	hist	mod_age_smk
+unnamed-chunk-9	?	$	$<-	as.factor	bdims	c	dim	library	names	str
+unnamed-chunk-10	$	$<-	aes	as.factor	c	element_text	ggpairs	library	list	sex	theme	wrap
+unnamed-chunk-11	~	$	abline	d	F	library	plot	regsubsets	str	summary
+unnamed-chunk-12	$	as.data.frame	g	summary
+unnamed-chunk-13	coef	g
+unnamed-chunk-14	~	d	lm	summary
+unnamed-chunk-15	mod1	mod2	round	vcov
+unnamed-chunk-16	mod2	sqrt	vcov
+unnamed-chunk-17	$	F	hist	mod1	plot
+unnamed-chunk-18	[[	$	as.formula	as.vector	coef	model.matrix	names
+unnamed-chunk-19	d	dim	F	nrow	sample	set.seed
+unnamed-chunk-20	~	F	regsubsets	train
+unnamed-chunk-21	$	class	dim	g.train	length	predict.reg	summary	validation
+unnamed-chunk-22	coef	g.train
+unnamed-chunk-23	^	$	mean	predicted.y	validation
+unnamed-chunk-24	^	$	g.train	mean	plot	predict.reg	return	sapply	validation
+unnamed-chunk-25	~	d	F	regsubsets
+unnamed-chunk-26	coef	find.champion

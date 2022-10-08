@@ -1,0 +1,273 @@
+---
+title: "SML201 Rmarkdown"
+author: "Daisy Huang"
+date: "Fall 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+geometry: margin=1.5in
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=TRUE, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE)
+options(width=63)
+```
+
+
+
+# What is R Markdown?
+
+A package that allows one to create *reproducible* analysis reports that combine
+
+* R codes
+* narrative part of the report
+* other features: nicely-typeset math, hyperlinks, images, etc.
+
+Output can be easily "knitted" into different common file types (e.g., .html, .pdf, .word etc.)
+
+# Advantages
+
+* No more copying and pasting
+* Readability--codes can be easily shared with someone else
+* Organization - everything in one place
+
+
+# How to make a report with R Markdown
+
+## YAML header
+
+```
+---
+title: "SML_201 Problem Set 2"  
+author: "Your Name"  
+date: "`r Sys.Date()`"  
+output:  
+  pdf_document:   
+    toc: no  
+    toc_depth: 2
+geometry: margin=1.5in    
+---
+```
+
+* output: pdf_document--produces a .pdf report
+* toc: yes -- includes table of contents for the report
+* toc_depth:2--specify the depth of headers for the table of contents to be 2
+* geometry: margin=1.5in--specify 1.5 inches wide margin for the document
+
+--------
+
+See more options at
+
+https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf
+
+--------
+
+## Set the options for the document globally
+
+In a code chunk specify the options for the document globally by using the following arguments:
+
+
+```
+knitr::opts_chunk$set(fig.align="center", fig.height=5.5, fig.width=6, collapse=TRUE, comment="", prompt=TRUE, echo = TRUE, cache=TRUE, autodep=TRUE, cache.comments=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+options(width=63)
+```
+
+
+Use `include=FALSE` so that this particular code chunk will not show up on your report.
+
+
+## For the narrative part
+
+
+**Headers**:
+```
+# Header 1
+## Header 2
+### Header 3
+```
+
+--------
+  
+**Emphasis**:
+```
+*italic* **bold**
+_italic_ __bold__
+```
+  
+   
+**Computer Type**
+```
+`R`
+```
+
+  
+**Verbatim**
+
+```
+Place verbatim contents between two lines of three back ticks.
+```
+
+--------
+  
+**Lists**
+
+Unordered list:
+```
+- Item 1 Make sure that you have a blank line before the first item
+- Item 2
+      - Item 2a Make sure that you have 4 spaces before
+        and 1 space after "-"
+      - Item 2b Make sure that you have a blank line after the last item
+```
+
+Ordered list:
+```
+1. Item 1
+2. Item 2
+3. Item 3
+      i. Item 
+      ii. Item
+```
+
+--------    
+  
+**Include a link**
+
+```
+https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf
+
+[linked phrase](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+```
+The second link above will become this when you knit:
+
+[linked phrase](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+--------  
+
+**Block quotes**
+
+```
+> Include a block of quotes here. 
+> Do this for additional lines. 
+```
+
+  
+**Paragraph Breaks and Forced Line Breaks**  
+To insert a break between paragraphs, include a single completely blank line.  
+
+To force a line break, put two blank
+spaces at the end of a line.  
+
+--------
+
+  
+## For the code part
+
+**Inline Code**  
+
+
+```{r, echo=FALSE}
+cat(c("We use the `r sum(c(2, 7))", "`to get the sum of two numbers in R."), 
+    sep='')
+```
+
+--------
+
+  
+**Code chunk**
+
+You can click **insert** on the top of your code window panel or use **option + command + i**
+
+
+```{r, echo=FALSE}
+cat(c("```{r}",
+     
+      "```"), 
+    sep='\n\n')
+```
+
+--------
+
+  
+**Chunk Options**
+
+```{r, echo=FALSE}
+cat(c("```{r, options}",
+     
+      "```"), 
+    sep='\n')
+```
+  
+
+Some choices for options:
+Turns off printing out the code, but leaves the results alone: **{r, echo=FALSE}**  
+
+Runs the code, but includes neither the text of the code nor its output: **{r, include=FALSE}**  
+
+Another option prints the code in the document, but does not run it: **{r, eval=FALSE}** 
+
+
+--------
+
+  
+**Make a table for R results**  
+
+
+```{r}
+library(knitr) # Only need this the first time!
+summary(iris)
+
+```
+
+--------
+
+```{r}
+kable(summary(iris))
+
+```
+
+
+
+
+# Some Common Rmarkdown Errors  
+
+--------
+
+* If you see an error message like the following when you compile a .Rmd file
+
+> Memory exceeded 50000 ...
+> ...
+
+Most likely this is because you were printing out a large object in your report and R could not print out so many pages of pdf.  Solution: locate the code that prints out the large object and modify it.  Sometimes you might also need to restart Rstudio and copy and pasted the modified codes to a brand new file to compile again.  Deleting the cache folder might also help.
+
+--------
+
+*  Do not understand that the environment (i.e., the workspace) for the .Rmd file is different from that for the console.  When you compile a .Rmd file, R starts a new environment for your .Rmd file; as a result all the variables that you created and all the packages that you loaded in your workspace outside of your .Rmd file will not be available for the compiling.  This is one of the reasons why you should knit your file frequently.  Solution: Always write you code in the .Rmd file and run it from the .Rmd file.
+
+--------
+
+* If you see an error message like this:
+
+> !LaTeX Error: ...
+> ...
+
+> l.107 ...
+> ...
+
+most likely this is because you have some error around line 107 (not necessarily on line 107 and sometimes this number could be quite off); this error is most likely in the text part of your report because it says "LaTeX Error".  Solution:  Use the *Edit > Find...* to look for the problematic part and make corrections.
+
+--------
+
+* Assign an object that you created to a variable name that is identical to a built-in function or a dataset that already existed in R.  This will cause R to mask (i.e., hide) the original function or dataset.  Solution: reassign the object to a variable with different name.  Use ls() to check if you still have the object with the bad name; if so, use rm() to remove the object from the environment.  Unload and reload the package that contains the built-in dataset if necessary.
+
+--------
+
+* Forget to knit after every few lines of code/sentences.  Solution: Knit frequently!!
+
+

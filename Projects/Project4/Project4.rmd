@@ -1,0 +1,608 @@
+---
+title: "SML 201 Project 4 Predicting House Sold Prices for Seattle and Greater Area"
+subtitle: Solutions
+author: 'Bill Haarlow & Weston Carpenter'
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    dev: png
+    fig_caption: yes
+geometry: margin=1in
+fontsize: 10pt
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align="center", fig.height=6, fig.width=8, collapse=T, comment="", prompt=F, echo = T, cache=T, autodep=T, tidy=T, tidy.opts=list(width.cutoff=63), dev='png')
+options(width=63)
+
+```
+
+
+
+
+**Project 4 is due by *5pm* on Tuesday January 14.** Please submit both a .Rmd and a .pdf file on Blackboard by the deadline **and** drop off a hard copy of the pdf file at 26 Prospect Avenue by **6pm** on the due date. To look for the drop-off cabinet, after you enter the building turn to the left to enter the lounge area and the file cabinet will then be on your right; you can just drop your report into the open slot of the cabinet labeled "SML 201 Homework"; note that the building might be locked after 6pm and on weekends.  You are also welcome to drop off the pdf copy in advance of the deadline.
+
+
+**No late projects** will be accepted after the deadline.  The University forbids instructors granting extensions past Dean’s Date without the approval of students' either college Dean or Director of Study.  Please contact your college Dean or Director of Study *directly before the project deadline* in case you need an extension.
+
+This project can be completed in groups of up to 3 students. It is okay to work by yourself, if this is preferable.   You are welcome to get help (you can either ask questions on Piazza or talk to instructors in person during office hours) from instructors; however, please do not post code/solutions on Piazza on a public post.  
+
+You are encouraged to get help from the instructors (either through Piazza or in person) if you need help to understand the definitions of the variables of the dataset or the procedure of the experiment.
+
+When working in a group it is your responsibility to make sure that you are satisfied with all parts of the report and the submission is on time (e.g., we will not entertain arguments that deficiencies are the responsibility of other group members).  We expect that you each work independently first and then compare your answers with each other once you all finish, or you all work together on your own laptops.  Failing to make contributions and then putting your name on a report will be considered a violation of the honor code.  **Please do not divide work among group mates.**  Everyone in your group is responsible for being able to explain the solutions in the report.
+
+For all parts of this problem set, you **MUST** use R commands to print the output as part of your R Markdown file. You are not permitted to find the answer in the R console and then copy and paste the answer into this document.
+
+**If you are completing this project in a group**, please have only **one** person in your group turn in the .Rmd and .pdf files; the other person in your group should turn in the list of the people in your group
+in the *Text Submission* field on the submission page.  This means that **everyone should make a submission**--either a file-upload or a text submission--regardless of whether you are working in a group or not.
+
+**The physical pdf report that you drop off and the .pdf file that you submit on Blackboard should be identical.  Modifying your report after the deadline could result in a penalty as much as getting a zero score for the assignment.**
+
+
+----
+
+Please type your name(s) after "Digitally signed:" below the honor pledge to serve as digital signature(s).  Put the pledge and your signature(s) at the beginning of each document that you turn in.
+
+> I pledge my honor that I have not violated the honor code when completing this assignment.
+
+Digitally signed: Bill Haarlow & Weston Carpenter
+
+----
+
+
+**In order to receive full credits, please have sensible titles and axis labels for all your graphs and adjust values for all the relevant graphical parameters so that your plots are informative.  Also, all answers must be written in complete sentences.**
+
+
+## (-3 pts each if any of these are not satisfied: code runs, code has annotations, answers are in complete sentences)
+
+## Before you start: loops are not allowed for this project.  Please report all numerical answers to 4 digits after the decimal.  Remember not to round intermediate calculations and please avoid hard-coding.
+
+
+----
+
+
+<ins>**In order to receive full credits, please**</ins> 
+
+* avoid hard-coding and do not round intermediate calculations;
+* round all final numerical answers to four digits after the decimal.
+* have sensible titles and axis labels for all your graphs;
+* adjust values for all the relevant graphical parameters so that your plots are informative.
+* annotate your code and have answers in the write up section, not in the code chunks;
+* have all answers written in complete sentences;
+* submit both a .Rmd and a .pdf file on Blackboard by the deadline;
+* drop off a copy of the pdf by 6pm on the due date.
+
+
+# Objective of this project
+
+(Hypothetical)  Congrats!  You have been hired as an intern at Redfin (Redfin.com) in Seattle.  As for your first project your manager would like you to build a new model for Redfin to predict the sold prices for houses in the King county area of the Washington state.  
+
+To see the prices predicted by Redfin's current model, you can see the number shown near the top of the web page of a listing; e.g., for this house (https://www.redfin.com/WA/Seattle/132-NE-95th-St-98115/unit-B108/home/2316), the Redfin estimate is $394,279 as of Dec. 9, 2019.)
+
+
+
+# Background info and the dataset
+
+We will use a subset of the dataset `house_data_cleaned.csv` to build the model. The dataset contains sold prices for houses in King County (in Washington state), including Seattle, for transactions made between May 2014 and May 2015. We will use only a subset of the variables in `kc_house_data.csv` because we only want to include variables that have clear definitions and seem relevant for house prices.  A description of the original dataset `house_data_cleaned.csv` and the complete list of the variable definitions can be found here (https://www.kaggle.com/harlfoxem/housesalesprediction/data).
+
+We will use the dataset `house_data_cleaned.csv` and the definitions for the variables in the dataset are listed below (see the website address provided above for the complete list of the variables). 
+
+
+* **date**  The date the house was sold  
+* **price**  Sold price of the house  
+* **bedrooms**  Number of bedrooms in the house  
+* **bathrooms**  Number of bathrooms in the house  
+* **sqft_living**  Square footage of the house  
+* **sqft_lot**  Square footage of the lot  
+* **floors**  Total number of floors (levels) in house  
+* **waterfront**  Does the house have a view to a waterfront (0-No; 1-Yes)  
+* **condition**  How good the overall condition is   
+* **grade**  Overall grade given to the housing unit, based on King County grading system  (see table for `BLDGGRADE` on https://www5.kingcounty.gov/sdc/FGDCDocs/RESBLDG_EXTR_faq.htm)
+* **sqft_above**  Square footage of house apart from the basement   
+* **sqft_basement**  Square footage of the basement  
+* **yr_built**  Year when house was built  
+* **yr_renovated**  Year when house was renovated  
+* **zipcode**  Zip code of the house address  
+
+
+
+
+```{r}
+# Load required packages
+library(ggplot2)
+library(GGally)
+```
+
+
+
+## Question 1 
+
+Read the dataset `subset_kc_house_data.csv` into `R` and name it `house`. `house` should have 21605 rows and 15 columns.
+
+```{r}
+# Reads the dataset into R
+# house = read.csv("/Users/billhaarlow/Desktop/SML201/Projects/Project4/house_data_cleaned.csv")
+house = read.csv("~/SML201/Projects/Project4/house_data_cleaned.csv")
+dim(house)
+str(house)
+head(house)
+```
+
+
+
+
+# Exploring the relationship between `price` and other variables.
+
+## Question 2 (18 pts)
+
+
+Below are the matrices of scatterplots (you will need to remove `eval = F`), colored by the values in `waterfront`,  for most the variables in the dataset.   The variables `date` and `zipcode` are not included for the plots.  
+
+Since we have limited time for this project I have investigated the relationship between the month of sale and `price` and did not see any patterns; therefore, we will not include the date-related information in our model.  
+
+Also, note that including `zipcode` in a scatterplot matrix will not be helpful since the graph will be too small to show the relationship between `price` and `zipcode`; thus, we will investigate the relationship between `price` and `zipcode` separately later in the report.
+
+
+
+
+```{r warning = F, message=FALSE}
+
+ggpairs(house[, c(5:6,8, 11:12, 2)], aes(color = as.factor(waterfront), 
+    alpha = 0.3), upper = list(continuous = wrap("cor", size = 3.5)), lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+theme(axis.text.x = element_text(angle = 45, size = 6)) 
+  
+
+ggpairs(house[, c(3:4, 7:8, 2)], aes(color = as.factor(waterfront), 
+    alpha = 0.3), upper = list(continuous = wrap("cor", size = 3.5)), lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+  theme(axis.text.x = element_text(angle = 45, size = 6))
+
+ggpairs(house[, c(8:10, 13:14, 2)], aes(color = as.factor(waterfront), 
+    alpha = 0.3), upper = list(continuous = wrap("cor", size = 3.5)), lower = list(continuous = wrap("points", alpha = 0.3, size=0.1))) +
+  theme(axis.text.x = element_text(angle = 45, size = 6))
+
+```
+
+### Part a (6 pts)
+ 
+
+Are there any pair(s) of x-variables with correlation value greater than .8?  Report the pair(s).  In general, it is good to have x-variables that are highly correlated (i.e., with correlation close to -1 or 1) among themselves in your model?  Explain why yes or why no.
+
+Answer: The pair `sqft_above, sqft_living` has a correlation value of 0.877. In general, it is not good to have x-variables that are highly correlated in a model, because collinearity (strong pairwise correlations between variables) makes interpretation of the model near impossible.
+
+
+### Part b (8 pts)
+
+For each of the variables, `grade` and `bedrooms`, calculate the average house price for each unique value of the variable and make a scatterplot for the average house prices v.s. the unique values of the variable; e.g., `grade` takes on the integer values 3 through 13 so your scatterplot for `grade` should have 11 points, the first point should have x-coordinate 3 and y-coordinate the average price for all the houses with `grade` = 3; the second point should have x-coordinate 4 and the y-coordinate the mean price for all the houses with `grade` = 4, and so on.  Please include the origin for the graph for `grade`.  Do the patterns on the two scatterplots look linear?  
+
+```{r}
+avg.price.grade = with(house, tapply(X = price, INDEX = grade, FUN = mean))
+avg.price.bedrooms = with(house, tapply(X = price, INDEX = bedrooms, FUN = mean))
+
+ggplot() +
+  geom_point(aes(x = sort(unique(house$grade)), y = avg.price.grade)) +
+  scale_x_continuous(limits = c(0, 13), breaks = c(0:13)) +
+  labs(y = 'Average House Price ($)', 
+       x = 'Grade', 
+       title = 'Average House Price Per Grade')
+
+ggplot() +
+  geom_point(aes(x = sort(unique(house$bedrooms)), y = avg.price.bedrooms)) +
+  scale_x_continuous(limits = c(0, 11), breaks = c(0:11)) +
+  labs(y = 'Average House Price ($)', 
+       x = 'Number of Bedrooms', 
+       title = 'Average House Price Per Number of Bedrooms')
+```
+
+Answer: The patterns on the two scatterplots do not look linear.
+
+
+
+
+### Part c (4 pts)
+
+
+**True or False**  According to the assumptions of linear models if we take average of the y-values that correspond to the each given x-value, the averages should roughly form a straight line.
+
+(A)  True  
+(B)  False  
+
+Answer:  A
+
+## Question 3 (13 pts) Zipcode variable  
+
+### Part a (5 pts; 1 for  answer; 1 for plots; 3 for explanation) 
+
+Make side by side boxplots to compare the values in `price` by zip code.  Based on your boxplots, is it good to include the dummy variables for some of the zip codes in your model?  Explain.
+
+```{r, fig.height=9}
+ggplot(data = house) +
+  geom_boxplot(aes(x = as.factor(zipcode), y = price, group = zipcode)) +
+  labs(x = 'Zip code', 
+       y = 'Price ($)', 
+       title = 'Price Distributions by Zip Code') +
+  coord_flip()
+```
+
+Answer: Based on our boxplots, it is a good idea to include the dummy variables for a few select zip codes. This is because a small number of price distributions, such as (but not limited to) zip codes 98039, 98004, and 98112 differ noticeably from most of the other price distributions.
+
+### Part b (8 pts; 1 for each answer, 3 for each interpretation) 
+
+Consider the following model (you will need to remove `eval=F` to run the code below):
+
+
+```{r}
+summary(lm(price~factor(zipcode), data = house))
+```
+
+What is the estimate for the y-intercept of the model? Interpret the meaning of the y-intercept.  What is the coefficient estimate for the dummy variable for zip code 98004? interpret this number too.
+
+Answer: The estimate for the y-intercept of the model is 281195. This means that the baseline price for a house without considering zip code is 281,195 dollars. The coefficient estimate for the dummy variable for zip code 98004 is 1074732. This means that the baseline price for a house in the zip code 98004 is increased by 1,074,732 dollars.
+
+
+ 
+
+
+# Transforming some of the variables and creating additional ones
+
+
+## Question 4 (15 pts)
+
+As we saw in question 2 some of the variables do not have a linear relationship with `price`.  We will transform these variables to make their relationship with `price` more linear in this question.
+
+### Part a (6 pts)
+
+Let $X$ be the unique values in `grade` and let $Y$ be the average house price for the corresponding $X$-value.   Thus, the scatterplot that we made in question 2.b for the average house price and `grade` plots $Y$ v.s. $X$.  From the scatterplot we see that the relationship between $Y$ and $X$ is not linear and could be approximated with the equation
+
+\[
+Y \approx (X)^{b}
+\]
+
+for some constant $b$.
+
+Taking log on both sides results in
+
+\[
+log(Y) \approx b \times log(X)
+\]
+
+Find out what the "best" value for $b$ should be according to the data; i.e., find $b$ such that $(log(Y_i) - b \times log(X))^2$ will be minimized for the 11 data points for the scatterplot on average.
+
+
+```{r}
+lm(log(avg.price.grade)~log(sort(unique(house$grade))))
+```
+Answer: The calculated $b$ value of 1.948 is the "best" value for $b$ according to the data.
+
+
+### Part b (2 pts)
+
+Use the value that you found for $b$ in part a and create the variable `trans.grade` by transforming `grade` to $trans.grade = (grade)^{b}$.
+
+You can make the scatterplot that you made for the average house prices v.s. the unique values in `grade` in question 2.d again, except that now replace the unique values of `grade` with that of `trans.grade`.  You can then verify that the scatterplot now shows a more linear pattern.  This step should improve the linearity between `price` and `grade` but it will not make the relationship completely linear. You are not required to turn in the scatterplot for this part.
+
+```{r}
+trans.grade = (house$grade)^1.948
+```
+
+
+
+### Part c (3 pts) Creating new variables for the model
+
+Here, we will make a new data frame for all the variables that we will need for building the model.  
+
+We will create the new data frame `mod.variables` with all the transformed variables and some of the original variables.  `mod.variables` should include `price`, `sqft_living`, `sqft_basement`, `grade`, `bedrooms`, `bathrooms` and `date` from the data frame `house` plus the following transformed variables:
+
+* `f.waterfront`: the factor version of `house$waterfront`;
+* `f.floor`: the factor version of `house$floor`;
+* `f.cond`: the factor version of `house$condition`;
+* `f.renov`: a factor vector and each element in `f.renov` is 1 if the corresponding element in `house$yr_renovated` does not equal to zero, and 0 otherwise;
+* `f.bdrm.less.eq.8`: a factor vector and each element in `f.bdrm.less.eq.8` is 1 if the corresponding element in `house$bedrooms` is less or equal to 8, and 0 otherwise;
+* `f.zipcode`: the factor version of `house$zipcode`;
+
+and also the transformed variable
+
+* `trans.grade`: the vector `trans.grade` that you have already made.
+
+```{r}
+mod.variables = with(data = house, data.frame("price" = price,
+                                              "sqft_living" = sqft_living,
+                                              "sqft_basement" = sqft_basement,
+                                              "grade" = grade,
+                                              "bedrooms" = bedrooms,
+                                              "bathrooms" = bathrooms,
+                                              "date" = date,
+                                              "f.waterfront" = as.factor(waterfront),
+                                              "f.floor" = as.factor(floors),
+                                              "f.cond" = as.factor(condition),
+                                              "f.renov" = as.factor(as.numeric(yr_renovated!=0)),
+                                              "f.bdrm.less.eq.8" = as.factor(as.numeric(bedrooms<=8)),
+                                              "f.zipcode" = as.factor(zipcode),
+                                              "trans.grade" = trans.grade
+                                              )
+                     )
+```
+
+
+
+
+
+### Part d (4 pts)
+
+Explain why based on one of the scatterplots that you made in question 2.b, it makes sense to consider the variables `f.bdrm.less.eq.8` and `f.bdrm.less.eq.8:bedrooms` in the model.
+
+Answer: Based on the "Average House Price Per Number of Bedrooms" scatterplot, it makes sense to include the variables `f.bdrm.less.eq.8` and `f.bdrm.less.eq.8:bedrooms` in the model because the average house price data for houses with less than or equal to 8 bedrooms is fairly linear, and the data for houses with 9 or more bedrooms is also fairly linear, but if combined the best fit line would be very inaccurate. Therefore, it makes sense to split the data and have different terms for the <=8 bedroom data and >=9 bedroom data.
+
+
+# Divide data into four subsets: one training set, one validation set and two test sets.
+
+
+For this part you just need to remove the `eval=F` argument for each of the code chunks below and run the code; no action is required from you other than that.  
+
+`mod.variables` covers the period from May 2014 to May 2015.  We will prepare a vector `date.format` that we can use to extract out the observations that correspond to transactions closed in May 2015.
+
+```{r}
+date.format = format(as.Date(mod.variables$date, '%Y%m%dT'), "%Y%m")
+length(date.format)
+head(date.format)
+dim(mod.variables)
+
+```
+
+
+
+Then, the following lines will extract out all the observations with transactions closed in May 2015. We will use these observations for our out-of-time test set `test2`.  
+
+```{r}
+
+test2 = mod.variables[date.format %in% '201505', !(names(mod.variables)%in%c('date'))]
+
+dim(test2)
+```
+
+For the rest of the observations run the following code chunk; this will split the remaining observations into 3 sets: 70% for the training set (i.e., `train`), 15% for the validation set (i.e., `val`) and 15% for in-time test set (i.e., `test1`).
+
+```{r}
+# remove the `date` column from the data frame
+# keep the rows that are not correspond to the period May 2015
+tmp = mod.variables[!date.format %in% '201505',  !(names(mod.variables)%in%c('date'))]
+
+s = nrow(tmp)
+s
+
+set.seed(12122019)
+permu = sample(1:s) # shuffle the row indices
+train = tmp[permu,][1:round(s*.70),] 
+# randomly select 70% of the rows in tmp to form the training set
+dim(train)
+
+
+val = tmp[permu,][(round(s*.70)+1):round(s*.85),]
+# randomly select 15% of the rows in tmp to form the validation set
+dim(val)
+
+
+test1 = tmp[permu,][(round(s*.85)+1):s,]
+# randomly select 15% of the rows in tmp to form the in-time test set
+dim(test1)
+
+
+```
+
+
+```{r}
+# check to see what variables are in the datasets
+colnames(test2)
+```
+
+
+# Model selection
+
+We are now ready to build our model!  `mod.variables` has been divided into 4 sets: 
+
+* `train`: The 14671 by 13 training set 
+* `validation`: The 3144 by 13 validation set
+* `test1`: The 3144 by 13 in-time test set
+* `test2`: The 646 by 13 out-of-time test set  
+
+
+For the rest of the project we will pick the number of predictors in our champion model in two ways: with and without cross-validation.
+
+  
+
+## Question 5 (24 pts) Selecting the number of predictors in the champion model without using cross-validation
+
+### Part a (20 pts) Will include additional variables in the model improve the model performance?
+
+Use the non-test set (i.e., the combination of the training and validation sets) for this part.
+
+First, find the "best" models by considering only the predictors that already exist in the original dataset (i.e., all the variables in non-test set except `f.bdrm.less.eq.8` and `trans.grade`).  Use BIC and Adjusted $R^2$ as the criteria to evaluate the performance of your "best" models. You should use both backward and forward selection algorithms.  Do backward and forward selection algorithms produce similar (in terms of the values for BIC and Adjusted $R^2$) results in this case?  
+
+```{r}
+non_test = rbind(train, val)
+dim(non_test)
+```
+
+```{r}
+library(leaps)
+
+g = regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode, data = non_test, method = 'backward', nvmax = 85, really.big = T)
+h = regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode, data = non_test, method = 'forward', nvmax = 85, really.big = T)
+i = regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data = non_test, method = 'backward', nvmax = 90, really.big = T)
+j = regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data = non_test, method = 'forward', nvmax = 90, really.big = T)
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(aes(x = c(1:85), y = summary(g)$bic, color = 'backward'), alpha = .4) +
+  geom_point(aes(x = c(1:85), y = summary(h)$bic, color = 'forward'), alpha = .4) +
+  geom_point(aes(x = c(1:90), y = summary(i)$bic, color = 'backward adjusted'), alpha = .4) +
+  geom_point(aes(x = c(1:90), y = summary(j)$bic, color = 'forward adjusted'), alpha = .4) +
+  labs(title = 'BIC for best model for each given number of predictors', 
+       x = 'Given number of predictors',
+       y = 'BIC')
+  
+ggplot() +
+  geom_point(aes(x = c(1:85), y = summary(g)$adjr2, color = 'backward'), alpha = .4) +
+  geom_point(aes(x = c(1:85), y = summary(h)$adjr2, color = 'forward'), alpha = .4) +
+  geom_point(aes(x = c(1:90), y = summary(i)$adjr2, color = 'backward adjusted'), alpha = .4) +
+  geom_point(aes(x = c(1:90), y = summary(j)$adjr2, color = 'forward adjusted'), alpha = .4) +
+  labs(title = 'Adjusted R-square for best model for each given number of predictors',
+       x = 'Given number of predictors',
+       y = 'Adjusted R-square')
+```
+
+```{r, results='hide'}
+mod1 = lm(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode, data = non_test)
+summary(mod1)
+
+mod2 = lm(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data = non_test)
+summary(mod2)
+```
+
+Secondly, repeat everything in the first step above but consider additional 5 variables for your models: `f.bdrm.less.eq.8`, `trans.grade`, the interaction terms `f.waterfront:sqft_living`, `f.waterfront:bathrooms` and `f.bdrm.less.eq.8:bedrooms`.  Again, use backward and forward selection algorithms.  Plot the BIC values with the ones produced in the first step above to see how much improvement there is by considering the additional 5 variables for your models.  Similarly, Plot the Adjusted $R^2$ values with the ones produced in the first step above.  Since you are making comparisons here, please make sure that all the values being compared are on the same graph.
+
+As you can see from the graphs, creating the right variables helps to improve your model significantly! A seasoned data scientist knows how to create good variables by doing exploratory analysis on the data like what we did earlier in the report.
+
+Answer: The backward and forward selection algorithms produce similar BIC and Adjusted $R^2$ graphs, but they are not identical.
+
+
+
+### Part b (4 pt)
+
+What is the purpose of using measures, such as BIC or Adjusted R-square, to evaluate the performance of a model?  Why don't we just use RSS instead?
+
+Answer: We don't just use RSS because of the threat of overfitting the model. With BIC or or Adjusted R-square, it becomes easier to find the best model without having too many predictors, such that the model would become useless for later testing and predictions.
+
+## Question 6 (21 pts) Selecting the number of predictors in the champion model with cross-validation
+
+### Part a (10 pts)
+
+Use cross-validation to select the number of predictors in your champion model.  Since we saw in question 5.a that considering the 5 additional x-variables help improve the performance of the best models significantly, make sure that you consider the 5 additional x-variables together with the original variables.
+
+```{r}
+g.train = regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data = train, method = 'backward', nvmax = 90, really.big = T)
+h.train = regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data = train, method = 'forward', nvmax = 90, really.big = T)
+```
+
+```{r}
+# define a function to make prediction for an object that is the output of regsubsets()
+predict.reg = function(object,newdata,id){
+      form = as.formula(object$call[[2]]) # Extract the formula used when we called regsubsets()
+      mat = model.matrix(form,newdata)    # Build the model matrix
+      coefi = coef(object,id=id)          # Extract the coefficients of the id'th model
+      xvars = names(coefi)                # Pull out the names of the predictors used in the ith model
+      as.vector(mat[,xvars]%*%coefi)               # Make predictions using matrix multiplication
+}
+
+cal.mse.g = function(x){
+  predicted.y = predict.reg(object = g.train, newdata = val,id = x)
+  return(mean((val$price - predicted.y)^2))
+}
+cal.mse.h = function(x){
+  predicted.y = predict.reg(object = h.train, newdata = val,id = x)
+  return(mean((val$price - predicted.y)^2))
+}
+
+mse.g = sapply(1:90, FUN = cal.mse.g)
+mse.h = sapply(1:90, FUN = cal.mse.h)
+```
+
+```{r}
+ggplot() +
+  geom_point(aes(x = c(1:90), y = mse.g, color = 'backward train'), alpha = .4) +
+  geom_point(aes(x = c(1:90), y = mse.h, color = 'forward train'), alpha = .4) +
+  labs(title = 'MSE v.s. the number of predictors in the "best" model', 
+       x = 'Number of predictors in the "best" model',
+       y = 'Mean squared error')
+```
+
+
+### Part b (2 pts)
+
+Is the number of predictors for the champion model that you found in part a the same as that you found with BIC and adjusted $R^2$?  If the two numbers disagree use the one selected with cross-validation for the rest of the parts in this question.
+
+Answer: The number of predictors for the "best" model in both the non-cross-validation and cross-validation sets falls in the range of 50-60 predictors. Knowing this, we chose to to use the cross-validation set just because we couldn't be 100% sure.
+
+
+### Part c (4 pts: 3pts for the choice and 1 for the print out) The champion model
+
+
+Propose your champion model by printing out the coefficient estimates for your model with code.  Justify your choice.  
+
+```{r}
+champion <- regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data=non_test, really.big=T, method='backward', nvmax=58)
+
+coef(champion, id = 58)
+```
+
+Justification: We thought this was the best model because the MSE plateaued at its minimum first around 58 predictors, and we chose backward selection because it produced visibly better results than forward selection.
+
+### Part d (5 pts)
+
+Let $k$ be the number of predictors that you chose for your champion model.  Compare the best models with k predictors selected by the backward and forward algorithms.  Do the algorithms pick the same set of predictors?  Are there any predictors that are selected by the forward algorithm but not by the backward?  List the names of these variables if there are any.  Similarly, are there any predictors that are selected by the backward algorithm but not by the forward?  List the variables too if there are any.
+
+```{r}
+find.champion.b <- regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data=non_test, really.big=T, method='backward', nvmax=58)
+
+find.champion.f <- regsubsets(price ~ sqft_living + sqft_basement + grade + bedrooms + bathrooms + f.waterfront + f.floor + f.cond + f.renov + f.zipcode + f.bdrm.less.eq.8 + trans.grade + f.waterfront:sqft_living + f.waterfront:bathrooms + f.bdrm.less.eq.8:bedrooms, data=non_test, really.big=T, method='forward', nvmax=58)
+
+names.b = names(coef(find.champion.b, id = 58))
+names.f = names(coef(find.champion.f, id = 58))
+names.f[!(names.f %in% names.b)]
+names.b[!(names.f %in% names.b)]
+```
+
+Answer: The algorithms do not pick the same set of predictors. There are 4 predictors selected by the forward algorithm but not by the backward, and likewise 4 predictors selected by the backward algorithm but not by the forward. See the above code annotations for the corresponding lists of differing variables.
+
+## Question 7 (12 pts) 
+
+### Part a (6 pts) Checking assumptions
+
+For your champion model plot the residual plot, the qq plot and the histogram for the distribution of the residuals.  What are the assumptions on the distribution of the errors for a linear model?  Do your plots suggest any possible violation of the assumptions?  Explain.
+
+```{r}
+predicted.y = predict.reg(object = champion, newdata = val, id = 58)
+summary(predicted.y)
+summary(val$price)
+res = val$price - predicted.y
+
+plot(predicted.y, res)
+abline(lm(res~predicted.y), col = 'red')
+qqnorm(res)
+qqline(res, col = 'red')
+hist(res, freq=F, breaks=30)
+```
+
+Answer: The assumptions on the errors for a linear model are that the errors are independent and also that the errors follow a normal distribution (0, sd = $\sigma$). Our plots do not suggest any possible violation of these assumptions, considering that the histogram of the distribution of the residuals appears to be normal, our qq plot is fairly linear, and our plot of the residuals vs. the predicted y-values has a best fit line that is very close to y=0, demonstrating that our model is sound and works pretty well. **Note: We checked on Piazza and determined from a post that checking the independence assumption is outside the scope of this course. What we have written here is what we believe to be the correct answer, but we could be mistaken.
+
+
+### Part b (6 pts)
+
+Estimate the mean squared errors for your champion model with the in-time and out-of-time test sets.  Is the MSE estimated with the out-of-time test set bigger or smaller than the MSE estimated with the in-time test set?  Is this result expected? 
+
+```{r}
+cal.mse.in.time = function(x){
+  predicted.y = predict.reg(object = champion, newdata = test1,id = x)
+  return(mean((test1$price - predicted.y)^2))
+}
+cal.mse.out.time = function(x){
+  predicted.y = predict.reg(object = champion, newdata = test2,id = x)
+  return(mean((test2$price - predicted.y)^2))
+}
+
+mse.out.time = sapply(1:58, FUN = cal.mse.out.time)
+mse.in.time = sapply(1:58, FUN = cal.mse.in.time)
+
+ggplot() +
+  geom_point(aes(x = c(1:58), y = mse.in.time, color = 'In-Time'), alpha = .4) +
+  geom_point(aes(x = c(1:58), y = mse.out.time, color = 'Out-Of-Time'), alpha = .4) +
+  labs(title = 'Testing the Champion Model with the In- & Out of Time Test Sets', 
+       x = 'Number of predictors in the champion model',
+       y = 'Mean squared error')
+```
+
+Answer: The MSE of the out-of-time test set is bigger than that of the in-time test set. This makes sense because the champion model is based off of similar data to that of the in-time test set.
