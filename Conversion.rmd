@@ -1,4 +1,0 @@
-``` {r}
-library(rmarkdown)
-pandoc_convert(input = "/Users/billhaarlow/Desktop/SML201/Ch5.3_Constructing_Confidence_Intervals/SML201 Chapter 5.3.html", to = "markdown_strict", options = c("--mathjax", "--atx-headers"), output = "Ch5.3.3.md")
-```
